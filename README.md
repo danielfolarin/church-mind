@@ -74,6 +74,13 @@ Then open <http://127.0.0.1:5174>.
 `npm run build` type-checks the project and writes a deployable copy to
 `dist/`, which any static web host can serve.
 
+## Hosting
+
+The game is published free with GitHub Pages. Every push to `main` runs
+`.github/workflows/deploy.yml`, which builds the game and puts it online at
+<https://game.thecuriousseekers.com>. Nothing else needs doing to release a
+change.
+
 ## Edit the story
 
 Everything a player reads is in `src/game/stories/alderRowWeek.ts`. From top
