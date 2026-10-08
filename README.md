@@ -1,0 +1,105 @@
+# Church Mind
+
+*See life through the way of Jesus.*
+
+Church Mind is a Christian formation game set in a living neighbourhood where
+Christians and non-Christians share ordinary life. It is its own app and does
+not depend on any other project.
+
+## How it plays
+
+The first story is **A Week in Alder Row**. You live four days, each with a
+morning and an evening: eight turns in all.
+
+- **A map, not a quiz.** Each turn opens on the neighbourhood map. Places with
+  something happening light up, with the faces of who is there. You pick one
+  place to go. The other things don't all wait for you.
+- **Limited time, money and energy.** Work pays the rent but wears you out.
+  A friend needs help the same morning your boss needs cover. Rent is due on
+  Saturday whether or not you lent money on Monday.
+- **People remember.** Closeness with each person rises and falls with how you
+  treat them, and what you did earlier changes what they say later.
+- **Everyday themes.** Relationships (a serious question from someone who
+  doesn't share your faith), friendship (a friend short on his deposit), work
+  (an over-full till, a cruel customer), money (rent), conflict and
+  forgiveness (a debt, an avoided conversation), and faith (prayer, the
+  Thursday table, a colleague who asks what you believe).
+- **Scripture in context.** Passages arrive where they belong: in a mentor's
+  kitchen, in the Sunday reading, on a walk by the river. Each comes with a
+  short explanation, and none is used as a punishment.
+- **Room to turn around.** Almost every mistake has a later chance to put it
+  right: take the money back, knock on the door, go and apologise. Those
+  chances are never locked behind money or energy.
+- **A summary, not a score.** The week ends with how things stand with each
+  person, what grew in you (wisdom, integrity, compassion, courage, trust),
+  and questions to carry into real life.
+
+Scenes have illustrated, animated characters and unfold a line at a time.
+Sound and spoken lines are optional and start switched off.
+
+## Run it
+
+You need [Node.js](https://nodejs.org) 18 or newer.
+
+```bash
+npm install
+npm run dev
+```
+
+Then open <http://127.0.0.1:5174>.
+
+`npm run build` type-checks the project and writes a deployable copy to
+`dist/`, which any static web host can serve.
+
+## Edit the story
+
+Everything a player reads is in `src/game/stories/alderRowWeek.ts`. From top
+to bottom it holds:
+
+- **People:** how each one looks and sounds.
+- **Scripture:** each passage with its explanation.
+- **`start`, `slots`, `places`:** starting money and energy, the days of the
+  week, and where places sit on the map.
+- **`opportunities`:** what the player can do and when. Each has a place, the
+  slots it is offered in, what it costs or gives (`money`, `energy`, `bond`),
+  an optional `when` condition, and the scene it opens.
+- **`nodes`:** the scenes. Lines are written with short helpers: `n(...)` for
+  narration, `d("ruth", "...", "warm")` for speech with an expression,
+  `t(...)` for a thought, `m(...)` for a phone message, `s(...)` for
+  Scripture. A scene ends with choices or with `next: "map"`.
+- **`endings` and `threads`:** how the week is summed up.
+
+Choices and opportunities can set `flags`, and anything can be made
+conditional on them with `when`. Doing an opportunity also sets `did:<id>`.
+
+To add another story, copy that file, change its content, and add it to the
+list in `src/game/stories/index.ts`. In development the app checks every
+story for broken links and prints any problems in the browser console.
+
+## Where things are
+
+```
+src/App.tsx                 title, introduction, scene and summary screens
+src/game/MapScreen.tsx      the neighbourhood map and the list of things to do
+src/game/stories/           story content, one file per story
+src/game/types.ts           the shape a story must follow
+src/game/engine.ts          time, money, energy, closeness, branching, checks
+src/game/ui.tsx             dialogue, Scripture panel, growth, week tracker
+src/game/SceneArt.tsx       scene and map illustrations, drawn in code
+src/game/Figure.tsx         the characters: faces, expressions, movement
+src/game/Stage.tsx          places the characters in the scene and lights them
+src/game/audio.ts           atmosphere for each place and small story sounds
+src/game/voice.ts           reads lines aloud with the device's built-in voices
+tailwind.config.js          colours, fonts, and motion
+```
+
+## Before sharing it widely
+
+- The story, its theology and the Scripture explanations are a first draft and
+  should be reviewed by a pastor.
+- The balance of money and energy was checked by simulation, not by watching
+  real people play. Expect to tune it after a few playtests.
+- The sound was tuned by measurement, not by ear, and the voices are whatever
+  each device provides. Listen on a phone and a computer first.
+- Scripture is quoted from the World English Bible, which is public domain.
+  Another translation may need a licence.
