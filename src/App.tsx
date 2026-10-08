@@ -17,7 +17,9 @@ import {
 import { MapScreen } from "./game/MapScreen";
 import { sound } from "./game/audio";
 import { CharacterCreator, customLead, loadCharacter, saveCharacter, type CustomCharacter } from "./game/Creator";
+import { Coin, CollectionScreen, WeekRewards } from "./game/Collection";
 import { DownloadPanel } from "./game/Download";
+import { loadProfile, rewardWeek, type WeekReward } from "./game/rewards";
 import { FullFigure } from "./game/Rig";
 import { SceneArt, TitleArt } from "./game/SceneArt";
 import { Stage, type StagePerson } from "./game/Stage";
@@ -47,7 +49,7 @@ if (import.meta.env.DEV) {
   }
 }
 
-type Screen = "title" | "intro" | "play";
+type Screen = "title" | "intro" | "play" | "collection";
 
 function joinNames(names: string[]) {
   if (names.length < 2) return names.join("");
@@ -108,6 +110,15 @@ export default function App() {
     if (screen === "play" && game.phase === "summary") sound.play("ending");
   }, [screen, game.phase]);
 
+  // A finished week pays out once: coins and keepsakes, kept for next time.
+  const [reward, setReward] = useState<WeekReward | null>(null);
+  const rewarded = useRef<GameState | null>(null);
+  useEffect(() => {
+    if (screen !== "play" || game.phase !== "summary" || rewarded.current === game) return;
+    rewarded.current = game;
+    setReward(rewardWeek(story, game));
+  }, [screen, game]);
+
   function begin(chosen: Lead) {
     setLead(chosen);
     setGame(startWeek(story));
@@ -115,7 +126,11 @@ export default function App() {
   }
 
   if (screen === "title") {
-    return <TitleScreen story={story} audio={audio} headingRef={headingRef} onBegin={() => setScreen("intro")} />;
+    return <TitleScreen story={story} audio={audio} headingRef={headingRef} onBegin={() => setScreen("intro")} onCollection={() => setScreen("collection")} />;
+  }
+
+  if (screen === "collection") {
+    return <CollectionScreen story={story} lead={lead} wordmark={<Wordmark />} headingRef={headingRef} onBack={() => setScreen("title")} />;
   }
 
   if (screen === "intro") {
@@ -139,6 +154,7 @@ export default function App() {
         story={story}
         lead={lead}
         game={game}
+        reward={reward}
         audio={audio}
         headingRef={headingRef}
         onReplay={() => setScreen("intro")}
@@ -223,12 +239,15 @@ function TitleScreen({
   audio,
   headingRef,
   onBegin,
+  onCollection,
 }: {
   story: Story;
   audio: SoundSettings;
   headingRef: HeadingRef;
   onBegin: () => void;
+  onCollection: () => void;
 }) {
+  const profile = loadProfile();
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden bg-cm-night text-cm-cream">
       <div className="absolute inset-0 animate-cm-fade">
@@ -273,7 +292,14 @@ function TitleScreen({
           <p className="text-xs text-cm-sand/80">Atmosphere and spoken lines are optional, and start off.</p>
         </div>
 
-        <div {...stagger(10, "mt-4")}>
+        <div {...stagger(10, "mt-4 flex flex-wrap items-start gap-2")}>
+          <button
+            type="button"
+            onClick={onCollection}
+            className="inline-flex min-h-10 items-center gap-2 rounded-full border border-white/15 px-4 py-2 text-xs font-semibold tracking-wide text-cm-cream/80 transition hover:border-white/40 hover:text-cm-cream"
+          >
+            <Coin /> {profile.coins} · Collection{profile.keepsakes.length ? ` (${profile.keepsakes.length} of ${story.keepsakes.length})` : ""}
+          </button>
           <DownloadPanel />
         </div>
       </main>
@@ -723,6 +749,7 @@ function EndingScreen({
   story,
   lead,
   game,
+  reward,
   audio,
   headingRef,
   onReplay,
@@ -731,6 +758,7 @@ function EndingScreen({
   story: Story;
   lead: Lead;
   game: GameState;
+  reward: WeekReward | null;
   audio: SoundSettings;
   headingRef: HeadingRef;
   onReplay: () => void;
@@ -777,6 +805,8 @@ function EndingScreen({
 
         <div className="mt-10 animate-cm-fade space-y-10" style={{ animationDelay: "0.9s" }}>
           <ScripturePanel scripture={ending.scripture} />
+
+          {reward && <WeekRewards story={story} lead={lead} game={game} ending={ending} reward={reward} />}
 
           <section>
             <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cm-sand">The rest of your week</h2>

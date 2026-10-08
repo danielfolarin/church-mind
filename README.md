@@ -86,6 +86,22 @@ The game is published free with GitHub Pages. Every push to `main` runs
 <https://game.thecuriousseekers.com>. Nothing else needs doing to release a
 change.
 
+## Rewards
+
+Finishing a week pays out, and what is earned is kept on the player's device.
+
+- **Keepsakes** are small things people give the player, each tied to how a
+  week went (`keepsakes` in the story file, each with a `when` condition).
+  Several are only earned by going back to put something right.
+- **Coins** come from finishing a week, from what grew in the player, and from
+  new keepsakes. They are spent in the Collection on new looks for the
+  character creator (the `SHOP` list in `src/game/rewards.ts`).
+- **Share your week** makes a picture of the player's character, ending and
+  keepsakes to post or send.
+
+Rewards mark showing up for people and making repairs. They are deliberately
+not a measure of how good the player was.
+
 ## Installing and playing offline
 
 Church Mind can be downloaded without an app store. On the title screen,
@@ -147,6 +163,9 @@ src/game/SceneArt.tsx       scene and map illustrations, drawn in code
 src/game/Figure.tsx         the characters' heads: faces, hair, expressions
 src/game/Rig.tsx            full-body characters on a skeleton: poses and movement
 src/game/Creator.tsx        the make-your-own-character screen
+src/game/rewards.ts         coins, keepsakes and the shop: what is earned and kept
+src/game/Collection.tsx     the end-of-week rewards and the Collection screen
+src/game/shareCard.ts       draws the picture for "Share your week"
 src/game/Stage.tsx          places the characters in the scene and lights them
 src/game/audio.ts           atmosphere for each place and small story sounds
 src/game/voice.ts           plays recorded voices, or the device's own as a fallback

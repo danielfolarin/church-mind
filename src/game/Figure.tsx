@@ -115,6 +115,27 @@ function Clothes({ look }: { look: Look }) {
   }
 }
 
+/** Things worn at the neck: a scarf, or a cross on a chain. Shared by the bust and the full figure. */
+export function Neckwear({ look }: { look: Look }) {
+  return (
+    <>
+      {look.pendant && (
+        <g>
+          <path d="M84 178 Q100 214 116 178" fill="none" stroke="#E2B36B" strokeWidth="1.6" />
+          <path d="M100 206 V222 M94 211 H106" stroke="#E2B36B" strokeWidth="3" strokeLinecap="round" />
+        </g>
+      )}
+      {look.scarf && (
+        <g fill={look.scarf}>
+          <path d="M78 166 Q100 186 122 166 L126 184 Q100 206 74 184Z" />
+          <path d="M106 192 L122 246 H104 L98 198Z" />
+          <path d="M78 166 Q100 186 122 166 L123 171 Q100 191 77 171Z" fill="#000" opacity="0.15" />
+        </g>
+      )}
+    </>
+  );
+}
+
 /** The head: face, hair and expression. Shared by the bust and the full figure. */
 export function Head({
   look,
@@ -164,6 +185,13 @@ export function Head({
         />
       )}
       <HairFront look={look} />
+      {look.beanie && (
+        <g>
+          <path d="M55 96 Q52 42 100 40 Q148 42 145 96 Q100 80 55 96Z" fill={look.beanie} />
+          <path d="M54 98 Q100 80 146 98 L146 86 Q100 68 54 86Z" fill="#000" opacity="0.2" />
+          <circle cx="100" cy="38" r="9" fill={look.beanie} />
+        </g>
+      )}
 
       <g style={{ transform: `translateX(${turn}px)`, transition: "transform 0.5s ease" }}>
         <g fill="#E8622C" style={{ opacity: face.blush, transition: "opacity 0.5s ease" }}>
@@ -263,6 +291,7 @@ export function Figure({
         </g>
         <path d="M84 150 V181 Q100 196 116 181 V150Z" fill={look.shade} />
         <path d="M84 152 Q100 176 116 152 V163 Q100 184 84 163Z" fill="#000" opacity="0.2" />
+        <Neckwear look={look} />
 
         <Head look={look} mood={mood} speaking={speaking} facing={facing} blinkDelay={blinkDelay} />
       </g>

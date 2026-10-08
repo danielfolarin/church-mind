@@ -61,6 +61,12 @@ export interface Look {
   glasses?: boolean;
   beard?: boolean;
   earrings?: boolean;
+  /** A knitted hat of this colour. */
+  beanie?: string;
+  /** A scarf of this colour. */
+  scarf?: string;
+  /** A small cross on a chain. */
+  pendant?: boolean;
   /** Full figure: how they stand. `akimbo` is hands on hips; `hip` is one hand on a hip. */
   stance?: Stance;
   /** Full figure: how they move while standing. */
@@ -258,6 +264,21 @@ export interface Ending {
   questions: string[];
 }
 
+/**
+ * Something the player takes away from a week and keeps: usually a small gift
+ * from someone, marking a moment with them. Collected across weeks.
+ */
+export interface Keepsake {
+  id: string;
+  name: string;
+  /** A single emoji shown on the keepsake's token. */
+  icon: string;
+  /** One or two lines about it. May use tokens. */
+  text: string;
+  /** The week must have gone this way to earn it. */
+  when: Condition;
+}
+
 /** A strand of the week summed up at the end, e.g. "Dev" or "Rent". */
 export interface Thread {
   title: string;
@@ -314,4 +335,5 @@ export interface Story {
   nodes: Record<string, StoryNode>;
   endings: Ending[];
   threads: Thread[];
+  keepsakes: Keepsake[];
 }

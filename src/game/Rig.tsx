@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
-import { HairBack, Head } from "./Figure";
+import { HairBack, Head, Neckwear } from "./Figure";
 import type { Look, Manner, Mood, Stance } from "./types";
 
 // Full-body characters built on a skeleton.
@@ -244,6 +244,7 @@ export function FullFigure({ look, mood = "warm", delay = "0s", className = "" }
 
           <path d="M84 150 V181 Q100 196 116 181 V150Z" fill={look.shade} />
           <path d="M84 152 Q100 176 116 152 V163 Q100 184 84 163Z" fill="#000" opacity="0.2" />
+          <Neckwear look={look} />
           <g ref={bone("head")} transform={rest.head}>
             <Head look={look} mood={mood} speaking={false} facing={0} blinkDelay={delay} />
           </g>

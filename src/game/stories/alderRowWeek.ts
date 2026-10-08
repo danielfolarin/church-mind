@@ -1311,6 +1311,24 @@ export const alderRowWeek: Story = {
     },
   ],
 
+  // Things to keep. Each is earned by how a week went, and collected across weeks.
+  keepsakes: [
+    { id: "seeds", icon: "🌱", name: "A packet of saved seeds", when: { all: ["told_truth"] }, text: "{partner} saved these for you. You parted honestly, and {he} still thought of you." },
+    { id: "note", icon: "💬", name: "A message from {partner}", when: { all: ["repaired"] }, text: "“Thank you for coming back to say it properly. It mattered.”" },
+    { id: "recipe", icon: "🍲", name: "Ruth’s soup recipe", when: { any: ["did:table", "did:soup"] }, text: "On the back of an envelope, in her handwriting. “Serves eight. Make extra.”" },
+    { id: "fern", icon: "🪴", name: "A cutting from Dev’s fern", when: { all: ["did:dev_move"] }, text: "Six years old and still going. He says you have earned a piece of it." },
+    { id: "iou", icon: "🤝", name: "A torn-up IOU", when: { all: ["forgave_debt"] }, text: "A hundred dollars you turned into a gift." },
+    { id: "knock", icon: "🚪", name: "Dev’s spare key", when: { all: ["dev_repaired"] }, text: "You let him down, then went and said so. He gave you a key anyway." },
+    { id: "envelope", icon: "✉️", name: "The dated envelope", when: { all: ["reported"] }, text: "Priya kept it: forty dollars, and the date you handed it back." },
+    { id: "returned", icon: "💵", name: "Forty dollars, returned", when: { all: ["confessed"] }, text: "The hardest flight of stairs you have ever climbed." },
+    { id: "mug", icon: "☕", name: "A Kindling staff mug", when: { all: ["shared_faith"] }, text: "“For someone who answered my question properly.”" },
+    { id: "receipt", icon: "🧾", name: "A receipt for a third flat white", when: { all: ["kind_customer"] }, text: "He came back on Friday to say thank you." },
+    { id: "stone", icon: "🪨", name: "A river stone", when: { all: ["prayed"] }, text: "Smooth, from under the footbridge. It sits on your windowsill now." },
+    { id: "reading", icon: "📖", name: "Sunday’s reading", when: { any: ["did:service", "did:service_guest"] }, text: "Colossians 3, folded into your coat pocket." },
+    { id: "card", icon: "🫖", name: "A card from Pastor Tolu", when: { all: ["did:pastors"] }, text: "“The kettle is on most mornings.”" },
+    { id: "tin", icon: "🥫", name: "The biscuit-tin envelope", when: { all: ["rent_helped"] }, text: "Half the table has needed it. One day you will be the one refilling it." },
+  ],
+
   // The other strands of the week. Each beat that fits is shown.
   threads: [
     {

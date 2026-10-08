@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { loadProfile } from "./rewards";
 import { FullFigure } from "./Rig";
 import type { HairStyle, Lead, Look, Manner, Stance, Story, TopStyle } from "./types";
 
@@ -25,6 +26,9 @@ const SKINS: { skin: string; shade: string }[] = [
   { skin: "#6F4631", shade: "#5B3827" },
 ];
 const HAIR_COLOURS = ["#17110F", "#3A2A20", "#6B4630", "#8A3B2A", "#C9A46A", "#BDB7B0"];
+// Bought with coins in the Collection.
+const BOLD_HAIR = ["#6B1F2E", "#D9A441", "#1B2440"];
+const JEWEL_TOPS = ["#1F7A5A", "#5B3FA6", "#E0705A"];
 const TOP_COLOURS = ["#2F6F73", "#3F5A7A", "#A8553A", "#55704F", "#6B3F5A", "#B8862F", "#B5673A", "#E8DCC8"];
 const HAIR_STYLES: [HairStyle, string][] = [["short", "Short"], ["side", "Side part"], ["curly", "Curly"], ["puff", "Natural"], ["bun", "Bun"], ["wavy", "Wavy"], ["long", "Long"]];
 const TOP_STYLES: [TopStyle, string][] = [["plain", "Plain"], ["collar", "Collar"], ["hoodie", "Hoodie"], ["cardigan", "Cardigan"]];
@@ -118,6 +122,9 @@ export function CharacterCreator({ story, value, onChange }: { story: Story; val
   const look = value.look;
   const set = (change: Partial<Look>) => onChange({ ...value, look: { ...look, ...change } });
   const bottom = look.skirt ? (look.longSkirt ? "long" : "skirt") : look.legs === "#2B3A55" ? "jeans" : "trousers";
+  const owned = loadProfile().owned;
+  const hairColours = owned.includes("hair") ? [...HAIR_COLOURS, ...BOLD_HAIR] : HAIR_COLOURS;
+  const topColours = owned.includes("jewel") ? [...TOP_COLOURS, ...JEWEL_TOPS] : TOP_COLOURS;
 
   return (
     <div className="animate-cm-rise rounded-2xl border border-cm-ember/40 bg-cm-ember/[0.06] p-4 sm:p-6 md:flex md:gap-8">
@@ -165,7 +172,7 @@ export function CharacterCreator({ story, value, onChange }: { story: Story; val
           ))}
         </Group>
         <Group label="Hair colour">
-          {HAIR_COLOURS.map((colour, index) => (
+          {hairColours.map((colour, index) => (
             <Swatch key={colour} colour={colour} label={`Hair colour ${index + 1}`} on={look.hair === colour} onClick={() => set({ hair: colour })} />
           ))}
         </Group>
@@ -178,7 +185,7 @@ export function CharacterCreator({ story, value, onChange }: { story: Story; val
           ))}
         </Group>
         <Group label="Top colour">
-          {TOP_COLOURS.map((colour, index) => (
+          {topColours.map((colour, index) => (
             <Swatch key={colour} colour={colour} label={`Top colour ${index + 1}`} on={look.top === colour} onClick={() => set({ top: colour, accent: colour === "#E8DCC8" ? "#3A2A22" : "#F4EBDD" })} />
           ))}
         </Group>
@@ -201,7 +208,23 @@ export function CharacterCreator({ story, value, onChange }: { story: Story; val
           <Pill on={Boolean(look.earrings)} onClick={() => set({ earrings: !look.earrings })}>
             Earrings
           </Pill>
+          {owned.includes("pendant") && (
+            <Pill on={Boolean(look.pendant)} onClick={() => set({ pendant: !look.pendant })}>
+              Cross pendant
+            </Pill>
+          )}
+          {owned.includes("scarf") && (
+            <Pill on={Boolean(look.scarf)} onClick={() => set({ scarf: look.scarf ? undefined : "#B5673A" })}>
+              Scarf
+            </Pill>
+          )}
+          {owned.includes("beanie") && (
+            <Pill on={Boolean(look.beanie)} onClick={() => set({ beanie: look.beanie ? undefined : "#3F5A7A" })}>
+              Beanie
+            </Pill>
+          )}
         </Group>
+        {owned.length < 5 && <p className="text-xs text-cm-sand/80">More looks can be unlocked with coins in your Collection.</p>}
 
         <Group label="Frame">
           {FRAMES.map(([id, label, build]) => (
