@@ -109,9 +109,10 @@ export function FullFigure({ look, mood = "warm", delay = "0s", className = "" }
 
   const legColour = look.skirt ? look.skin : (look.legs ?? "#2A2F3A");
   // Trousers fill out to the hips; bare legs under a skirt are slimmer.
+  const wide = Boolean(look.wideLegs) && !look.skirt;
   const thigh = look.skirt ? limbs * 0.9 : hips / 2;
-  const knee = look.skirt ? limbs * 0.8 : limbs * 1.05;
-  const ankle = look.skirt ? limbs * 0.66 : limbs * 0.86;
+  const knee = look.skirt ? limbs * 0.8 : wide ? hips / 2 : limbs * 1.05;
+  const ankle = look.skirt ? limbs * 0.66 : wide ? hips * 0.56 : limbs * 0.86;
   const shoes = look.shoes ?? "#1A1614";
   const hem = look.longSkirt ? 476 : 424;
 

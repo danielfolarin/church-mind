@@ -75,6 +75,8 @@ export interface Look {
   build?: Build;
   /** Full figure: trouser colour. */
   legs?: string;
+  /** Full figure: trousers cut wide all the way down. */
+  wideLegs?: boolean;
   /** Full figure: wears a skirt of this colour instead of trousers. */
   skirt?: string;
   longSkirt?: boolean;
