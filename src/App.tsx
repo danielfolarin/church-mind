@@ -16,6 +16,7 @@ import {
 } from "./game/engine";
 import { MapScreen } from "./game/MapScreen";
 import { sound } from "./game/audio";
+import { CharacterCreator, customLead, loadCharacter, saveCharacter, type CustomCharacter } from "./game/Creator";
 import { FullFigure } from "./game/Figure";
 import { SceneArt, TitleArt } from "./game/SceneArt";
 import { Stage, type StagePerson } from "./game/Stage";
@@ -290,8 +291,15 @@ function IntroScreen({
   onBack: () => void;
   onStart: (lead: Lead) => void;
 }) {
-  const [lead, setLead] = useState(initialLead);
+  // Either one of the story's own leads, or a character the player makes.
+  const [custom, setCustom] = useState(() => (story.leads.includes(initialLead) ? loadCharacter(story) : { ...loadCharacter(story), look: initialLead.look }));
+  const [choice, setChoice] = useState(() => (story.leads.includes(initialLead) ? initialLead.id : "custom"));
+  const lead = choice === "custom" ? customLead(story, custom) : (story.leads.find((option) => option.id === choice) ?? story.leads[0]);
   const tokens = tokensFor(lead);
+  const changeCustom = (next: CustomCharacter) => {
+    setCustom(next);
+    saveCharacter(next);
+  };
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-cm-night text-cm-cream">
@@ -331,16 +339,16 @@ function IntroScreen({
 
         <section {...stagger(4, "mt-10")}>
           <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cm-sand">Who will you be?</h2>
-          <div className="mt-3 grid max-w-xl grid-cols-2 gap-3" role="radiogroup" aria-label="Choose your character">
+          <div className="mt-3 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-3" role="radiogroup" aria-label="Choose your character">
             {story.leads.map((option, index) => {
-              const selected = option.id === lead.id;
+              const selected = option.id === choice;
               return (
                 <button
                   key={option.id}
                   type="button"
                   role="radio"
                   aria-checked={selected}
-                  onClick={() => setLead(option)}
+                  onClick={() => setChoice(option.id)}
                   className={`flex flex-col items-center rounded-2xl border px-3 pb-4 pt-4 text-center transition ${
                     selected ? "border-cm-ember bg-cm-ember/10" : "border-white/10 bg-white/[0.04] hover:border-white/30"
                   }`}
@@ -351,7 +359,26 @@ function IntroScreen({
                 </button>
               );
             })}
+            <button
+              type="button"
+              role="radio"
+              aria-checked={choice === "custom"}
+              onClick={() => setChoice("custom")}
+              className={`col-span-2 flex flex-col items-center rounded-2xl border px-3 pb-4 pt-4 text-center transition sm:col-span-1 ${
+                choice === "custom" ? "border-cm-ember bg-cm-ember/10" : "border-dashed border-white/25 bg-white/[0.02] hover:border-white/50"
+              }`}
+            >
+              <FullFigure look={custom.look} mood={choice === "custom" ? "warm" : "neutral"} delay="-2.1s" className="h-48 w-full sm:h-60" />
+              <span className="mt-3 block font-story text-2xl text-cm-cream">{custom.name.trim() || "Create your own"}</span>
+              <span className="mt-0.5 block text-xs text-cm-sand sm:text-sm">your name, your look</span>
+            </button>
           </div>
+
+          {choice === "custom" && (
+            <div className="mt-4">
+              <CharacterCreator story={story} value={custom} onChange={changeCustom} />
+            </div>
+          )}
         </section>
 
         <section {...stagger(6, "mt-10")}>

@@ -28,6 +28,11 @@ morning and an evening: eight turns in all.
   (an over-full till, a cruel customer), money (rent), conflict and
   forgiveness (a debt, an avoided conversation), and faith (prayer, the
   Thursday table, a colleague who asks what you believe).
+- **Your own character.** Players can pick Naomi or Caleb, or make their own:
+  a name, skin, hair, clothes, extras and stance. The character is saved on
+  their device and appears on the map and in every scene. They take the story
+  place of one of the leads, so the recorded voices still work; for that
+  reason spoken lines never include the player's name.
 - **Scripture in context.** Passages arrive where they belong: in a mentor's
   kitchen, in the Sunday reading, on a walk by the river. Each comes with a
   short explanation, and none is used as a punishment.
@@ -121,6 +126,7 @@ src/game/engine.ts          time, money, energy, closeness, branching, checks
 src/game/ui.tsx             dialogue, Scripture panel, growth, week tracker
 src/game/SceneArt.tsx       scene and map illustrations, drawn in code
 src/game/Figure.tsx         the characters: faces, expressions, movement
+src/game/Creator.tsx        the make-your-own-character screen
 src/game/Stage.tsx          places the characters in the scene and lights them
 src/game/audio.ts           atmosphere for each place and small story sounds
 src/game/voice.ts           plays recorded voices, or the device's own as a fallback

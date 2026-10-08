@@ -6,9 +6,11 @@ import type { Beat, Condition, Look, Mood, Scripture, Story } from "../types";
 // In each one the player picks an Opportunity from the map (see
 // `opportunities`), which plays a short scene made of the `nodes` below.
 //
-// Text may use {you}, {partner}, {he}, {him}, {his}, {himself}, {He}, {Him},
-// {His} and {money}. Write them as if the partner were a man; they are swapped
-// automatically for the other lead.
+// Text may use {partner}, {he}, {him}, {his}, {himself}, {He}, {Him}, {His}
+// and {money}. Write them as if the partner were a man; they are swapped
+// automatically for the other lead. Don't use the player's name ({you}) in
+// anything spoken: players can make their own character, and every line is
+// recorded in advance.
 //
 // Scripture quotations are from the World English Bible (public domain).
 
@@ -948,7 +950,7 @@ export const alderRowWeek: Story = {
         d("ruth", "Well. You did a wrong thing. You are not a wrong thing. Those are different, and the gospel lives in the difference.", "warm"),
         s(CONFESSION),
         d("ruth", "God’s forgiveness you can have before the kettle cools. {partner}’s is {his} to give, in {his} own time, and you mustn’t demand it. An apology isn’t a transaction. You go, you tell the truth, you name what you did without the word “but”, and you let {him} feel however {he} feels.", "thoughtful"),
-        d("ruth", "And {you}, I’ll be praying the whole time. Go now, while it’s light.", "warm", { react: { you: "warm" } }),
+        d("ruth", "And I’ll be praying the whole time. Go now, while it’s light.", "warm", { react: { you: "warm" } }),
       ],
       next: "repair",
     },
@@ -1061,7 +1063,7 @@ export const alderRowWeek: Story = {
       caption: "Sunday evening · Ruth’s kitchen",
       beats: [
         n("Sunday supper is whoever turns up. Tonight it is seven people, one casserole, and a pudding that has collapsed in the middle and is all the better for it.", { react: { ruth: "warm" } }),
-        d("ruth", "Now. Round the table. One thing from this week you’re glad of, and one you’d do differently. {you}, you start.", "warm"),
+        d("ruth", "Now. Round the table. One thing from this week you’re glad of, and one you’d do differently. You start.", "warm"),
         n("You tell them. All of it, more or less. Nobody gasps and nobody applauds. Samuel passes you the custard."),
         t("It still hurts. It hurts less in a room like this.", { when: { all: ["told_truth"] }, react: { you: "warm" } }),
         t("This is what you would want anyone to see of your faith, you think. Not an argument. A table.", { when: { none: ["told_truth"] }, react: { you: "warm" } }),
