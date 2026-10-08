@@ -17,6 +17,7 @@ import {
 import { MapScreen } from "./game/MapScreen";
 import { sound } from "./game/audio";
 import { CharacterCreator, customLead, loadCharacter, saveCharacter, type CustomCharacter } from "./game/Creator";
+import { DownloadPanel } from "./game/Download";
 import { FullFigure } from "./game/Rig";
 import { SceneArt, TitleArt } from "./game/SceneArt";
 import { Stage, type StagePerson } from "./game/Stage";
@@ -270,6 +271,10 @@ function TitleScreen({
         <div {...stagger(9, "mt-8 flex flex-wrap items-center gap-x-4 gap-y-2")}>
           <SoundControls settings={audio} />
           <p className="text-xs text-cm-sand/80">Atmosphere and spoken lines are optional, and start off.</p>
+        </div>
+
+        <div {...stagger(10, "mt-4")}>
+          <DownloadPanel />
         </div>
       </main>
     </div>

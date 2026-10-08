@@ -86,6 +86,20 @@ The game is published free with GitHub Pages. Every push to `main` runs
 <https://game.thecuriousseekers.com>. Nothing else needs doing to release a
 change.
 
+## Installing and playing offline
+
+Church Mind can be downloaded without an app store. On the title screen,
+"Download the game" offers two things:
+
+- **Put it on your device.** Installs the game with its own icon, opening full
+  screen like an app. Android and desktop Chrome or Edge show an Install
+  button; on iPhone and iPad it is Share, then "Add to Home Screen" in Safari.
+- **Play without internet.** Saves the whole game, voices included (about
+  25 MB), so it works with no connection.
+
+`public/manifest.webmanifest` describes the app, `public/sw.js` serves saved
+files when offline, and `src/game/offline.ts` handles installing and saving.
+
 ## Edit the story
 
 Everything a player reads is in `src/game/stories/alderRowWeek.ts`. From top
