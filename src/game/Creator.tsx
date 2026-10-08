@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { FullFigure } from "./Figure";
-import type { HairStyle, Lead, Look, Stance, Story, TopStyle } from "./types";
+import { FullFigure } from "./Rig";
+import type { HairStyle, Lead, Look, Manner, Stance, Story, TopStyle } from "./types";
 
 // Lets a player make their own character instead of choosing a ready-made one.
 // A custom character borrows the story role of one of the leads (the same
@@ -29,6 +29,13 @@ const TOP_COLOURS = ["#2F6F73", "#3F5A7A", "#A8553A", "#55704F", "#6B3F5A", "#B8
 const HAIR_STYLES: [HairStyle, string][] = [["short", "Short"], ["side", "Side part"], ["curly", "Curly"], ["puff", "Natural"], ["bun", "Bun"], ["wavy", "Wavy"], ["long", "Long"]];
 const TOP_STYLES: [TopStyle, string][] = [["plain", "Plain"], ["collar", "Collar"], ["hoodie", "Hoodie"], ["cardigan", "Cardigan"]];
 const STANCES: [Stance, string][] = [["relaxed", "Relaxed"], ["hip", "Hand on hip"], ["akimbo", "Akimbo"], ["pockets", "Pockets"], ["clasped", "Clasped"], ["wave", "Waving"]];
+const MANNERS: [Manner, string][] = [["calm", "Calm"], ["easy", "Easy-going"], ["warm", "Warm"], ["confident", "Confident"], ["graceful", "Graceful"], ["lively", "Lively"]];
+const FRAMES: [string, string, Look["build"]][] = [
+  ["slight", "Slight", { height: 0.96, shoulders: 88, hips: 82, limbs: 17 }],
+  ["average", "Average", { height: 1, shoulders: 100, hips: 88, limbs: 20 }],
+  ["tall", "Tall", { height: 1.06, shoulders: 106, hips: 86, limbs: 20 }],
+  ["sturdy", "Sturdy", { height: 1.02, shoulders: 116, hips: 96, limbs: 24 }],
+];
 const BOTTOMS: [string, string, Partial<Look>][] = [
   ["trousers", "Trousers", { skirt: undefined, longSkirt: false, legs: "#2A2F3A" }],
   ["jeans", "Jeans", { skirt: undefined, longSkirt: false, legs: "#2B3A55" }],
@@ -41,7 +48,7 @@ export function defaultCharacter(story: Story): CustomCharacter {
   return {
     name: "",
     base: base.id,
-    look: { ...SKINS[3], hair: HAIR_COLOURS[0], hairStyle: "curly", top: TOP_COLOURS[5], topStyle: "plain", accent: "#F4EBDD", stance: "relaxed", legs: "#2B3A55", shoes: "#E8DCC8", slim: base.look.slim },
+    look: { ...SKINS[3], hair: HAIR_COLOURS[0], hairStyle: "curly", top: TOP_COLOURS[5], topStyle: "plain", accent: "#F4EBDD", stance: "relaxed", manner: "easy", build: FRAMES[1][2], legs: "#2B3A55", shoes: "#E8DCC8" },
   };
 }
 
@@ -138,7 +145,7 @@ export function CharacterCreator({ story, value, onChange }: { story: Story; val
 
         <Group label="You are dating">
           {story.leads.map((lead) => (
-            <Pill key={lead.id} on={value.base === lead.id} onClick={() => onChange({ ...value, base: lead.id, look: { ...look, slim: lead.look.slim } })}>
+            <Pill key={lead.id} on={value.base === lead.id} onClick={() => onChange({ ...value, base: lead.id })}>
               {lead.partner}
             </Pill>
           ))}
@@ -194,6 +201,22 @@ export function CharacterCreator({ story, value, onChange }: { story: Story; val
           <Pill on={Boolean(look.earrings)} onClick={() => set({ earrings: !look.earrings })}>
             Earrings
           </Pill>
+        </Group>
+
+        <Group label="Frame">
+          {FRAMES.map(([id, label, build]) => (
+            <Pill key={id} on={look.build?.shoulders === build?.shoulders && look.build?.height === build?.height} onClick={() => set({ build })}>
+              {label}
+            </Pill>
+          ))}
+        </Group>
+
+        <Group label="How you carry yourself">
+          {MANNERS.map(([manner, label]) => (
+            <Pill key={manner} on={(look.manner ?? "easy") === manner} onClick={() => set({ manner })}>
+              {label}
+            </Pill>
+          ))}
         </Group>
 
         <Group label="How you stand">

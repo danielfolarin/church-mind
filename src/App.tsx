@@ -17,7 +17,7 @@ import {
 import { MapScreen } from "./game/MapScreen";
 import { sound } from "./game/audio";
 import { CharacterCreator, customLead, loadCharacter, saveCharacter, type CustomCharacter } from "./game/Creator";
-import { FullFigure } from "./game/Figure";
+import { FullFigure } from "./game/Rig";
 import { SceneArt, TitleArt } from "./game/SceneArt";
 import { Stage, type StagePerson } from "./game/Stage";
 import { STORIES } from "./game/stories";

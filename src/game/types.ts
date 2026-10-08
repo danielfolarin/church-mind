@@ -22,6 +22,25 @@ export type TopStyle = "plain" | "cardigan" | "apron" | "hoodie" | "collar";
 /** What someone does with their hands when they are standing about. */
 export type Stance = "relaxed" | "akimbo" | "hip" | "pockets" | "clasped" | "book" | "cup" | "wave" | "open";
 
+/**
+ * How someone carries themselves: the rhythm and size of their movements when
+ * they are standing about. It is what makes two people in the same pose look
+ * like different people.
+ */
+export type Manner = "calm" | "confident" | "lively" | "graceful" | "easy" | "brisk" | "steady" | "warm";
+
+/** A person's frame. Every part is optional; sizes are in the figure's own units. */
+export interface Build {
+  /** 1 is average height; 0.93 is short, 1.06 is tall. */
+  height?: number;
+  /** Width across the shoulders (about 88 to 116). */
+  shoulders?: number;
+  /** Width across the hips (about 78 to 96). */
+  hips?: number;
+  /** Thickness of arms and legs (about 16 to 24). */
+  limbs?: number;
+}
+
 /** How a character is drawn. Colours are hex values. */
 export interface Look {
   skin: string;
@@ -44,6 +63,10 @@ export interface Look {
   earrings?: boolean;
   /** Full figure: how they stand. `akimbo` is hands on hips; `hip` is one hand on a hip. */
   stance?: Stance;
+  /** Full figure: how they move while standing. */
+  manner?: Manner;
+  /** Full figure: their frame. */
+  build?: Build;
   /** Full figure: trouser colour. */
   legs?: string;
   /** Full figure: wears a skirt of this colour instead of trousers. */

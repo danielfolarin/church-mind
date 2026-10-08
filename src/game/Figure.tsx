@@ -1,5 +1,5 @@
 import { useId, type CSSProperties } from "react";
-import type { Look, Mood, Stance } from "./types";
+import type { Look, Mood } from "./types";
 
 // Illustrated people, drawn in SVG. Each figure breathes and blinks on its own,
 // changes expression with `mood`, and moves its mouth while `speaking`.
@@ -32,7 +32,7 @@ const FACES: Record<Mood, Face> = {
   worried: { mouth: "M92 141 Q100 139.5 108 141", browLeft: -9, browRight: 9, browLift: -2, eyeX: 0, eyeY: 0, lid: 0, squint: 0, lipY: 145.5, blush: 0 },
 };
 
-function HairBack({ look }: { look: Look }) {
+export function HairBack({ look }: { look: Look }) {
   switch (look.hairStyle) {
     case "puff":
       return <circle cx="100" cy="74" r="60" fill={look.hair} />;
@@ -116,7 +116,7 @@ function Clothes({ look }: { look: Look }) {
 }
 
 /** The head: face, hair and expression. Shared by the bust and the full figure. */
-function Head({
+export function Head({
   look,
   mood,
   speaking,
@@ -276,147 +276,5 @@ export function Portrait({ look, mood = "warm", className = "" }: { look: Look; 
     <span className={`block overflow-hidden rounded-full bg-cm-clay ring-1 ring-white/10 ${className}`}>
       <Figure look={look} mood={mood} viewBox="30 24 140 140" preserveAspectRatio="xMidYMid slice" className="h-full w-full" />
     </span>
-  );
-}
-
-// ——— Full figures ———
-
-type Arm = "relaxed" | "akimbo" | "pockets" | "clasped" | "book" | "cup" | "wave" | "open";
-
-// Each stance as [left arm, right arm]. Left means the viewer's left.
-const STANCES: Record<Stance, [Arm, Arm]> = {
-  relaxed: ["relaxed", "relaxed"],
-  akimbo: ["akimbo", "akimbo"],
-  hip: ["akimbo", "relaxed"],
-  pockets: ["pockets", "pockets"],
-  clasped: ["clasped", "clasped"],
-  book: ["book", "book"],
-  cup: ["relaxed", "cup"],
-  wave: ["relaxed", "wave"],
-  open: ["relaxed", "open"],
-};
-
-// Shoulder, elbow and hand positions for the left arm; the right arm mirrors them.
-const ARMS: Record<Arm, [number, number][]> = {
-  relaxed: [[46, 202], [33, 268], [37, 330]],
-  akimbo: [[46, 202], [10, 262], [57, 316]],
-  pockets: [[46, 202], [35, 266], [58, 322]],
-  clasped: [[46, 202], [40, 272], [91, 312]],
-  book: [[46, 202], [38, 270], [82, 272]],
-  cup: [[46, 202], [34, 270], [76, 262]],
-  wave: [[46, 202], [16, 240], [22, 170]],
-  open: [[46, 202], [30, 262], [4, 280]],
-};
-
-/**
- * A whole person, standing. Their `look.stance` decides what they do with
- * their hands, and they shift their weight, blink, and move as they wait.
- */
-export function FullFigure({ look, mood = "warm", delay = "0s", className = "" }: { look: Look; mood?: Mood; /** Offsets the movement so a row of people isn't in step. */ delay?: string; className?: string }) {
-  const stance = look.stance ?? "relaxed";
-  const [leftArm, rightArm] = STANCES[stance];
-  const legs = look.legs ?? "#2A2F3A";
-  const shoes = look.shoes ?? "#1A1614";
-  const hem = look.longSkirt ? 478 : 424;
-  const flowing = look.hairStyle === "long" || look.hairStyle === "wavy";
-  const pivot = { transformBox: "fill-box", transformOrigin: "50% 0%" } as const;
-
-  const arm = (kind: Arm, side: "left" | "right") => {
-    const flip = (x: number) => (side === "left" ? x : 200 - x);
-    const [shoulder, elbow, hand] = ARMS[kind].map(([x, y]) => [flip(x), y] as const);
-    const sleeve = { fill: "none", stroke: look.top, strokeWidth: 21, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
-    const forearm = (
-      <>
-        <path d={`M${elbow[0]} ${elbow[1]} L${hand[0]} ${hand[1]}`} {...sleeve} />
-        {kind !== "pockets" && <circle cx={hand[0]} cy={hand[1]} r="10.5" fill={look.skin} />}
-      </>
-    );
-    return (
-      <g key={side}>
-        <path d={`M${shoulder[0]} ${shoulder[1]} L${elbow[0]} ${elbow[1]}`} {...sleeve} />
-        {kind === "wave" ? (
-          <g className="animate-cm-wave" style={{ transformBox: "view-box", transformOrigin: `${elbow[0]}px ${elbow[1]}px` }}>
-            {forearm}
-          </g>
-        ) : (
-          forearm
-        )}
-      </g>
-    );
-  };
-
-  return (
-    <svg viewBox="0 0 200 520" preserveAspectRatio="xMidYMax meet" aria-hidden="true" className={`block ${className}`}>
-      <ellipse cx="100" cy="507" rx="62" ry="8" fill="#000" opacity="0.3" />
-      <g className="animate-cm-shift" style={{ transformBox: "fill-box", transformOrigin: "50% 100%", animationDelay: delay }}>
-        {flowing ? (
-          <g className="animate-cm-hairswing" style={{ ...pivot, animationDelay: delay }}>
-            <HairBack look={look} />
-          </g>
-        ) : (
-          <HairBack look={look} />
-        )}
-
-        {/* Legs and shoes */}
-        {look.skirt ? (
-          <>
-            <rect x="72" y={hem - 6} width="17" height={500 - hem + 6} rx="6" fill={look.skin} />
-            <rect x="111" y={hem - 6} width="17" height={500 - hem + 6} rx="6" fill={look.skin} />
-          </>
-        ) : (
-          <>
-            <path d="M54 322 H103 L97 500 H68Z" fill={legs} />
-            <path d="M97 322 H146 L132 500 H103Z" fill={legs} />
-          </>
-        )}
-        <ellipse cx="78" cy="503" rx="19" ry="8" fill={shoes} />
-        <g className={stance === "akimbo" ? "animate-cm-tap" : undefined} style={{ transformBox: "fill-box", transformOrigin: "0% 100%" }}>
-          <ellipse cx="122" cy="503" rx="19" ry="8" fill={shoes} />
-        </g>
-        {look.skirt && <path d={`M52 322 H148 L${look.longSkirt ? 158 : 164} ${hem} H${look.longSkirt ? 42 : 36}Z`} fill={look.skirt} />}
-
-        {/* Body */}
-        <g transform={look.slim ? "translate(7 0) scale(0.93 1)" : undefined}>
-          <path d="M46 190 L84 179 Q100 192 116 179 L154 190 Q164 204 158 240 L148 334 H52 L42 240 Q36 204 46 190Z" fill={look.top} />
-          {look.topStyle === "collar" && <path d="M84 179 L100 198 L88 208 L72 186Z M116 179 L100 198 L112 208 L128 186Z" fill={look.accent ?? "#F4EBDD"} />}
-          {look.topStyle === "cardigan" && <path d="M84 180 Q100 200 116 180 L121 334 H79Z" fill={look.accent ?? "#F4EBDD"} />}
-          {look.topStyle === "hoodie" && (
-            <>
-              <path d="M70 186 Q100 214 130 186 Q122 204 100 208 Q78 204 70 186Z M70 288 H130 L136 322 H64Z" fill="#000" opacity="0.18" />
-              <path d="M92 206 V238 M108 206 V238" stroke={look.accent ?? "#F4EBDD"} strokeWidth="2.5" strokeLinecap="round" />
-            </>
-          )}
-          {look.topStyle === "apron" && (
-            <g fill={look.accent ?? "#2A2523"}>
-              <path d="M66 222 H134 V408 H66Z" />
-              <path d="M66 222 L84 181 H90 L76 224Z M134 222 L116 181 H110 L124 224Z" />
-            </g>
-          )}
-          <path d="M42 240 Q36 204 46 190 Q52 230 60 334 H52Z M158 240 Q164 204 154 190 Q148 230 140 334 H148Z" fill="#000" opacity="0.12" />
-          {arm(leftArm, "left")}
-          {arm(rightArm, "right")}
-
-          {stance === "book" && (
-            <g>
-              <rect x="80" y="246" width="40" height="50" rx="3" fill="#6B2E26" />
-              <path d="M100 258 V282 M91 266 H109" stroke="#E2B36B" strokeWidth="3" strokeLinecap="round" />
-              <circle cx="82" cy="272" r="10.5" fill={look.skin} />
-              <circle cx="118" cy="272" r="10.5" fill={look.skin} />
-            </g>
-          )}
-          {stance === "cup" && (
-            <g>
-              <path d="M112 232 q-6 -10 0 -20 q6 -10 0 -20" fill="none" stroke="#F4EBDD" strokeWidth="2.5" strokeLinecap="round" className="animate-cm-steam" />
-              <rect x="103" y="240" width="22" height="26" rx="4" fill="#F4EBDD" />
-              <circle cx="124" cy="262" r="10.5" fill={look.skin} />
-            </g>
-          )}
-        </g>
-
-        <path d="M84 150 V181 Q100 196 116 181 V150Z" fill={look.shade} />
-        <path d="M84 152 Q100 176 116 152 V163 Q100 184 84 163Z" fill="#000" opacity="0.2" />
-        <Head look={look} mood={mood} speaking={false} facing={0} blinkDelay={delay} />
-      </g>
-    </svg>
   );
 }

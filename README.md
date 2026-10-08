@@ -91,10 +91,15 @@ change.
 Everything a player reads is in `src/game/stories/alderRowWeek.ts`. From top
 to bottom it holds:
 
-- **People:** how each one looks, stands and sounds, plus the short `traits`
-  shown beside their full-body figure on the cast screen. `stance` sets what
-  they do with their hands (`akimbo`, `hip`, `pockets`, `clasped`, `book`,
-  `cup`, `wave`, `open` or `relaxed`).
+- **People:** how each one looks, stands, moves and sounds, plus the short
+  `traits` shown beside their full-body figure on the cast screen. Full
+  figures are built on a skeleton (hips, spine, head, two-part arms and legs),
+  and three settings shape each person:
+  - `build` is their frame: `height`, `shoulders`, `hips`, `limbs`.
+  - `stance` is their pose: `akimbo`, `hip`, `pockets`, `clasped`, `book`,
+    `cup`, `wave`, `open` or `relaxed`.
+  - `manner` is how they move while standing: `calm`, `confident`, `lively`,
+    `graceful`, `easy`, `brisk`, `steady` or `warm`.
 - **Scripture:** each passage with its explanation.
 - **`start`, `slots`, `places`:** starting money and energy, the days of the
   week, and where places sit on the map.
@@ -125,7 +130,8 @@ src/game/types.ts           the shape a story must follow
 src/game/engine.ts          time, money, energy, closeness, branching, checks
 src/game/ui.tsx             dialogue, Scripture panel, growth, week tracker
 src/game/SceneArt.tsx       scene and map illustrations, drawn in code
-src/game/Figure.tsx         the characters: faces, expressions, movement
+src/game/Figure.tsx         the characters' heads: faces, hair, expressions
+src/game/Rig.tsx            full-body characters on a skeleton: poses and movement
 src/game/Creator.tsx        the make-your-own-character screen
 src/game/Stage.tsx          places the characters in the scene and lights them
 src/game/audio.ts           atmosphere for each place and small story sounds
