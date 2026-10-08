@@ -43,13 +43,26 @@ async function slice(request, response) {
 }
 
 // Files whose names change whenever their contents do: safe to keep for ever.
-async function keep(cacheName, request) {
+async function keep(cacheName, request, event) {
   const cache = await caches.open(cacheName);
   const saved = await cache.match(request.url);
   if (saved) return slice(request, saved);
+
+  // An audio player asking for part of a file gets it straight from the
+  // network, exactly as it would without this worker; the whole file is saved
+  // quietly alongside for next time.
+  if (request.headers.has("range")) {
+    event.waitUntil(
+      fetch(request.url)
+        .then((whole) => (whole.ok ? cache.put(request.url, whole) : undefined))
+        .catch(() => undefined)
+    );
+    return fetch(request);
+  }
+
   const fresh = await fetch(request.url);
   if (fresh.ok) await cache.put(request.url, fresh.clone());
-  return slice(request, fresh);
+  return fresh;
 }
 
 // Everything else: the newest copy when online, the saved copy when not.
@@ -72,7 +85,7 @@ self.addEventListener("fetch", (event) => {
   const fonts = url.hostname === "fonts.gstatic.com" || url.hostname === "fonts.googleapis.com";
   if (url.origin !== self.location.origin && !fonts) return;
 
-  if (url.pathname.endsWith(".mp3")) event.respondWith(keep(AUDIO, request));
-  else if (url.pathname.includes("/assets/") || url.hostname === "fonts.gstatic.com") event.respondWith(keep(APP, request));
+  if (url.pathname.endsWith(".mp3")) event.respondWith(keep(AUDIO, request, event));
+  else if (url.pathname.includes("/assets/") || url.hostname === "fonts.gstatic.com") event.respondWith(keep(APP, request, event));
   else event.respondWith(freshest(request));
 });
