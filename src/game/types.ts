@@ -19,6 +19,9 @@ export type Mood = "neutral" | "warm" | "sad" | "hurt" | "thoughtful" | "worried
 export type HairStyle = "short" | "side" | "puff" | "wavy" | "bun" | "long" | "curly";
 export type TopStyle = "plain" | "cardigan" | "apron" | "hoodie" | "collar";
 
+/** What someone does with their hands when they are standing about. */
+export type Stance = "relaxed" | "akimbo" | "hip" | "pockets" | "clasped" | "book" | "cup" | "wave" | "open";
+
 /** How a character is drawn. Colours are hex values. */
 export interface Look {
   skin: string;
@@ -39,6 +42,14 @@ export interface Look {
   glasses?: boolean;
   beard?: boolean;
   earrings?: boolean;
+  /** Full figure: how they stand. `akimbo` is hands on hips; `hip` is one hand on a hip. */
+  stance?: Stance;
+  /** Full figure: trouser colour. */
+  legs?: string;
+  /** Full figure: wears a skirt of this colour instead of trousers. */
+  skirt?: string;
+  longSkirt?: boolean;
+  shoes?: string;
 }
 
 /**
@@ -246,7 +257,8 @@ export interface Character {
   /** Speaker id used in dialogue beats. `you` and `partner` are reserved. */
   id: string;
   name: string;
-  bio: string;
+  /** Short points shown beside them on the cast screen. */
+  traits: string[];
   look: Look;
   voice: VoiceStyle;
 }
@@ -259,9 +271,9 @@ export interface Story {
   intro: {
     place: string;
     paragraphs: string[];
-    /** Shown once a lead is chosen; may use tokens. */
-    playerBio: string;
-    partnerBio: string;
+    /** Short points about the player and their partner; may use tokens. */
+    playerTraits: string[];
+    partnerTraits: string[];
     /** How the week works, in a sentence or two. */
     howToPlay: string;
   };

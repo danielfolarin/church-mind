@@ -28,15 +28,15 @@ const s = (scripture: Scripture, extra: Extra = {}): Beat => ({ type: "scripture
 const WEB = "World English Bible";
 
 // How each person is drawn. See `Look` in ../types.ts for the options.
-const NAOMI: Look = { slim: true, skin: "#8E5B3C", shade: "#774A30", hair: "#1D1412", hairStyle: "puff", top: "#2F6F73", topStyle: "collar", accent: "#E8DCC8", lip: "#5A2420", earrings: true };
-const CALEB: Look = { skin: "#7C4C30", shade: "#663C25", hair: "#17110F", hairStyle: "short", top: "#3F5A7A", topStyle: "hoodie", accent: "#C9D4E0", lip: "#4E211C" };
-const MARCUS: Look = { eyes: "#4E6A5A", skin: "#D2A27E", shade: "#B98964", hair: "#4A3122", hairStyle: "side", top: "#55704F", topStyle: "collar", accent: "#E8DCC8" };
-const ELENA: Look = { slim: true, eyes: "#5A4630", skin: "#DDB092", shade: "#C59676", hair: "#4B2C20", hairStyle: "wavy", top: "#A8553A", lip: "#8A3A32" };
-const RUTH: Look = { slim: true, skin: "#6F4631", shade: "#5B3827", hair: "#BDB7B0", hairStyle: "bun", top: "#6B3F5A", topStyle: "cardigan", accent: "#E8DCC8", lip: "#4A1F1C", glasses: true, earrings: true };
-const DEV: Look = { skin: "#AA7750", shade: "#93633F", hair: "#17120F", hairStyle: "curly", top: "#B5673A", topStyle: "hoodie", accent: "#F1DCC0", beard: true };
-const DANIEL: Look = { skin: "#7A4B31", shade: "#643B25", hair: "#19120F", hairStyle: "short", top: "#2C3E57", topStyle: "collar", accent: "#E8DCC8", lip: "#4C201B", beard: true, glasses: true };
-const TOLU: Look = { slim: true, skin: "#8A5638", shade: "#72452C", hair: "#1A1210", hairStyle: "bun", top: "#B8862F", topStyle: "cardigan", accent: "#F1E4CC", lip: "#5C2421", earrings: true };
-const PRIYA: Look = { slim: true, skin: "#B48158", shade: "#9C6B45", hair: "#1B1412", hairStyle: "long", top: "#E8DCC8", topStyle: "apron", accent: "#2A2523", lip: "#7A2E2C", earrings: true };
+const NAOMI: Look = { stance: "hip", legs: "#2B3A55", shoes: "#E8DCC8", slim: true, skin: "#8E5B3C", shade: "#774A30", hair: "#1D1412", hairStyle: "puff", top: "#2F6F73", topStyle: "collar", accent: "#E8DCC8", lip: "#5A2420", earrings: true };
+const CALEB: Look = { stance: "akimbo", legs: "#2A2F3A", shoes: "#D9D2C4", skin: "#7C4C30", shade: "#663C25", hair: "#17110F", hairStyle: "short", top: "#3F5A7A", topStyle: "hoodie", accent: "#C9D4E0", lip: "#4E211C" };
+const MARCUS: Look = { stance: "pockets", legs: "#6B5A45", shoes: "#3A2A20", eyes: "#4E6A5A", skin: "#D2A27E", shade: "#B98964", hair: "#4A3122", hairStyle: "side", top: "#55704F", topStyle: "collar", accent: "#E8DCC8" };
+const ELENA: Look = { stance: "relaxed", skirt: "#5A3A4A", shoes: "#3A2420", slim: true, eyes: "#5A4630", skin: "#DDB092", shade: "#C59676", hair: "#4B2C20", hairStyle: "wavy", top: "#A8553A", lip: "#8A3A32" };
+const RUTH: Look = { stance: "clasped", skirt: "#3F3345", longSkirt: true, shoes: "#2A2020", slim: true, skin: "#6F4631", shade: "#5B3827", hair: "#BDB7B0", hairStyle: "bun", top: "#6B3F5A", topStyle: "cardigan", accent: "#E8DCC8", lip: "#4A1F1C", glasses: true, earrings: true };
+const DEV: Look = { stance: "wave", legs: "#2A2F3A", shoes: "#E8DCC8", skin: "#AA7750", shade: "#93633F", hair: "#17120F", hairStyle: "curly", top: "#B5673A", topStyle: "hoodie", accent: "#F1DCC0", beard: true };
+const DANIEL: Look = { stance: "book", legs: "#2E2E33", shoes: "#1A1614", skin: "#7A4B31", shade: "#643B25", hair: "#19120F", hairStyle: "short", top: "#2C3E57", topStyle: "collar", accent: "#E8DCC8", lip: "#4C201B", beard: true, glasses: true };
+const TOLU: Look = { stance: "open", skirt: "#5B3A2A", longSkirt: true, shoes: "#2A2020", slim: true, skin: "#8A5638", shade: "#72452C", hair: "#1A1210", hairStyle: "bun", top: "#B8862F", topStyle: "cardigan", accent: "#F1E4CC", lip: "#5C2421", earrings: true };
+const PRIYA: Look = { stance: "cup", legs: "#2A2523", shoes: "#1A1614", slim: true, skin: "#B48158", shade: "#9C6B45", hair: "#1B1412", hairStyle: "long", top: "#E8DCC8", topStyle: "apron", accent: "#2A2523", lip: "#7A2E2C", earrings: true };
 
 const UNEQUALLY_YOKED: Scripture = {
   reference: "2 Corinthians 6:14",
@@ -121,10 +121,18 @@ export const alderRowWeek: Story = {
       "Alder Row is the kind of neighbourhood where people still know each other’s names. There is a community garden behind the old fire hall, a café called Kindling that stays open late, and Great Haven Assembly, the brick church on the corner whose doors are open more days than they are shut.",
       "Not everyone here believes the same things. Most days, that is simply what it means to be neighbours.",
     ],
-    playerBio:
-      "That’s you. You are 25. You work the counter at Kindling while you finish your course, and three years in Alder Row have given you a church family at Great Haven Assembly, a Thursday table at Ruth’s, and, since the spring, {partner}.",
-    partnerBio:
-      "Teaches Grade 7 science and runs the garden’s seed library. Kind, curious, and honest. Doesn’t share your faith, and has never pretended to.",
+    playerTraits: [
+      "That’s you: 25, three years in Alder Row",
+      "Works the counter at Kindling while finishing a course",
+      "Part of Great Haven Assembly and Ruth’s Thursday table",
+      "Dating {partner} since the spring",
+    ],
+    partnerTraits: [
+      "Teaches Grade 7 science",
+      "Runs the garden’s seed library",
+      "Kind, curious and honest",
+      "Doesn’t share your faith, and has never pretended to",
+    ],
     howToPlay:
       "You have one week: four days, each with a morning and an evening. Every time, you choose one place to go. Work pays the rent but wears you out, people need you at the same hour, and some chances don’t come round again.",
   },
@@ -158,35 +166,35 @@ export const alderRowWeek: Story = {
       name: "Ruth",
       look: RUTH,
       voice: { kind: "female", variant: 3, pitch: 0.85, rate: 0.9 },
-      bio: "Hosts the Thursday table. Married to Samuel for thirty-one years. Asks better questions than she gives answers.",
+      traits: ["Hosts the Thursday table", "Married to Samuel for thirty-one years", "Asks better questions than she gives answers"],
     },
     {
       id: "dev",
       name: "Dev",
       look: DEV,
       voice: { kind: "male", variant: 2, pitch: 1.1, rate: 1.03 },
-      bio: "Your closest friend at Great Haven. Works shifts at the warehouse. Loyal, funny, and sure that things tend to work out.",
+      traits: ["Your closest friend at Great Haven", "Works shifts at the warehouse", "Loyal and funny", "Sure that things tend to work out"],
     },
     {
       id: "priya",
       name: "Priya",
       look: PRIYA,
       voice: { kind: "female", variant: 4, pitch: 1.08 },
-      bio: "Owns Kindling, which makes her your boss. Not religious. Tells the truth as if it were a form of affection.",
+      traits: ["Owns Kindling, which makes her your boss", "Not religious", "Tells the truth as if it were a form of affection"],
     },
     {
       id: "daniel",
       name: "Pastor Daniel",
       look: DANIEL,
       voice: { kind: "male", variant: 3, pitch: 0.9, rate: 0.95 },
-      bio: "Leads Great Haven Assembly with his wife, Tolu. Preaches plainly and remembers everyone’s name.",
+      traits: ["Leads Great Haven Assembly with his wife, Tolu", "Preaches plainly", "Remembers everyone’s name"],
     },
     {
       id: "tolu",
       name: "Pastor Tolu",
       look: TOLU,
       voice: { kind: "female", variant: 5, pitch: 1 },
-      bio: "Leads Great Haven alongside Daniel. Asks how you really are, and waits for the real answer.",
+      traits: ["Leads Great Haven alongside Daniel", "Asks how you really are", "Waits for the real answer"],
     },
   ],
 

@@ -86,7 +86,10 @@ change.
 Everything a player reads is in `src/game/stories/alderRowWeek.ts`. From top
 to bottom it holds:
 
-- **People:** how each one looks and sounds.
+- **People:** how each one looks, stands and sounds, plus the short `traits`
+  shown beside their full-body figure on the cast screen. `stance` sets what
+  they do with their hands (`akimbo`, `hip`, `pockets`, `clasped`, `book`,
+  `cup`, `wave`, `open` or `relaxed`).
 - **Scripture:** each passage with its explanation.
 - **`start`, `slots`, `places`:** starting money and energy, the days of the
   week, and where places sit on the map.

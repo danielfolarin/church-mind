@@ -16,7 +16,7 @@ import {
 } from "./game/engine";
 import { MapScreen } from "./game/MapScreen";
 import { sound } from "./game/audio";
-import { Portrait } from "./game/Figure";
+import { FullFigure } from "./game/Figure";
 import { SceneArt, TitleArt } from "./game/SceneArt";
 import { Stage, type StagePerson } from "./game/Stage";
 import { STORIES } from "./game/stories";
@@ -310,7 +310,7 @@ function IntroScreen({
         </div>
       </header>
 
-      <main className="relative z-10 mx-auto w-full max-w-3xl px-6 pb-16 pt-10 sm:px-10 sm:pt-16">
+      <main className="relative z-10 mx-auto w-full max-w-5xl px-6 pb-16 pt-10 sm:px-10 sm:pt-16">
         <p {...stagger(0, "text-[11px] font-semibold uppercase tracking-[0.22em] text-cm-gold")}>
           {story.title}
         </p>
@@ -321,7 +321,7 @@ function IntroScreen({
         >
           Welcome to {story.intro.place}
         </h1>
-        <div {...stagger(2, "mt-6 space-y-4")}>
+        <div {...stagger(2, "mt-6 max-w-3xl space-y-4")}>
           {story.intro.paragraphs.map((paragraph) => (
             <p key={paragraph} className="font-story text-lg leading-[1.75] text-cm-cream/85">
               {paragraph}
@@ -331,8 +331,8 @@ function IntroScreen({
 
         <section {...stagger(4, "mt-10")}>
           <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cm-sand">Who will you be?</h2>
-          <div className="mt-3 grid grid-cols-2 gap-3" role="radiogroup" aria-label="Choose your character">
-            {story.leads.map((option) => {
+          <div className="mt-3 grid max-w-xl grid-cols-2 gap-3" role="radiogroup" aria-label="Choose your character">
+            {story.leads.map((option, index) => {
               const selected = option.id === lead.id;
               return (
                 <button
@@ -341,17 +341,13 @@ function IntroScreen({
                   role="radio"
                   aria-checked={selected}
                   onClick={() => setLead(option)}
-                  className={`flex items-center gap-3 rounded-2xl border px-3 py-3 text-left transition sm:gap-4 sm:px-4 sm:py-4 ${
-                    selected
-                      ? "border-cm-ember bg-cm-ember/10"
-                      : "border-white/10 bg-white/[0.04] hover:border-white/30"
+                  className={`flex flex-col items-center rounded-2xl border px-3 pb-4 pt-4 text-center transition ${
+                    selected ? "border-cm-ember bg-cm-ember/10" : "border-white/10 bg-white/[0.04] hover:border-white/30"
                   }`}
                 >
-                  <Portrait look={option.look} mood={selected ? "warm" : "neutral"} className="h-12 w-12 shrink-0 sm:h-16 sm:w-16" />
-                  <span>
-                    <span className="block font-story text-xl text-cm-cream sm:text-2xl">{option.name}</span>
-                    <span className="mt-0.5 block text-xs text-cm-sand sm:text-sm">dating {option.partner}</span>
-                  </span>
+                  <FullFigure look={option.look} mood={selected ? "warm" : "neutral"} delay={`${index * -1.3}s`} className="h-48 w-full sm:h-60" />
+                  <span className="mt-3 block font-story text-2xl text-cm-cream">{option.name}</span>
+                  <span className="mt-0.5 block text-xs text-cm-sand sm:text-sm">dating {option.partner}</span>
                 </button>
               );
             })}
@@ -360,21 +356,28 @@ function IntroScreen({
 
         <section {...stagger(6, "mt-10")}>
           <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cm-sand">The people in this story</h2>
-          <dl className="mt-3 divide-y divide-white/10 rounded-2xl border border-white/10 bg-white/[0.03]">
+          <ul className="mt-3 grid gap-3 md:grid-cols-2">
             {[
-              { name: lead.name, look: lead.look, bio: fill(story.intro.playerBio, tokens) },
-              { name: lead.partner, look: lead.partnerLook, bio: fill(story.intro.partnerBio, tokens) },
+              { name: lead.name, look: lead.look, traits: story.intro.playerTraits },
+              { name: lead.partner, look: lead.partnerLook, traits: story.intro.partnerTraits },
               ...story.cast,
-            ].map((person) => (
-              <div key={person.name} className="flex gap-4 px-4 py-4 sm:px-5">
-                <Portrait look={person.look} className="h-12 w-12 shrink-0 sm:h-14 sm:w-14" />
-                <div>
-                  <dt className="font-story text-xl text-cm-cream">{person.name}</dt>
-                  <dd className="mt-0.5 text-[0.9375rem] leading-relaxed text-cm-cream/75">{person.bio}</dd>
+            ].map((person, index) => (
+              <li key={person.name} className="flex items-end gap-4 rounded-2xl border border-white/10 bg-white/[0.03] px-4 pb-4 pt-5 sm:gap-5 sm:px-5">
+                <FullFigure look={person.look} delay={`${index * -0.9}s`} className="h-52 w-24 shrink-0 sm:h-60 sm:w-28" />
+                <div className="min-w-0 self-center">
+                  <h3 className="font-story text-2xl text-cm-cream">{person.name}</h3>
+                  <ul className="mt-2.5 space-y-2">
+                    {person.traits.map((trait) => (
+                      <li key={trait} className="flex gap-2.5 text-[0.9375rem] leading-snug text-cm-cream/80">
+                        <span aria-hidden="true" className="mt-[0.5em] h-1.5 w-1.5 shrink-0 rounded-full bg-cm-gold" />
+                        {fill(trait, tokens)}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-              </div>
+              </li>
             ))}
-          </dl>
+          </ul>
         </section>
 
         <div {...stagger(8, "mt-10")}>

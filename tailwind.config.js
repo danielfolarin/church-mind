@@ -96,6 +96,23 @@ export default {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-5px)" },
         },
+        // People standing about
+        "cm-hairswing": {
+          "0%, 100%": { transform: "rotate(-4deg)" },
+          "50%": { transform: "rotate(5deg)" },
+        },
+        "cm-shift": {
+          "0%, 100%": { transform: "rotate(-1deg)" },
+          "50%": { transform: "rotate(1.1deg)" },
+        },
+        "cm-tap": {
+          "0%, 55%, 100%": { transform: "rotate(0deg)" },
+          "28%": { transform: "rotate(-16deg)" },
+        },
+        "cm-wave": {
+          "0%, 100%": { transform: "rotate(-10deg)" },
+          "50%": { transform: "rotate(14deg)" },
+        },
         "cm-drift": {
           from: { transform: "scale(1)" },
           to: { transform: "scale(1.07) translateY(-1%)" },
@@ -114,6 +131,10 @@ export default {
         "cm-enter-left": "cm-enter-left 0.7s ease-out both",
         "cm-enter-right": "cm-enter-right 0.7s ease-out both",
         "cm-drift": "cm-drift 36s ease-in-out infinite alternate",
+        "cm-hairswing": "cm-hairswing 2.8s ease-in-out infinite",
+        "cm-shift": "cm-shift 5.5s ease-in-out infinite",
+        "cm-tap": "cm-tap 0.95s ease-in-out infinite",
+        "cm-wave": "cm-wave 0.7s ease-in-out infinite",
         "cm-coin": "cm-coin 1.6s ease-in-out infinite",
         "cm-sparkle": "cm-sparkle 1.8s ease-in-out infinite",
         "cm-step": "cm-step 0.32s ease-in-out infinite alternate",
