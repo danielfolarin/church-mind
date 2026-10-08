@@ -1,16 +1,28 @@
 {
-  "_readme": "Fish Audio voices for each speaker. Put a voice's id (the 'reference_id' from its page on fish.audio) beside each name. Leave one empty to use Fish Audio's default voice. Then run: npm run voices",
+  "_readme": "Fish Audio voices for each speaker. Each id is the code at the end of the voice's page address on fish.audio (https://fish.audio/m/<id>). All of these are Fish Audio's own official voices. Change one, then run: npm run voices -- --redo=<speaker>",
   "model": "s2.1-pro-free",
   "voices": {
-    "narrator": "",
-    "naomi": "",
-    "caleb": "",
-    "marcus": "",
-    "elena": "",
-    "ruth": "",
-    "dev": "",
-    "priya": "",
-    "daniel": "",
-    "tolu": ""
+    "narrator": "e3cd384158934cc9a01029cd7d278634",
+    "naomi": "ba875f2fb2ea4a4e9b175821014984b6",
+    "caleb": "f983ef416c87413f986e1a5a000c385e",
+    "marcus": "8634617958764b539e0cdd5eb6c7723e",
+    "elena": "f493c40876fc4d5ab28daf77efb0e686",
+    "ruth": "b347db033a6549378b48d00acb0d06cd",
+    "dev": "f663fef9788d4ac0a6bfe36f1b3c871f",
+    "priya": "c70cfb98867a4bfb9ae20d2401257b92",
+    "daniel": "79d0bd3e4e5444b18f7b6d89b5927bf1",
+    "tolu": "1258154bb41540c7b9dc0d10cd6704bf"
+  },
+  "_who": {
+    "narrator": "Laura: warm, calm, confident female narrator",
+    "naomi": "Avery: young Canadian woman, natural and clear",
+    "caleb": "Miles: relaxed young man",
+    "marcus": "Abel: warm man",
+    "elena": "Jennifer: conversational woman",
+    "ruth": "Selene: soft, gentle, unhurried older woman",
+    "dev": "Cody: upbeat young man",
+    "priya": "Delia: confident woman",
+    "daniel": "Jordan: older man, measured and assured, a speaker's voice",
+    "tolu": "Amara: Nigerian English woman, clear and confident"
   }
 }
