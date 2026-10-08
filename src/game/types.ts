@@ -124,10 +124,17 @@ export type Beat = {
  */
 export type Next = string | { when?: Condition; to: string }[];
 
+/**
+ * Marks something as a temptation, so the game makes it look as attractive as
+ * it would feel: `money` glitters, `ease` glows like the easy way out.
+ */
+export type Tempt = "money" | "ease";
+
 /** Something the player does inside a scene. */
 export interface Choice extends Effects {
   id: string;
   label: string;
+  tempt?: Tempt;
   /** Only offered when this passes. */
   when?: Condition;
   next: Next;
@@ -162,6 +169,15 @@ export interface Place {
   x: number;
   y: number;
   icon: PlaceIcon;
+  /** The road junction (see `Story.roads`) this place's front path joins. */
+  at: string;
+}
+
+/** The streets people walk along. Positions are percentages, like places. */
+export interface Roads {
+  junctions: Record<string, [x: number, y: number]>;
+  /** Pairs of junction ids joined by a street. */
+  streets: [string, string][];
 }
 
 export interface Slot {
@@ -185,6 +201,7 @@ export interface Opportunity extends Effects {
   when?: Condition;
   /** Marks a moment the story is waiting on. */
   key?: boolean;
+  tempt?: Tempt;
   /** Can be done more than once (rest, prayer). */
   repeatable?: boolean;
   /** Happens by itself at the start of the slot and doesn't use up the time. */
@@ -257,6 +274,7 @@ export interface Story {
   start: { money: number; energy: number; bond: number; place: PlaceId };
   slots: Slot[];
   places: Record<PlaceId, Place>;
+  roads: Roads;
   opportunities: Opportunity[];
   nodes: Record<string, StoryNode>;
   endings: Ending[];

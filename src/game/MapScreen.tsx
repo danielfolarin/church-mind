@@ -1,14 +1,15 @@
 import { useMemo, useState, type ReactNode, type RefObject } from "react";
 import { fill, MAX_BOND, offers, tokensFor, type GameState, type Offer } from "./engine";
 import { Portrait } from "./Figure";
-import { MapArt } from "./SceneArt";
+import { doorstep, Strollers, TownArt, walkBetween, Walker, type Point } from "./Town";
 import type { Lead, Look, Opportunity, PlaceId, Story } from "./types";
 import { EffectChips, GrowthStrip, PlaceGlyph, Purse, WeekProgress } from "./ui";
 
 // The neighbourhood, between scenes. This is where the player spends the
 // week: one place per morning or evening, chosen from whatever is on offer.
 
-const TRAVEL_MS = 750;
+/** Nudges people standing at the same door apart, so they don't overlap. */
+const beside = ([x, y]: Point, step: number): Point => [x + 3.6 * step, y + 0.6];
 
 function lookOf(story: Story, lead: Lead, id: string): Look | null {
   if (id === "you") return lead.look;
@@ -53,10 +54,13 @@ export function MapScreen({
   const focused = focus?.slot === game.slot && byPlace.has(focus.place) ? focus.place : null;
   const listed = focused ? (byPlace.get(focused) ?? []) : available;
 
-  // Walking there: the player's marker moves across the map before the scene opens.
+  // Walking there: the player's figure follows the streets before the scene opens.
   const [heading, setHeading] = useState<Opportunity | null>(null);
-  const standing = heading?.place ?? game.place;
   const still = useMemo(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches, []);
+  const walk = useMemo(
+    () => (heading ? [beside(doorstep(story, game.place), -1), ...walkBetween(story, game.place, heading.place).slice(1, -1), beside(doorstep(story, heading.place), -1)] : null),
+    [story, game.place, heading]
+  );
 
   function set(opportunity: Opportunity) {
     if (heading) return;
@@ -65,7 +69,6 @@ export function MapScreen({
       return;
     }
     setHeading(opportunity);
-    window.setTimeout(() => onGo(opportunity), TRAVEL_MS);
   }
 
   const people = ["partner", ...story.cast.map((character) => character.id)];
@@ -89,13 +92,23 @@ export function MapScreen({
           </div>
 
           <div className="relative mt-5 aspect-[4/3] overflow-hidden rounded-2xl bg-cm-dusk shadow-2xl shadow-black/40 ring-1 ring-white/10">
-            <MapArt evening={evening} />
+            <TownArt story={story} evening={evening} />
+            {!still && <Strollers story={story} />}
+
+            {/* Whoever is waiting for you stands outside */}
+            {Object.entries(story.places).flatMap(([id]) => {
+              const faces = [...new Set((byPlace.get(id) ?? []).flatMap((offer) => offer.opportunity.with ?? []))].slice(0, 3);
+              return faces.map((face, index) => {
+                const look = lookOf(story, lead, face);
+                return look ? <Walker key={`${id}-${face}`} look={look} at={beside(doorstep(story, id), index + 1)} className="h-[8.5%] w-[3.8%]" /> : null;
+              });
+            })}
 
             {Object.entries(story.places).map(([id, place]) => {
               const here = byPlace.get(id) ?? [];
               const open = here.length > 0;
               const key = here.some((offer) => offer.opportunity.key);
-              const faces = [...new Set(here.flatMap((offer) => offer.opportunity.with ?? []))].slice(0, 3);
+              const lure = here.some((offer) => offer.opportunity.tempt === "money");
               const selected = focused === id;
               return (
                 <button
@@ -105,37 +118,22 @@ export function MapScreen({
                   onClick={() => setFocus(selected ? null : { slot: game.slot, place: id })}
                   aria-pressed={selected}
                   aria-label={`${place.name}${open ? `, ${here.length} thing${here.length === 1 ? "" : "s"} to do` : ", nothing right now"}`}
-                  className="group absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 disabled:cursor-default"
+                  className="group absolute flex h-[22%] w-[17%] -translate-x-1/2 -translate-y-[78%] flex-col items-center justify-end disabled:cursor-default"
                   style={{ left: `${place.x}%`, top: `${place.y}%` }}
                 >
+                  {open && (
+                    <span
+                      aria-hidden="true"
+                      className={`absolute -top-1 grid h-6 w-6 animate-cm-hop place-items-center rounded-full text-xs font-bold shadow-lg sm:h-7 sm:w-7 ${
+                        lure ? "bg-cm-gold text-cm-night" : key ? "bg-cm-gold text-cm-night" : "bg-cm-ember text-white"
+                      }`}
+                    >
+                      {lure ? "$" : key ? "!" : "•"}
+                    </span>
+                  )}
                   <span
-                    className={`relative grid h-10 w-10 place-items-center rounded-full border-2 transition sm:h-12 sm:w-12 ${
-                      selected
-                        ? "border-cm-ember bg-cm-ember text-white"
-                        : open
-                          ? "border-cm-ember/80 bg-cm-night/90 text-cm-cream group-hover:bg-cm-ember/30"
-                          : "border-white/15 bg-cm-night/60 text-cm-cream/35"
-                    }`}
-                  >
-                    {open && !selected && <span className="absolute inset-0 animate-ping rounded-full border border-cm-ember/50 [animation-duration:2.6s]" />}
-                    <PlaceGlyph icon={place.icon} />
-                    {key && (
-                      <span aria-hidden="true" className="absolute -right-1.5 -top-1.5 grid h-4 w-4 place-items-center rounded-full bg-cm-gold text-[10px] font-bold leading-none text-cm-night">
-                        !
-                      </span>
-                    )}
-                    {faces.length > 0 && (
-                      <span className="absolute -bottom-2 left-1/2 flex -translate-x-1/2 -space-x-1.5">
-                        {faces.map((face) => {
-                          const look = lookOf(story, lead, face);
-                          return look ? <Portrait key={face} look={look} mood="neutral" className="h-5 w-5 ring-cm-night sm:h-6 sm:w-6" /> : null;
-                        })}
-                      </span>
-                    )}
-                  </span>
-                  <span
-                    className={`mt-1.5 max-w-[5.5rem] rounded bg-cm-night/70 px-1.5 py-0.5 text-center text-[10px] font-semibold leading-tight sm:max-w-none sm:text-[11px] ${
-                      open ? "text-cm-cream" : "text-cm-cream/40"
+                    className={`translate-y-[115%] whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-semibold leading-tight shadow sm:text-[11px] ${
+                      selected ? "bg-cm-ember text-white" : open ? "bg-cm-night/85 text-cm-cream group-hover:bg-cm-ember/80" : "bg-cm-night/55 text-cm-cream/60"
                     }`}
                   >
                     {place.name}
@@ -145,17 +143,16 @@ export function MapScreen({
             })}
 
             {/* You */}
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-1/2 transition-[left,top] ease-in-out"
-              style={{
-                left: `calc(${story.places[standing].x}% - 26px)`,
-                top: `calc(${story.places[standing].y}% - 22px)`,
-                transitionDuration: `${TRAVEL_MS}ms`,
-              }}
+            <Walker
+              key={`${game.slot}-${game.place}`}
+              look={lead.look}
+              at={beside(doorstep(story, game.place), -1)}
+              path={walk}
+              onArrive={() => heading && onGo(heading)}
+              className="z-10 h-[9.5%] w-[4.2%]"
             >
-              <Portrait look={lead.look} className="h-8 w-8 ring-2 ring-cm-cream sm:h-9 sm:w-9" />
-            </span>
+              <span className="absolute -top-2 left-1/2 h-0 w-0 -translate-x-1/2 animate-cm-hop border-x-[5px] border-t-[7px] border-x-transparent border-t-cm-cream" />
+            </Walker>
           </div>
 
           <div className="mt-5 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
@@ -208,7 +205,7 @@ export function MapScreen({
                   <div
                     className={`animate-cm-rise rounded-2xl border px-5 py-4 transition ${
                       going ? "border-cm-ember bg-cm-ember/10" : opportunity.key ? "border-cm-gold/35 bg-cm-gold/[0.05]" : "border-white/10 bg-white/[0.04]"
-                    } ${blocked ? "opacity-60" : ""}`}
+                    } ${blocked ? "opacity-60" : opportunity.tempt ? `cm-tempt cm-tempt-${opportunity.tempt}` : ""}`}
                   >
                     <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-cm-sand">
                       <PlaceGlyph icon={place.icon} className="h-3.5 w-3.5" />
@@ -228,7 +225,7 @@ export function MapScreen({
                             })}
                           </span>
                         )}
-                        <EffectChips effects={opportunity} />
+                        <EffectChips effects={opportunity} lively={opportunity.tempt === "money"} />
                       </div>
                       <button
                         type="button"

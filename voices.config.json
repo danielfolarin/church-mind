@@ -1,0 +1,16 @@
+{
+  "_readme": "Fish Audio voices for each speaker. Put a voice's id (the 'reference_id' from its page on fish.audio) beside each name. Leave one empty to use Fish Audio's default voice. Then run: npm run voices",
+  "model": "s2.1-pro-free",
+  "voices": {
+    "narrator": "",
+    "naomi": "",
+    "caleb": "",
+    "marcus": "",
+    "elena": "",
+    "ruth": "",
+    "dev": "",
+    "priya": "",
+    "daniel": "",
+    "tolu": ""
+  }
+}

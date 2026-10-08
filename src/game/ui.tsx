@@ -267,11 +267,16 @@ export function WeekProgress({ slots, current }: { slots: Slot[]; current: numbe
 }
 
 /** Money and energy: the two things the week runs on. */
-export function Purse({ money, energy }: { money: number; energy: number }) {
+export function Purse({ money, energy, lure = 0 }: { money: number; energy: number; /** Money on offer right now, shown glittering beside what you have. */ lure?: number }) {
   return (
     <div className="flex items-center gap-3 text-xs font-semibold text-cm-cream">
       <span aria-label={`${money} dollars`} className="tabular-nums">
         ${money}
+        {lure > 0 && (
+          <span aria-hidden="true" className="ml-1.5 inline-block animate-cm-coin rounded-full bg-cm-gold/20 px-1.5 text-cm-gold">
+            +${lure}
+          </span>
+        )}
       </span>
       <span aria-label={`Energy ${energy} of ${MAX_ENERGY}`} className="flex items-center gap-0.5">
         {Array.from({ length: MAX_ENERGY }, (_, index) => (
@@ -285,7 +290,7 @@ export function Purse({ money, energy }: { money: number; energy: number }) {
 }
 
 /** Small tags showing what something costs or gives. */
-export function EffectChips({ effects }: { effects: Effects }) {
+export function EffectChips({ effects, lively = false }: { effects: Effects; /** Makes money gained glitter. */ lively?: boolean }) {
   const chips: { text: string; good: boolean }[] = [];
   if (effects.money) chips.push({ text: `${effects.money > 0 ? "+" : "−"}$${Math.abs(effects.money)}`, good: effects.money > 0 });
   if (effects.energy) chips.push({ text: `${effects.energy > 0 ? "+" : "−"}${Math.abs(effects.energy)} energy`, good: effects.energy > 0 });
@@ -297,7 +302,7 @@ export function EffectChips({ effects }: { effects: Effects }) {
           key={chip.text}
           className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold tabular-nums ${
             chip.good ? "border-cm-gold/40 text-cm-gold" : "border-white/15 text-cm-sand"
-          }`}
+          } ${lively && chip.good && chip.text.includes("$") ? "inline-block animate-cm-coin border-cm-gold bg-cm-gold/20 text-sm" : ""}`}
         >
           {chip.text}
         </span>

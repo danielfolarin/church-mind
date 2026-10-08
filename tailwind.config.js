@@ -71,6 +71,31 @@ export default {
           from: { opacity: "0", transform: "translateX(22px)" },
           to: { opacity: "1", transform: "translateX(0)" },
         },
+        // Temptation and the town
+        "cm-coin": {
+          "0%, 100%": { transform: "scale(1) translateY(0)", filter: "brightness(1)" },
+          "50%": { transform: "scale(1.09) translateY(-2px)", filter: "brightness(1.35)" },
+        },
+        "cm-sparkle": {
+          "0%, 100%": { opacity: "0", transform: "scale(0.3) rotate(0deg)" },
+          "50%": { opacity: "1", transform: "scale(1) rotate(45deg)" },
+        },
+        "cm-step": {
+          from: { transform: "rotate(-24deg)" },
+          to: { transform: "rotate(24deg)" },
+        },
+        "cm-bob": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-1.5px)" },
+        },
+        "cm-flow": {
+          from: { strokeDashoffset: "0" },
+          to: { strokeDashoffset: "-120" },
+        },
+        "cm-hop": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-5px)" },
+        },
         "cm-drift": {
           from: { transform: "scale(1)" },
           to: { transform: "scale(1.07) translateY(-1%)" },
@@ -89,6 +114,12 @@ export default {
         "cm-enter-left": "cm-enter-left 0.7s ease-out both",
         "cm-enter-right": "cm-enter-right 0.7s ease-out both",
         "cm-drift": "cm-drift 36s ease-in-out infinite alternate",
+        "cm-coin": "cm-coin 1.6s ease-in-out infinite",
+        "cm-sparkle": "cm-sparkle 1.8s ease-in-out infinite",
+        "cm-step": "cm-step 0.32s ease-in-out infinite alternate",
+        "cm-bob": "cm-bob 0.32s ease-in-out infinite",
+        "cm-flow": "cm-flow 7s linear infinite",
+        "cm-hop": "cm-hop 1.4s ease-in-out infinite",
       },
     },
   },

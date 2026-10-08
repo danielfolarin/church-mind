@@ -11,9 +11,13 @@ not depend on any other project.
 The first story is **A Week in Alder Row**. You live four days, each with a
 morning and an evening: eight turns in all.
 
-- **A map, not a quiz.** Each turn opens on the neighbourhood map. Places with
-  something happening light up, with the faces of who is there. You pick one
-  place to go. The other things don't all wait for you.
+- **A living town, not a quiz.** Each turn opens on the town: houses, streets,
+  a river, neighbours out walking. Whoever is waiting for you stands outside
+  their door. You pick one place and your character walks there along the
+  streets. The other things don't all wait for you.
+- **Temptation looks tempting.** Money left unwatched glows and glitters on
+  screen, and the easy way out shimmers. Mark any choice or opportunity with
+  `tempt: "money"` or `tempt: "ease"` in the story file.
 - **Limited time, money and energy.** Work pays the rent but wears you out.
   A friend needs help the same morning your boss needs cover. Rent is due on
   Saturday whether or not you lent money on Monday.
@@ -36,6 +40,25 @@ morning and an evening: eight turns in all.
 
 Scenes have illustrated, animated characters and unfold a line at a time.
 Sound and spoken lines are optional and start switched off.
+
+## Real voices (Fish Audio)
+
+Lines can be spoken by recorded voices from [Fish Audio](https://fish.audio)
+instead of the device's built-in voice. The recordings are made once, saved in
+`public/audio/`, and shipped with the game, so players never need an account
+and your API key is never exposed.
+
+1. Create a Fish Audio account and an API key.
+2. Put the key in a file called `.env.local` in this folder:
+   `FISH_API_KEY=your-key-here` (this file is never uploaded to GitHub).
+3. Open `voices.config.json` and paste a Fish Audio voice id beside each
+   speaker. Use voices you have the right to publish.
+4. Run `npm run voices`. It records only what is missing, so it is safe to
+   stop and run again. `npm run voices -- --dry` just counts the lines, and
+   `npm run voices -- --redo=ruth` re-records one speaker.
+
+Any line without a recording falls back to the device's own voice. Re-run the
+command after editing the story so new lines get recorded.
 
 ## Run it
 
@@ -80,7 +103,8 @@ story for broken links and prints any problems in the browser console.
 
 ```
 src/App.tsx                 title, introduction, scene and summary screens
-src/game/MapScreen.tsx      the neighbourhood map and the list of things to do
+src/game/MapScreen.tsx      the town screen and the list of things to do
+src/game/Town.tsx           the town artwork, streets, and the walking figures
 src/game/stories/           story content, one file per story
 src/game/types.ts           the shape a story must follow
 src/game/engine.ts          time, money, energy, closeness, branching, checks
@@ -89,7 +113,10 @@ src/game/SceneArt.tsx       scene and map illustrations, drawn in code
 src/game/Figure.tsx         the characters: faces, expressions, movement
 src/game/Stage.tsx          places the characters in the scene and lights them
 src/game/audio.ts           atmosphere for each place and small story sounds
-src/game/voice.ts           reads lines aloud with the device's built-in voices
+src/game/voice.ts           plays recorded voices, or the device's own as a fallback
+src/game/speech.ts          decides what each line sounds like and names its recording
+scripts/generate-voices.mjs records every line with Fish Audio
+voices.config.json          which Fish Audio voice each speaker uses
 tailwind.config.js          colours, fonts, and motion
 ```
 

@@ -20,7 +20,7 @@ import { Portrait } from "./game/Figure";
 import { SceneArt, TitleArt } from "./game/SceneArt";
 import { Stage, type StagePerson } from "./game/Stage";
 import { STORIES } from "./game/stories";
-import { QUALITY_IDS, type Beat, type Lead, type Mood, type Story, type StoryNode, type VoiceStyle } from "./game/types";
+import { QUALITY_IDS, type Beat, type Lead, type Mood, type Story, type StoryNode } from "./game/types";
 import {
   BeatView,
   EffectChips,
@@ -33,7 +33,8 @@ import {
   voicesFor,
   type SoundSettings,
 } from "./game/ui";
-import { spokenReference, voice } from "./game/voice";
+import { speechFor } from "./game/speech";
+import { voice } from "./game/voice";
 
 const story = STORIES[0];
 
@@ -60,11 +61,16 @@ export default function App() {
   // Sound and voices always start off; browsers only allow audio after a click anyway.
   const [soundOn, setSoundOn] = useState(false);
   const [voiceOn, setVoiceOn] = useState(false);
+  // Real recorded voices, where they exist; the device's own voice otherwise.
+  const [recordings, setRecordings] = useState(0);
+  useEffect(() => {
+    void voice.loadClips().then(setRecordings);
+  }, []);
   const audio: SoundSettings = {
     soundOn,
     voiceOn,
     soundAvailable: sound.supported,
-    voiceAvailable: voice.supported,
+    voiceAvailable: voice.supported || recordings > 0,
     onToggleSound: () => {
       sound.setEnabled(!soundOn);
       setSoundOn(!soundOn);
@@ -431,30 +437,6 @@ function peopleOnStage(story: Story, lead: Lead, node: StoryNode, beats: Beat[],
   return ids.map((id) => ({ id, look: lookOf(id), mood: moods[id] ?? "neutral", speaking: id === speaker }));
 }
 
-/** What is said aloud for a beat, and in whose voice. */
-function speechFor(story: Story, lead: Lead, beat: Beat, text: (raw: string) => string): { text: string; style: VoiceStyle } {
-  const voiceOf = (id: string) => {
-    if (id === "you") return lead.voice;
-    if (id === "partner") return lead.partnerVoice;
-    return story.cast.find((character) => character.id === id)?.voice ?? story.narrator;
-  };
-
-  switch (beat.type) {
-    case "narration":
-      return { text: text(beat.text), style: story.narrator };
-    case "thought":
-      return { text: text(beat.text), style: { ...lead.voice, volume: 0.8 } };
-    case "dialogue":
-    case "message":
-      return { text: text(beat.text), style: voiceOf(beat.speaker) };
-    case "scripture":
-      return {
-        text: [`${spokenReference(beat.scripture.reference)}.`, beat.scripture.text, ...beat.scripture.context].join(" "),
-        style: story.narrator,
-      };
-  }
-}
-
 function PlayScreen({
   story,
   lead,
@@ -479,6 +461,8 @@ function PlayScreen({
   const text = (raw: string) => fill(raw, tokens);
   const beats = visibleBeats(node.beats, game);
   const choices = visibleChoices(node.choices, game);
+  // What is tempting the player here, if anything.
+  const moneyOnOffer = choices.find((choice) => choice.tempt === "money")?.money ?? 0;
   const activity = story.opportunities.find((opportunity) => opportunity.id === game.activity);
   const grewNames = game.grew.map((id) => QUALITY_LABELS[id]);
 
@@ -502,13 +486,19 @@ function PlayScreen({
     if (!speechTurn) return;
     const line = speechRef.current();
     setVoiceBusy(true);
-    voice.speak(line.text, line.style, () => setVoiceBusy(false));
+    voice.speak(line.text, line.style, () => setVoiceBusy(false), line.clip);
     return () => {
       voice.cancel();
       setVoiceBusy(false);
     };
   }, [speechTurn]);
   useEffect(() => sound.duck(voiceBusy), [voiceBusy]);
+
+  // Temptation announces itself.
+  const tempting = finished && choices.some((choice) => choice.tempt);
+  useEffect(() => {
+    if (tempting) sound.play("tempt");
+  }, [tempting, nodeId]);
 
   // A small sound as each new line arrives.
   const heard = useRef(`${nodeId}:${pace.shown}`);
@@ -556,14 +546,20 @@ function PlayScreen({
   return (
     <div className="min-h-screen bg-cm-night text-cm-cream">
       <TopBar audio={audio} onExit={onExit}>
-        <Purse money={game.money} energy={game.energy} />
+        <Purse money={game.money} energy={game.energy} lure={finished ? moneyOnOffer : 0} />
       </TopBar>
 
       <main className="mx-auto max-w-6xl px-5 pb-24 sm:px-8 lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-14 lg:pt-10">
         {/* On phones the scene stays pinned under the header while the story scrolls beneath it. */}
         <aside className="contents lg:sticky lg:top-24 lg:block lg:self-start">
           <div className="sticky top-14 z-10 -mx-5 bg-cm-night px-5 pb-3 pt-4 sm:-mx-8 sm:px-8 lg:static lg:m-0 lg:p-0">
-            <Stage setting={node.setting} caption={text(node.caption)} people={people} onClick={finished ? undefined : next} />
+            <Stage
+              setting={node.setting}
+              caption={text(node.caption)}
+              people={people}
+              lure={moneyOnOffer > 0 ? "money" : null}
+              onClick={finished ? undefined : next}
+            />
           </div>
           <div className="mt-1 lg:mt-6">
             <GrowthStrip qualities={game.qualities} grew={game.grew} note />
@@ -644,7 +640,9 @@ function PlayScreen({
                           sound.play("choice");
                           onChange(choose(story, game, choice));
                         }}
-                        className="group flex w-full items-start gap-4 rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-4 text-left transition hover:-translate-y-0.5 hover:border-cm-ember/70 hover:bg-white/[0.07]"
+                        className={`group flex w-full items-start gap-4 rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-4 text-left transition hover:-translate-y-0.5 hover:border-cm-ember/70 hover:bg-white/[0.07] ${
+                          choice.tempt ? `cm-tempt cm-tempt-${choice.tempt}` : ""
+                        }`}
                       >
                         <span
                           aria-hidden="true"
@@ -658,7 +656,7 @@ function PlayScreen({
                           </span>
                           {(choice.money || choice.energy) && (
                             <span className="mt-2 block">
-                              <EffectChips effects={choice} />
+                              <EffectChips effects={choice} lively={choice.tempt === "money"} />
                             </span>
                           )}
                         </span>

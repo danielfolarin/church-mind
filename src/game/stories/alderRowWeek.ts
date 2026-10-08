@@ -214,13 +214,29 @@ export const alderRowWeek: Story = {
   ],
 
   places: {
-    church: { name: "Great Haven Assembly", x: 19, y: 23, icon: "chapel" },
-    ruth: { name: "Ruth’s House", x: 50, y: 16, icon: "table" },
-    devs: { name: "Dev’s Flat", x: 82, y: 26, icon: "door" },
-    cafe: { name: "Kindling Café", x: 35, y: 49, icon: "cup" },
-    home: { name: "Home", x: 67, y: 55, icon: "home" },
-    garden: { name: "Community Garden", x: 17, y: 74, icon: "leaf" },
-    river: { name: "River Path", x: 61, y: 86, icon: "water" },
+    church: { name: "Great Haven Assembly", x: 19, y: 22, icon: "chapel", at: "west" },
+    ruth: { name: "Ruth’s House", x: 55, y: 20, icon: "table", at: "north" },
+    devs: { name: "Dev’s Flat", x: 86, y: 20, icon: "door", at: "east" },
+    cafe: { name: "Kindling Café", x: 29, y: 49, icon: "cup", at: "mid" },
+    home: { name: "Home", x: 64, y: 51, icon: "home", at: "lane" },
+    garden: { name: "Community Garden", x: 17, y: 77, icon: "leaf", at: "green" },
+    river: { name: "River Path", x: 66, y: 86, icon: "water", at: "bank" },
+  },
+
+  // The streets of Alder Row. People walk from junction to junction.
+  roads: {
+    junctions: {
+      w0: [0, 37], west: [19, 36], cross: [41, 35], north: [55, 34.5], top: [76, 33], east: [86, 32.5], e0: [100, 32],
+      n0: [41, 0], mid: [41, 49], square: [41, 63], s0: [39, 100],
+      t0: [76, 0], lane: [64, 64.5], corner: [73, 65], bank: [66, 82], b0: [62, 100],
+      l0: [0, 63], green: [17, 63], r0: [100, 67],
+    },
+    streets: [
+      ["w0", "west"], ["west", "cross"], ["cross", "north"], ["north", "top"], ["top", "east"], ["east", "e0"],
+      ["n0", "cross"], ["cross", "mid"], ["mid", "square"], ["square", "s0"],
+      ["t0", "top"], ["top", "corner"], ["corner", "bank"], ["bank", "b0"],
+      ["l0", "green"], ["green", "square"], ["square", "lane"], ["lane", "corner"], ["corner", "r0"],
+    ],
   },
 
   // What the player can do, and when. Order here is the order shown.
@@ -237,7 +253,7 @@ export const alderRowWeek: Story = {
     // Work
     { id: "shift_mon", place: "cafe", slots: ["mon-day"], with: ["priya"], title: "Work the morning shift", blurb: "Priya is short-staffed, and rent is due on Saturday.", money: 90, energy: -2, scene: "shift_till" },
     { id: "shift_thu", place: "cafe", slots: ["thu-day"], with: ["priya"], title: "Work the morning shift", blurb: "The 9:15 rush waits for no one.", money: 90, energy: -2, scene: "shift_customer" },
-    { id: "cover", place: "cafe", slots: ["sat-day"], with: ["priya"], when: { all: ["asked_cover"] }, title: "Cover the Saturday shift", blurb: "Priya asked on Thursday. It’s the same morning as Dev’s move.", money: 90, energy: -2, scene: "cover_shift" },
+    { id: "cover", tempt: "money", place: "cafe", slots: ["sat-day"], with: ["priya"], when: { all: ["asked_cover"] }, title: "Cover the Saturday shift", blurb: "Priya asked on Thursday. It’s the same morning as Dev’s move.", money: 90, energy: -2, scene: "cover_shift" },
     { id: "priya_coffee", place: "cafe", slots: ["sun-day"], with: ["priya"], when: { bond: { priya: 2 } }, title: "Coffee with Priya", blurb: "It’s her day off. She asked if you’d come by.", scene: "priya_coffee" },
     { id: "priya_confess", place: "cafe", slots: ["sun-eve"], with: ["priya"], when: { all: ["pocketed"], none: ["confessed"] }, title: "Take the forty dollars back to Priya", blurb: "It has got heavier every day.", grow: { integrity: 1, courage: 1 }, scene: "priya_confess" },
 
@@ -250,7 +266,7 @@ export const alderRowWeek: Story = {
     // {partner}
     { id: "seed_morning", place: "garden", slots: ["mon-day"], with: ["partner"], title: "Help {partner} at the seed library", blurb: "{He} has forty envelopes to label and would love the company.", bond: { partner: 1 }, scene: "seed_morning" },
     { id: "film", place: "garden", slots: ["thu-eve"], with: ["partner"], title: "Film night with {partner}", blurb: "{He} got two tickets. It’s the same night as Ruth’s.", money: -30, bond: { partner: 1 }, flags: ["drifted"], scene: "film_night" },
-    { id: "text_exit", place: "home", slots: ["sat-eve"], when: { all: ["did:question"] }, title: "End it with {partner} by message", blurb: "Face to face would hurt too much.", flags: ["path_text"], scene: "text_exit" },
+    { id: "text_exit", tempt: "ease", place: "home", slots: ["sat-eve"], when: { all: ["did:question"] }, title: "End it with {partner} by message", blurb: "Face to face would hurt too much.", flags: ["path_text"], scene: "text_exit" },
 
     // Sunday
     { id: "pastors", place: "church", slots: ["thu-day", "sat-day"], with: ["daniel", "tolu"], title: "Drop in on the pastors", blurb: "The church office door is open, and the kettle is usually on.", scene: "pastors_office" },
@@ -284,7 +300,7 @@ export const alderRowWeek: Story = {
       prompt: "What do you do with the forty?",
       choices: [
         { id: "report", label: "Put it in an envelope and tell Priya.", grow: { integrity: 1 }, bond: { priya: 1 }, flags: ["reported"], next: "till_report" },
-        { id: "pocket", label: "Pocket it. Nobody will ever know.", money: 40, flags: ["pocketed"], next: "till_pocket" },
+        { id: "pocket", tempt: "money", label: "Pocket it. Nobody will ever know.", money: 40, flags: ["pocketed"], next: "till_pocket" },
         { id: "leave", label: "Shut the drawer and say nothing.", flags: ["left_till"], next: "till_leave" },
       ],
     },
@@ -335,7 +351,7 @@ export const alderRowWeek: Story = {
       prompt: "How do you answer him?",
       choices: [
         { id: "kind", label: "Remake it yourself, and ask if he’s having a rough morning.", grow: { compassion: 1 }, flags: ["kind_customer"], next: "customer_kind" },
-        { id: "snap", label: "Give it back to him exactly as hard as he gave it.", flags: ["snapped"], bond: { priya: -1 }, next: "customer_snap" },
+        { id: "snap", tempt: "ease", label: "Give it back to him exactly as hard as he gave it.", flags: ["snapped"], bond: { priya: -1 }, next: "customer_snap" },
         { id: "cold", label: "Say nothing. Remake it. Seethe.", next: "customer_cold" },
       ],
     },
@@ -502,7 +518,7 @@ export const alderRowWeek: Story = {
       choices: [
         { id: "lend", when: { minMoney: 100 }, label: "Lend him the $100.", money: -100, flags: ["lent"], bond: { dev: 1 }, grow: { compassion: 1 }, next: "dev_lent" },
         { id: "honest", label: "Tell him honestly that you can’t, and offer to help him move.", flags: ["declined_kindly"], grow: { integrity: 1 }, next: "dev_declined" },
-        { id: "dodge", label: "Say you’ll see what you can do, and change the subject.", flags: ["dodged"], bond: { dev: -1 }, next: "dev_dodged" },
+        { id: "dodge", tempt: "ease", label: "Say you’ll see what you can do, and change the subject.", flags: ["dodged"], bond: { dev: -1 }, next: "dev_dodged" },
       ],
     },
     dev_lent: {
@@ -584,7 +600,7 @@ export const alderRowWeek: Story = {
       choices: [
         { id: "talk", label: "Tell him it hurt, and that you’d rather have the truth than be avoided.", grow: { courage: 1 }, bond: { dev: 1 }, flags: ["dev_talk", "dev_good"], next: "dev_talk" },
         { id: "release", label: "Tell him it’s a gift now. He doesn’t owe you.", grow: { compassion: 1 }, bond: { dev: 1 }, flags: ["forgave_debt", "dev_good"], next: "dev_release" },
-        { id: "resent", label: "Say “it’s fine” and carry the next box in silence.", flags: ["resent"], bond: { dev: -1 }, next: "dev_resent" },
+        { id: "resent", tempt: "ease", label: "Say “it’s fine” and carry the next box in silence.", flags: ["resent"], bond: { dev: -1 }, next: "dev_resent" },
       ],
     },
     dev_talk: {
@@ -801,7 +817,7 @@ export const alderRowWeek: Story = {
       prompt: "What do you do?",
       choices: [
         { id: "truth", label: "Tell {him} the whole truth.", grow: { courage: 1 }, next: "talk_truth" },
-        { id: "compromise", label: "Suggest you keep going, and keep your faith out of it.", flags: ["path_compromise"], next: "talk_compromise" },
+        { id: "compromise", tempt: "ease", label: "Suggest you keep going, and keep your faith out of it.", flags: ["path_compromise"], next: "talk_compromise" },
         { id: "pressure", label: "Ask {him} to come to church tomorrow. Maybe {he}’ll come round.", flags: ["path_pressure"], next: "talk_pressure" },
       ],
     },
@@ -826,7 +842,7 @@ export const alderRowWeek: Story = {
       prompt: "What do you say?",
       choices: [
         { id: "clear", label: "“You are not less. This is about where I’m going, not what you’re worth.”", grow: { compassion: 1, integrity: 1 }, flags: ["told_truth"], next: "truth_clear" },
-        { id: "pause", label: "“Maybe we don’t have to decide. Let’s just call it a pause.”", flags: ["path_pause"], next: "truth_pause" },
+        { id: "pause", tempt: "ease", label: "“Maybe we don’t have to decide. Let’s just call it a pause.”", flags: ["path_pause"], next: "truth_pause" },
       ],
     },
     truth_clear: {
@@ -1127,7 +1143,7 @@ export const alderRowWeek: Story = {
       choices: [
         { id: "grace", label: "Ring the landlord, tell him the truth, and ask for a week.", grow: { integrity: 1, courage: 1 }, flags: ["rent_grace"], next: "rent_grace" },
         { id: "help", when: { any: ["did:table", "did:soup"] }, label: "Message Ruth, and let the Thursday table help.", grow: { trust: 1 }, flags: ["rent_helped"], next: "rent_helped" },
-        { id: "avoid", label: "Silence the reminder. Deal with it on Monday.", flags: ["rent_avoided"], next: "rent_avoided" },
+        { id: "avoid", tempt: "ease", label: "Silence the reminder. Deal with it on Monday.", flags: ["rent_avoided"], next: "rent_avoided" },
       ],
     },
     rent_grace: {

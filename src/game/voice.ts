@@ -15,29 +15,65 @@ const NOVELTY = /albert|bad news|bahh|bells|boing|bubbles|cellos|good news|jeste
 class Voice {
   private turn = 0;
   private watchdog = 0;
+  /** Lines recorded with real voices, by clip id. See scripts/generate-voices.mjs. */
+  private clips = new Set<string>();
+  private player: HTMLAudioElement | null = null;
   // Browsers can drop an utterance that nothing refers to before it finishes.
   private queue: SpeechSynthesisUtterance[] = [];
 
-  get supported() {
+  /** The device can read lines aloud itself. */
+  private get device() {
     return typeof window !== "undefined" && "speechSynthesis" in window;
+  }
+
+  get supported() {
+    return this.device || this.clips.size > 0;
+  }
+
+  /** Finds out which lines have real recordings. Resolves to how many there are. */
+  async loadClips(): Promise<number> {
+    try {
+      const response = await fetch(`${import.meta.env.BASE_URL}audio/manifest.json`);
+      if (response.ok) this.clips = new Set((await response.json()) as string[]);
+    } catch {
+      // No recordings: the device's own voices are used instead.
+    }
+    return this.clips.size;
   }
 
   /** Call from a click: loads the voice list and lets later lines play. */
   prime() {
-    if (!this.supported) return;
+    if (!this.device) return;
     window.speechSynthesis.getVoices();
     const quiet = new SpeechSynthesisUtterance(" ");
     quiet.volume = 0;
     window.speechSynthesis.speak(quiet);
   }
 
-  speak(text: string, style: VoiceStyle, onEnd: () => void) {
-    if (!this.supported) {
+  /** Says a line: with its recording if there is one, otherwise with the device's voice. */
+  speak(text: string, style: VoiceStyle, onEnd: () => void, clip?: string) {
+    this.cancel();
+    const turn = this.turn;
+
+    if (clip && this.clips.has(clip)) {
+      const player = new Audio(`${import.meta.env.BASE_URL}audio/${clip}.mp3`);
+      player.volume = style.volume ?? 1;
+      const done = () => {
+        if (turn !== this.turn) return;
+        this.turn += 1;
+        onEnd();
+      };
+      player.onended = done;
+      player.onerror = done;
+      this.player = player;
+      void player.play().catch(done);
+      return;
+    }
+
+    if (!this.device) {
       onEnd();
       return;
     }
-    this.cancel();
-    const turn = this.turn;
     const voice = this.pick(style);
 
     // Sentence by sentence: some browsers cut off a long passage partway through.
@@ -79,7 +115,11 @@ class Voice {
     window.clearTimeout(this.watchdog);
     this.turn += 1;
     this.queue = [];
-    if (this.supported) window.speechSynthesis.cancel();
+    if (this.player) {
+      this.player.pause();
+      this.player = null;
+    }
+    if (this.device) window.speechSynthesis.cancel();
   }
 
   private pick(style: VoiceStyle): SpeechSynthesisVoice | null {
