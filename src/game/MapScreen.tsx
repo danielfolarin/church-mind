@@ -1,4 +1,6 @@
-import { useMemo, useState, type ReactNode, type RefObject } from "react";
+import { useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
+import { sound } from "./audio";
+import { addCoins } from "./rewards";
 import { fill, MAX_BOND, offers, tokensFor, type GameState, type Offer } from "./engine";
 import { Portrait } from "./Figure";
 import { doorstep, Strollers, TownArt, walkBetween, Walker, type Point } from "./Town";
@@ -54,6 +56,9 @@ export function MapScreen({
   const focused = focus?.slot === game.slot && byPlace.has(focus.place) ? focus.place : null;
   const listed = focused ? (byPlace.get(focused) ?? []) : available;
 
+  // Biscuit pays one coin per morning or evening, however much fuss he gets.
+  const petted = useRef(-1);
+
   // Walking there: the player's figure follows the streets before the scene opens.
   const [heading, setHeading] = useState<Opportunity | null>(null);
   const still = useMemo(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches, []);
@@ -93,7 +98,18 @@ export function MapScreen({
 
           <div className="relative mt-5 aspect-[4/3] overflow-hidden rounded-2xl bg-cm-dusk shadow-2xl shadow-black/40 ring-1 ring-white/10">
             <TownArt story={story} evening={evening} />
-            {!still && <Strollers story={story} />}
+            {!still && (
+              <Strollers
+                story={story}
+                onPet={() => {
+                  sound.play("woof");
+                  if (petted.current === game.slot) return false;
+                  petted.current = game.slot;
+                  addCoins(1);
+                  return true;
+                }}
+              />
+            )}
 
             {/* Whoever is waiting for you stands outside */}
             {Object.entries(story.places).flatMap(([id]) => {

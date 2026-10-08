@@ -5,7 +5,7 @@ import type { SettingId } from "./types";
 // chord, and a few small sounds mark moments in the story.
 
 export type AmbienceId = SettingId | "title";
-export type EffectId = "advance" | "choice" | "scripture" | "message" | "ending" | "tempt";
+export type EffectId = "advance" | "choice" | "scripture" | "message" | "ending" | "tempt" | "good" | "bad" | "win" | "woof";
 
 const noiseBuffers = new WeakMap<BaseAudioContext, AudioBuffer>();
 
@@ -99,6 +99,22 @@ export function playEffect(ctx: BaseAudioContext, out: AudioNode, effect: Effect
       tone(ctx, out, { frequency: 150, level: 0.03, decay: 0.16, type: "triangle" });
       tone(ctx, out, { frequency: 880, level: 0.035, decay: 0.14, delay: 0.02 });
       tone(ctx, out, { frequency: 1108.73, level: 0.035, decay: 0.22, delay: 0.14 });
+      break;
+    case "good":
+      tone(ctx, out, { frequency: 784, level: 0.045, decay: 0.12 });
+      tone(ctx, out, { frequency: 1174.66, level: 0.04, decay: 0.18, delay: 0.06 });
+      break;
+    case "bad":
+      tone(ctx, out, { frequency: 196, level: 0.05, decay: 0.2, type: "triangle" });
+      break;
+    case "win":
+      [523.25, 659.25, 783.99, 1046.5].forEach((frequency, index) => {
+        tone(ctx, out, { frequency, level: 0.045, decay: 0.5, delay: index * 0.1 });
+      });
+      break;
+    case "woof":
+      tone(ctx, out, { frequency: 330, level: 0.06, decay: 0.09, type: "triangle" });
+      tone(ctx, out, { frequency: 262, level: 0.06, decay: 0.12, type: "triangle", delay: 0.13 });
       break;
     case "tempt":
       // A bright, glittering run: the sound of something shiny catching your eye.

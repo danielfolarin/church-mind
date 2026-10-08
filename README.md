@@ -102,6 +102,21 @@ Finishing a week pays out, and what is earned is kept on the player's device.
 Rewards mark showing up for people and making repairs. They are deliberately
 not a measure of how good the player was.
 
+## Just for fun
+
+Not everything in the week is a decision. Some of it is only there to enjoy.
+
+- **Quick games** sit inside three activities: a coffee rush on a Kindling
+  shift, sorting beans from peas at the seed library, and stacking boxes on
+  Dev's moving day. Each lasts about twenty seconds, pays a few coins, can be
+  skipped, and never changes the story. An activity gets one by adding
+  `game: "coffee" | "seeds" | "boxes"` to it in the story file; the games
+  themselves are in `src/game/MiniGame.tsx`.
+- **The town answers back.** Tap a neighbour and they say something (the
+  `BANTER` list in `src/game/Town.tsx`). Tap Biscuit the dog for a woof and,
+  once per part of the day, a coin.
+- **Confetti** falls when a week ends and on a top score in a quick game.
+
 ## Installing and playing offline
 
 Church Mind can be downloaded without an app store. On the title screen,
@@ -163,6 +178,7 @@ src/game/SceneArt.tsx       scene and map illustrations, drawn in code
 src/game/Figure.tsx         the characters' heads: faces, hair, expressions
 src/game/Rig.tsx            full-body characters on a skeleton: poses and movement
 src/game/Creator.tsx        the make-your-own-character screen
+src/game/MiniGame.tsx       the quick games: coffee rush, seed sorting, box stacking
 src/game/rewards.ts         coins, keepsakes and the shop: what is earned and kept
 src/game/Collection.tsx     the end-of-week rewards and the Collection screen
 src/game/shareCard.ts       draws the picture for "Share your week"

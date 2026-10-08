@@ -17,14 +17,15 @@ import {
 import { MapScreen } from "./game/MapScreen";
 import { sound } from "./game/audio";
 import { CharacterCreator, customLead, loadCharacter, saveCharacter, type CustomCharacter } from "./game/Creator";
-import { Coin, CollectionScreen, WeekRewards } from "./game/Collection";
+import { Coin, CollectionScreen, Confetti, WeekRewards } from "./game/Collection";
 import { DownloadPanel } from "./game/Download";
-import { loadProfile, rewardWeek, type WeekReward } from "./game/rewards";
+import { MiniGame } from "./game/MiniGame";
+import { addCoins, loadProfile, rewardWeek, type WeekReward } from "./game/rewards";
 import { FullFigure } from "./game/Rig";
 import { SceneArt, TitleArt } from "./game/SceneArt";
 import { Stage, type StagePerson } from "./game/Stage";
 import { STORIES } from "./game/stories";
-import { QUALITY_IDS, type Beat, type Lead, type Mood, type Story, type StoryNode } from "./game/types";
+import { QUALITY_IDS, type Beat, type Lead, type Mood, type Story, type StoryNode, type Opportunity } from "./game/types";
 import {
   BeatView,
   EffectChips,
@@ -110,6 +111,9 @@ export default function App() {
     if (screen === "play" && game.phase === "summary") sound.play("ending");
   }, [screen, game.phase]);
 
+  // A quick game on the way in to some activities.
+  const [mini, setMini] = useState<Opportunity | null>(null);
+
   // A finished week pays out once: coins and keepsakes, kept for next time.
   const [reward, setReward] = useState<WeekReward | null>(null);
   const rewarded = useRef<GameState | null>(null);
@@ -163,6 +167,20 @@ export default function App() {
     );
   }
 
+  if (mini?.game) {
+    return (
+      <MiniGame
+        id={mini.game}
+        lead={lead}
+        onDone={({ coins }) => {
+          addCoins(coins);
+          setMini(null);
+          setGame(go(story, game, mini));
+        }}
+      />
+    );
+  }
+
   if (game.phase === "map") {
     return (
       <MapScreen
@@ -173,7 +191,8 @@ export default function App() {
         headingRef={headingRef}
         onGo={(opportunity) => {
           sound.play("choice");
-          setGame(go(story, game, opportunity));
+          if (opportunity.game) setMini(opportunity);
+          else setGame(go(story, game, opportunity));
         }}
       />
     );
@@ -786,6 +805,8 @@ function EndingScreen({
           <SoundControls settings={audio} compact />
         </div>
       </div>
+
+      {reward && <Confetti delay={0.5} />}
 
       <main className="relative mx-auto -mt-24 max-w-3xl px-6 pb-20 sm:px-10">
         <p {...stagger(0, "text-[11px] font-semibold uppercase tracking-[0.22em] text-cm-gold")}>

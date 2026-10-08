@@ -244,6 +244,8 @@ export interface Opportunity extends Effects {
   /** Marks a moment the story is waiting on. */
   key?: boolean;
   tempt?: Tempt;
+  /** A quick game played on the way in: `coffee`, `seeds` or `boxes`. See MiniGame.tsx. */
+  game?: "coffee" | "seeds" | "boxes";
   /** Can be done more than once (rest, prayer). */
   repeatable?: boolean;
   /** Happens by itself at the start of the slot and doesn't use up the time. */

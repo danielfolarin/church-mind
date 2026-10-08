@@ -81,6 +81,15 @@ export function rewardWeek(story: Story, state: GameState): WeekReward {
   return { coins, earned, fresh, profile: next };
 }
 
+/** Adds coins won in passing: a mini-game, or a dog who was glad to see you. */
+export function addCoins(coins: number): Profile {
+  const profile = loadProfile();
+  if (coins <= 0) return profile;
+  const next = { ...profile, coins: profile.coins + coins };
+  saveProfile(next);
+  return next;
+}
+
 /** Buys a shop item if the player can afford it. Returns the updated profile. */
 export function buy(item: ShopItem): Profile {
   const profile = loadProfile();

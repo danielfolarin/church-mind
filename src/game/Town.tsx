@@ -100,9 +100,15 @@ export function Walker({
   path,
   speed = 26,
   onArrive,
+  onTap,
+  sprite,
   className = "",
   children,
 }: {
+  /** Tapping them calls this; without it they can't be tapped. */
+  onTap?: () => void;
+  /** Draws something other than a person, e.g. the dog. */
+  sprite?: (walking: boolean, facingLeft: boolean) => ReactNode;
   look: Look;
   at: Point;
   /** Points to walk through, in order. */
@@ -170,9 +176,14 @@ export function Walker({
   }, [path, speed]);
 
   return (
-    <div ref={el} className={`pointer-events-none absolute -translate-x-1/2 -translate-y-[92%] ${className}`} style={{ left: `${at[0]}%`, top: `${at[1]}%` }}>
+    <div
+      ref={el}
+      onClick={onTap}
+      className={`absolute -translate-x-1/2 -translate-y-[92%] ${onTap ? "cursor-pointer" : "pointer-events-none"} ${className}`}
+      style={{ left: `${at[0]}%`, top: `${at[1]}%` }}
+    >
       {children}
-      <MiniPerson look={look} walking={walking} facingLeft={left} className="h-full w-full" />
+      {sprite ? sprite(walking, left) : <MiniPerson look={look} walking={walking} facingLeft={left} className="h-full w-full" />}
     </div>
   );
 }
@@ -185,10 +196,103 @@ const STROLLER_LOOKS: Look[] = [
   { skin: "#8E5B3C", shade: "", hair: "#201512", hairStyle: "short", top: "#4E9A78" },
 ];
 
+// What the neighbours say if you stop them for a chat.
+const BANTER = [
+  "Lovely day for it.",
+  "Have you tried Priya’s scones? Don’t.",
+  "My tomatoes are winning this year.",
+  "Is it Thursday? It feels like a Thursday.",
+  "Mind the pothole on Main Street.",
+  "I’m walking off a second breakfast.",
+  "Tell Ruth her soup changed my life.",
+  "Lost my hat. Found my hat. Good day overall.",
+  "That dog knows things.",
+  "I waved at the wrong person for ten minutes.",
+  "Someone’s been at the seed library again. Suspicious peas.",
+  "Great Haven’s coffee is terrible. I’ve had three.",
+  "The footbridge creaks in B flat. I checked.",
+  "You look like someone with places to be.",
+];
+
+function Bubble({ children }: { children: ReactNode }) {
+  return (
+    <span className="pointer-events-none absolute bottom-[104%] left-1/2 z-20 w-max max-w-[11rem] -translate-x-1/2 animate-cm-pop rounded-2xl bg-cm-cream px-2.5 py-1 text-center text-[10px] font-semibold leading-tight text-cm-night shadow-lg sm:text-[11px]">
+      {children}
+    </span>
+  );
+}
+
+/** Biscuit, who wanders the streets and likes being fussed over. */
+function Dog({ story, onPet }: { story: Story; onPet: () => boolean }) {
+  const ids = useMemo(() => Object.keys(story.roads.junctions), [story]);
+  const [leg, setLeg] = useState<{ from: string; path: Point[] | null }>(() => ({ from: ids[3 % ids.length], path: null }));
+  const [fuss, setFuss] = useState<string | null>(null);
+
+  const trot = (from: string) => {
+    let to = from;
+    while (to === from) to = ids[Math.floor(Math.random() * ids.length)];
+    setLeg({ from: to, path: junctionRoute(story, from, to).map((id) => story.roads.junctions[id]) });
+  };
+  useEffect(() => {
+    const timer = window.setTimeout(() => trot(leg.from), 900);
+    return () => window.clearTimeout(timer);
+    // Start once; each arrival schedules the next trot.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const pet = () => {
+    setFuss(onPet() ? "Woof! (+1 coin)" : "Woof!");
+    window.setTimeout(() => setFuss(null), 1700);
+  };
+
+  return (
+    <Walker
+      look={STROLLER_LOOKS[0]}
+      at={story.roads.junctions[leg.from]}
+      path={leg.path}
+      speed={17}
+      onArrive={() => window.setTimeout(() => trot(leg.from), 500 + Math.random() * 1800)}
+      onTap={pet}
+      className="z-[5] h-[5%] w-[5.4%]"
+      sprite={(walking, facingLeft) => (
+        <svg viewBox="0 0 40 28" role="img" aria-label="Biscuit the dog" className="block h-full w-full overflow-visible" style={{ transform: facingLeft ? "scaleX(-1)" : undefined }}>
+          <ellipse cx="20" cy="26.4" rx="13" ry="1.8" fill="#000" opacity="0.25" />
+          <g className="animate-cm-wag" style={{ transformBox: "fill-box", transformOrigin: "100% 100%" }}>
+            <path d="M8 13 Q3 9 4 4" fill="none" stroke="#B5763C" strokeWidth="2.6" strokeLinecap="round" />
+          </g>
+          {[10, 14, 24, 28].map((x, index) => (
+            <g key={x} className={walking ? "animate-cm-step" : undefined} style={{ transformBox: "fill-box", transformOrigin: "50% 0%", animationDirection: index % 2 ? "alternate-reverse" : "alternate" }}>
+              <rect x={x} y="17" width="2.8" height="8.5" rx="1.2" fill="#9A5F2E" />
+            </g>
+          ))}
+          <rect x="7" y="10" width="24" height="10" rx="5" fill="#C68B4E" />
+          <circle cx="32" cy="10" r="6" fill="#C68B4E" />
+          <path d="M29 5 L27 0 L33 4Z" fill="#8A5326" />
+          <rect x="35" y="9.5" width="5" height="4" rx="2" fill="#D9A26A" />
+          <circle cx="39.4" cy="10.6" r="1.1" fill="#1E1512" />
+          <circle cx="33" cy="8.6" r="1" fill="#1E1512" />
+        </svg>
+      )}
+    >
+      {fuss && (
+        <>
+          <Bubble>{fuss}</Bubble>
+          <span className="pointer-events-none absolute -top-2 left-1/2 animate-cm-heart text-sm">❤️</span>
+        </>
+      )}
+    </Walker>
+  );
+}
+
 /** A neighbour out for a walk: wanders from junction to junction for ever. */
 function Stroller({ story, index }: { story: Story; index: number }) {
   const ids = useMemo(() => Object.keys(story.roads.junctions), [story]);
   const [leg, setLeg] = useState<{ from: string; path: Point[] | null }>(() => ({ from: ids[(index * 5 + 2) % ids.length], path: null }));
+  const [says, setSays] = useState<string | null>(null);
+  const chat = () => {
+    setSays(BANTER[Math.floor(Math.random() * BANTER.length)]);
+    window.setTimeout(() => setSays(null), 2600);
+  };
 
   const wander = (from: string) => {
     let to = from;
@@ -211,14 +315,18 @@ function Stroller({ story, index }: { story: Story; index: number }) {
       path={leg.path}
       speed={9 + (index % 3) * 2}
       onArrive={() => window.setTimeout(() => wander(leg.from), 600 + Math.random() * 2600)}
-      className="h-[7.5%] w-[3.4%] opacity-90"
-    />
+      onTap={chat}
+      className={`h-[7.5%] w-[3.4%] ${says ? "z-20" : "opacity-90"}`}
+    >
+      {says && <Bubble>{says}</Bubble>}
+    </Walker>
   );
 }
 
-export function Strollers({ story, count = 5 }: { story: Story; count?: number }) {
+export function Strollers({ story, count = 5, onPet }: { story: Story; count?: number; /** Called when the dog is petted; returns true if it earned a coin. */ onPet: () => boolean }) {
   return (
     <>
+      <Dog story={story} onPet={onPet} />
       {Array.from({ length: count }, (_, index) => (
         <Stroller key={index} story={story} index={index} />
       ))}

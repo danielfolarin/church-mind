@@ -35,6 +35,30 @@ function Token({ keepsake, text, dim = false, fresh = false }: { keepsake: Keeps
   );
 }
 
+const CONFETTI = ["#E2B36B", "#E8622C", "#F4EBDD", "#7FB04F", "#5FA8CC", "#D9A7B5"];
+
+/** A burst of paper, for when something good has just been earned. */
+export function Confetti({ delay = 0 }: { delay?: number }) {
+  const pieces = Array.from({ length: 36 }, (_, index) => ({
+    left: (index * 37) % 100,
+    delay: (index % 9) * 0.07,
+    drift: ((index * 53) % 120) - 60,
+    colour: CONFETTI[index % CONFETTI.length],
+    tall: index % 3 === 0,
+  }));
+  return (
+    <div aria-hidden="true" className="pointer-events-none fixed inset-x-0 -top-4 z-50 h-0">
+      {pieces.map((piece, index) => (
+        <span
+          key={index}
+          className="absolute top-0 animate-cm-confetti rounded-sm"
+          style={{ left: `${piece.left}%`, width: 8, height: piece.tall ? 14 : 8, backgroundColor: piece.colour, animationDelay: `${delay + piece.delay}s`, ["--drift" as string]: `${piece.drift}px` }}
+        />
+      ))}
+    </div>
+  );
+}
+
 /** Shown at the end of a week: what the player takes away from it. */
 export function WeekRewards({ story, lead, game, ending, reward }: { story: Story; lead: Lead; game: GameState; ending: Ending; reward: WeekReward }) {
   const tokens = tokensFor(lead, game.money);
@@ -61,7 +85,7 @@ export function WeekRewards({ story, lead, game, ending, reward }: { story: Stor
   }
 
   return (
-    <section>
+    <section className="relative">
       <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cm-sand">What you take with you</h2>
       <div className="mt-4 rounded-2xl border border-cm-gold/25 bg-gradient-to-b from-cm-gold/[0.08] to-transparent p-5 sm:p-6">
         <p className="flex items-center gap-2.5 font-story text-2xl text-cm-cream">

@@ -96,6 +96,31 @@ export default {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-5px)" },
         },
+        // Play
+        "cm-pop": {
+          "0%": { transform: "scale(0.86)", opacity: "0" },
+          "60%": { transform: "scale(1.04)", opacity: "1" },
+          "100%": { transform: "scale(1)", opacity: "1" },
+        },
+        "cm-shake": {
+          "0%, 100%": { transform: "translateX(0)" },
+          "25%": { transform: "translateX(-7px)" },
+          "75%": { transform: "translateX(7px)" },
+        },
+        "cm-wag": {
+          from: { transform: "rotate(-28deg)" },
+          to: { transform: "rotate(28deg)" },
+        },
+        "cm-heart": {
+          "0%": { transform: "translateY(0) scale(0.6)", opacity: "0" },
+          "20%": { opacity: "1" },
+          "100%": { transform: "translateY(-34px) scale(1.2)", opacity: "0" },
+        },
+        "cm-confetti": {
+          "0%": { transform: "translate3d(0, 0, 0) rotate(0deg)", opacity: "1" },
+          "85%": { opacity: "1" },
+          "100%": { transform: "translate3d(var(--drift), 92vh, 0) rotate(720deg)", opacity: "0" },
+        },
         "cm-drift": {
           from: { transform: "scale(1)" },
           to: { transform: "scale(1.07) translateY(-1%)" },
@@ -114,6 +139,11 @@ export default {
         "cm-enter-left": "cm-enter-left 0.7s ease-out both",
         "cm-enter-right": "cm-enter-right 0.7s ease-out both",
         "cm-drift": "cm-drift 36s ease-in-out infinite alternate",
+        "cm-pop": "cm-pop 0.28s ease-out both",
+        "cm-shake": "cm-shake 0.22s ease-in-out 2",
+        "cm-wag": "cm-wag 0.22s ease-in-out infinite alternate",
+        "cm-heart": "cm-heart 1.3s ease-out both",
+        "cm-confetti": "cm-confetti 2.8s cubic-bezier(0.3, 0.2, 0.6, 1) both",
         "cm-coin": "cm-coin 1.6s ease-in-out infinite",
         "cm-sparkle": "cm-sparkle 1.8s ease-in-out infinite",
         "cm-step": "cm-step 0.32s ease-in-out infinite alternate",

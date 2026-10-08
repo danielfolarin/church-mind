@@ -261,20 +261,20 @@ export const alderRowWeek: Story = {
     { id: "counsel", key: true, place: "ruth", slots: ["sun-eve"], with: ["ruth"], when: { any: HARM, none: ["repaired"] }, title: "Ask Ruth to help you see it straight", blurb: "Then go and do what needs doing.", grow: { wisdom: 1 }, scene: "counsel_again" },
 
     // Work
-    { id: "shift_mon", place: "cafe", slots: ["mon-day"], with: ["priya"], title: "Work the morning shift", blurb: "Priya is short-staffed, and rent is due on Saturday.", money: 90, energy: -2, scene: "shift_till" },
-    { id: "shift_thu", place: "cafe", slots: ["thu-day"], with: ["priya"], title: "Work the morning shift", blurb: "The 9:15 rush waits for no one.", money: 90, energy: -2, scene: "shift_customer" },
-    { id: "cover", tempt: "money", place: "cafe", slots: ["sat-day"], with: ["priya"], when: { all: ["asked_cover"] }, title: "Cover the Saturday shift", blurb: "Priya asked on Thursday. It’s the same morning as Dev’s move.", money: 90, energy: -2, scene: "cover_shift" },
+    { id: "shift_mon", game: "coffee", place: "cafe", slots: ["mon-day"], with: ["priya"], title: "Work the morning shift", blurb: "Priya is short-staffed, and rent is due on Saturday.", money: 90, energy: -2, scene: "shift_till" },
+    { id: "shift_thu", game: "coffee", place: "cafe", slots: ["thu-day"], with: ["priya"], title: "Work the morning shift", blurb: "The 9:15 rush waits for no one.", money: 90, energy: -2, scene: "shift_customer" },
+    { id: "cover", tempt: "money", game: "coffee", place: "cafe", slots: ["sat-day"], with: ["priya"], when: { all: ["asked_cover"] }, title: "Cover the Saturday shift", blurb: "Priya asked on Thursday. It’s the same morning as Dev’s move.", money: 90, energy: -2, scene: "cover_shift" },
     { id: "priya_coffee", place: "cafe", slots: ["sun-day"], with: ["priya"], when: { bond: { priya: 2 } }, title: "Coffee with Priya", blurb: "It’s her day off. She asked if you’d come by.", scene: "priya_coffee" },
     { id: "priya_confess", place: "cafe", slots: ["sun-eve"], with: ["priya"], when: { all: ["pocketed"], none: ["confessed"] }, title: "Take the forty dollars back to Priya", blurb: "It has got heavier every day.", grow: { integrity: 1, courage: 1 }, scene: "priya_confess" },
 
     // Friends
     { id: "dev_ask", place: "cafe", slots: ["mon-eve"], with: ["dev"], title: "Meet Dev at Kindling", blurb: "His text just says: “Got a minute tonight? Need to ask you something.”", scene: "dev_ask" },
     { id: "breakfast", place: "cafe", slots: ["thu-day"], with: ["dev", "priya"], when: { all: ["did:question"] }, title: "Late breakfast with Dev", blurb: "He’s buying. Priya will have opinions.", bond: { dev: 1 }, scene: "cafe_talk" },
-    { id: "dev_move", place: "devs", slots: ["sat-day"], with: ["dev"], title: "Help Dev move", blurb: "Third floor, no lift, and the van is only free this morning.", energy: -2, bond: { dev: 1 }, scene: "dev_move" },
+    { id: "dev_move", game: "boxes", place: "devs", slots: ["sat-day"], with: ["dev"], title: "Help Dev move", blurb: "Third floor, no lift, and the van is only free this morning.", energy: -2, bond: { dev: 1 }, scene: "dev_move" },
     { id: "dev_door", place: "devs", slots: ["sun-eve"], with: ["dev"], when: { none: ["dev_good"] }, title: "Knock on Dev’s door", blurb: "You weren’t the friend he needed this week.", grow: { courage: 1 }, bond: { dev: 1 }, scene: "dev_door" },
 
     // {partner}
-    { id: "seed_morning", place: "garden", slots: ["mon-day"], with: ["partner"], title: "Help {partner} at the seed library", blurb: "{He} has forty envelopes to label and would love the company.", bond: { partner: 1 }, scene: "seed_morning" },
+    { id: "seed_morning", game: "seeds", place: "garden", slots: ["mon-day"], with: ["partner"], title: "Help {partner} at the seed library", blurb: "{He} has forty envelopes to label and would love the company.", bond: { partner: 1 }, scene: "seed_morning" },
     { id: "film", place: "garden", slots: ["thu-eve"], with: ["partner"], title: "Film night with {partner}", blurb: "{He} got two tickets. It’s the same night as Ruth’s.", money: -30, bond: { partner: 1 }, flags: ["drifted"], scene: "film_night" },
     { id: "text_exit", tempt: "ease", place: "home", slots: ["sat-eve"], when: { all: ["did:question"] }, title: "End it with {partner} by message", blurb: "Face to face would hurt too much.", flags: ["path_text"], scene: "text_exit" },
 
