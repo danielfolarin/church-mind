@@ -1,5 +1,5 @@
 {
-  "_readme": "Fish Audio voices for each speaker. Each id is the code at the end of the voice's page address on fish.audio (https://fish.audio/m/<id>). All of these are Fish Audio's own official voices. Change one, then run: npm run voices -- --redo=<speaker>",
+  "_readme": "Fish Audio voices for each speaker. Each id is the code at the end of the voice's page address on fish.audio (https://fish.audio/m/<id>). All of these are Fish Audio's own official voices. Change one, then run: npm run voices -- --redo=<speaker> Several characters in different worlds share a voice, the way one actor plays several parts.",
   "model": "s2.1-pro-free",
   "voices": {
     "narrator": "e3cd384158934cc9a01029cd7d278634",
@@ -11,7 +11,18 @@
     "dev": "f663fef9788d4ac0a6bfe36f1b3c871f",
     "priya": "c70cfb98867a4bfb9ae20d2401257b92",
     "daniel": "79d0bd3e4e5444b18f7b6d89b5927bf1",
-    "tolu": "1258154bb41540c7b9dc0d10cd6704bf"
+    "tolu": "1258154bb41540c7b9dc0d10cd6704bf",
+    "kai": "f663fef9788d4ac0a6bfe36f1b3c871f",
+    "mei": "f493c40876fc4d5ab28daf77efb0e686",
+    "okonkwo": "1258154bb41540c7b9dc0d10cd6704bf",
+    "grace": "c70cfb98867a4bfb9ae20d2401257b92",
+    "tobi": "8634617958764b539e0cdd5eb6c7723e",
+    "mum": "b347db033a6549378b48d00acb0d06cd",
+    "leila": "f493c40876fc4d5ab28daf77efb0e686",
+    "vic": "c70cfb98867a4bfb9ae20d2401257b92",
+    "femi": "79d0bd3e4e5444b18f7b6d89b5927bf1",
+    "owen": "f663fef9788d4ac0a6bfe36f1b3c871f",
+    "abi": "1258154bb41540c7b9dc0d10cd6704bf"
   },
   "_who": {
     "narrator": "Laura: warm, calm, confident female narrator",
@@ -23,6 +34,17 @@
     "dev": "Cody: upbeat young man",
     "priya": "Delia: confident woman",
     "daniel": "Jordan: older man, measured and assured, a speaker's voice",
-    "tolu": "Amara: Nigerian English woman, clear and confident"
+    "tolu": "Amara: Nigerian English woman, clear and confident",
+    "kai": "Cody (also Dev)",
+    "mei": "Jennifer (also Elena)",
+    "okonkwo": "Amara (also Pastor Tolu)",
+    "grace": "Delia (also Priya)",
+    "tobi": "Abel (also Marcus)",
+    "mum": "Selene (also Ruth)",
+    "leila": "Jennifer (also Elena)",
+    "vic": "Delia (also Priya)",
+    "femi": "Jordan (also Pastor Daniel)",
+    "owen": "Cody (also Dev)",
+    "abi": "Amara (also Pastor Tolu)"
   }
 }

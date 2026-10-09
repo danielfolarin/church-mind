@@ -17,6 +17,9 @@ const LIGHTING: Record<SettingId, string> = {
   room: "brightness(0.76) saturate(0.85)",
   river: "brightness(0.72) saturate(0.8)",
   hall: "brightness(0.96)",
+  office: "brightness(0.86) saturate(0.9)",
+  lecture: "brightness(0.9)",
+  library: "brightness(0.9) saturate(0.95)",
 };
 
 const BLINK_DELAYS = ["0s", "1.9s", "3.4s", "0.8s"];

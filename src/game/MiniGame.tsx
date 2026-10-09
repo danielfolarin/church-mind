@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { sound } from "./audio";
 import { Confetti } from "./Collection";
 import { fill, tokensFor } from "./engine";
@@ -11,7 +11,8 @@ import type { Lead, Look } from "./types";
 // They pay a few coins and never change how the story goes, and every one can
 // be skipped.
 
-export type MiniGameId = "coffee" | "seeds" | "boxes";
+export type MiniGameId = "coffee" | "seeds" | "boxes" | "books" | "inbox";
+type QuickId = Exclude<MiniGameId, "boxes">;
 
 interface Result {
   score: number;
@@ -33,7 +34,40 @@ const cup = (liquid: string, extra?: ReactNode) => (
   </svg>
 );
 
-const QUICK: Record<"coffee" | "seeds", { title: string; who: string; intro: string; ask: (label: string) => string; options: Option[]; quips: [string, string, string]; tiers: [number, number] }> = {
+const book = (cover: string, mark: ReactNode) => (
+  <svg viewBox="0 0 48 48" aria-hidden="true" className="h-12 w-12">
+    <rect x="10" y="7" width="28" height="34" rx="3" fill={cover} />
+    <rect x="10" y="7" width="5" height="34" rx="2" fill="#000" opacity="0.25" />
+    <rect x="14" y="36" width="24" height="5" rx="1" fill="#F4EBDD" />
+    {mark}
+  </svg>
+);
+
+const envelope = (paper: string, mark: ReactNode) => (
+  <svg viewBox="0 0 48 48" aria-hidden="true" className="h-12 w-12">
+    <rect x="6" y="12" width="36" height="25" rx="3" fill={paper} />
+    <path d="M7 14 L24 27 L41 14" fill="none" stroke="#14110F" strokeWidth="2.2" opacity="0.5" />
+    {mark}
+  </svg>
+);
+
+interface QuickGame {
+  title: string;
+  who: string;
+  intro: string;
+  /** What is shown when the thing to match is one of the options themselves. */
+  ask: (label: string) => string;
+  options: Option[];
+  /** Things to sort, when the game is about putting each one in the right place. */
+  prompts?: { text: string; id: string }[];
+  /** How long each one waits at first, in milliseconds. */
+  patience?: number;
+  done: string;
+  quips: [string, string, string];
+  tiers: [number, number];
+}
+
+const QUICK: Record<QuickId, QuickGame> = {
   coffee: {
     title: "The 9:15 rush",
     who: "Priya",
@@ -45,8 +79,73 @@ const QUICK: Record<"coffee" | "seeds", { title: string; who: string; intro: str
       { id: "choc", label: "Hot chocolate", icon: cup("#5A3324", <circle cx="20" cy="16.5" r="2.4" fill="#F4EBDD" />) },
       { id: "black", label: "Black coffee", icon: cup("#1E1512") },
     ],
+    done: "drinks served",
     quips: ["“We’ll call that a learning shift.”", "“Not bad. The queue only growled twice.”", "“Any faster and I’ll have to pay you more. Don’t.”"],
     tiers: [6, 12],
+  },
+  books: {
+    title: "The returns trolley",
+    who: "The head librarian",
+    intro: "The returns trolley is full and the reading room opens in a minute. Send each book back to the right shelf.",
+    ask: () => "Which shelf?",
+    patience: 3200,
+    options: [
+      { id: "science", label: "Science", icon: book("#2F6F73", <circle cx="26" cy="21" r="6" fill="none" stroke="#F4EBDD" strokeWidth="2.4" />) },
+      { id: "history", label: "History", icon: book("#8A4B32", <path d="M20 28 V16 h12 v12 M18 28 h16 M26 16 v12" stroke="#F4EBDD" strokeWidth="2.2" fill="none" />) },
+      { id: "stories", label: "Stories", icon: book("#6B3F5A", <path d="M26 15 l2 4.500 5 .500 -3.700 3.300 1.100 4.900 -4.400 -2.600 -4.400 2.600 1.100 -4.900 -3.700 -3.300 5 -.500z" fill="#F4EBDD" />) },
+    ],
+    prompts: [
+      { id: "science", text: "Statistics Without Tears" },
+      { id: "science", text: "Organic Chemistry II" },
+      { id: "science", text: "The Physics of Bridges" },
+      { id: "science", text: "Frogs of the World" },
+      { id: "science", text: "Volcanoes Explained" },
+      { id: "history", text: "The Roman Empire" },
+      { id: "history", text: "Medieval Kings and Queens" },
+      { id: "history", text: "A History of the Silk Road" },
+      { id: "history", text: "Ancient Egypt" },
+      { id: "history", text: "The Age of Steam" },
+      { id: "stories", text: "The Dragon Who Hated Mondays" },
+      { id: "stories", text: "Murder on the 7:42" },
+      { id: "stories", text: "A Robot Falls in Love" },
+      { id: "stories", text: "The Pirate’s Grandmother" },
+      { id: "stories", text: "Poems for Rainy Buses" },
+    ],
+    done: "books shelved",
+    quips: ["“We do have a system, dear. I’ll show you again.”", "“Tidy enough. The frogs are in History, but tidy.”", "“Quiet, quick and correct. You may stay for ever.”"],
+    tiers: [5, 10],
+  },
+  inbox: {
+    title: "Inbox, 8:58 a.m.",
+    who: "{partner}",
+    intro: "Forty-three unread before the first meeting. Answer what matters, park what can wait, and bin the rest.",
+    ask: () => "What do you do with it?",
+    patience: 3400,
+    options: [
+      { id: "reply", label: "Reply now", icon: envelope("#F4EBDD", <circle cx="38" cy="14" r="6" fill="#E8622C" />) },
+      { id: "later", label: "Later", icon: envelope("#D9CDB2", <path d="M24 30 v-6 l4 2" stroke="#14110F" strokeWidth="2" fill="none" opacity="0.6" />) },
+      { id: "bin", label: "Bin it", icon: envelope("#8F8C96", <path d="M17 19 l14 12 M31 19 l-14 12" stroke="#14110F" strokeWidth="2.6" opacity="0.6" />) },
+    ],
+    prompts: [
+      { id: "reply", text: "Client: “Can you call me before 10?”" },
+      { id: "reply", text: "Your manager: “Where is the deck??”" },
+      { id: "reply", text: "Reception: “Your 9:30 is here.”" },
+      { id: "reply", text: "A teammate: “The model’s broken. Help?”" },
+      { id: "reply", text: "Client: “One number on page 4 looks off.”" },
+      { id: "later", text: "Newsletter: “Q3 Thought Leadership”" },
+      { id: "later", text: "HR: “Wellbeing survey (optional)”" },
+      { id: "later", text: "Facilities: “Fridge clean-out on Friday”" },
+      { id: "later", text: "Invitation: “Synergy workshop, 3 hours”" },
+      { id: "later", text: "Social committee: “Quiz night ideas?”" },
+      { id: "bin", text: "“You have WON a luxury cruise!!!”" },
+      { id: "bin", text: "“A prince urgently needs your help”" },
+      { id: "bin", text: "“Cheap watches, best price, click now”" },
+      { id: "bin", text: "Reply-all: “Please remove me from this list”" },
+      { id: "bin", text: "Reply-all: “Me too, remove me as well”" },
+    ],
+    done: "emails dealt with",
+    quips: ["“You replied to the cruise one, didn’t you.”", "“Inbox twelve. I’ve seen worse. I’ve been worse.”", "“Inbox zero before nine? Who are you?”"],
+    tiers: [5, 10],
   },
   seeds: {
     title: "Beans from peas",
@@ -75,6 +174,7 @@ const QUICK: Record<"coffee" | "seeds", { title: string; who: string; intro: str
         ),
       },
     ],
+    done: "seeds sorted",
     quips: ["“Borlotti. Those were borlotti. I’m revoking your sorting privileges.”", "“Acceptable. The peas forgive you.”", "“All right, show-off. You can label the envelopes too.”"],
     tiers: [8, 16],
   },
@@ -92,35 +192,39 @@ const CUSTOMERS: Look[] = [
 ];
 
 const ROUND_SECONDS = 20;
-const patienceFor = (score: number) => Math.max(950, 2400 - score * 80);
+const patienceFor = (base: number, score: number) => Math.max(base * 0.4, base - score * 80);
 
 /** Something appears; tap what matches before the time runs out. */
-function QuickPick({ kind, lead, onEnd }: { kind: "coffee" | "seeds"; lead: Lead; onEnd: (score: number, run: number) => void }) {
+function QuickPick({ kind, lead, onEnd }: { kind: QuickId; lead: Lead; onEnd: (score: number, run: number) => void }) {
   const game = QUICK[kind];
-  const [target, setTarget] = useState(() => game.options[Math.floor(Math.random() * game.options.length)]);
+  const base = game.patience ?? 2400;
+  // What turns up: one of the options themselves, or something to be sorted into them.
+  const pool = useMemo<{ id: string; text?: string }[]>(() => game.prompts ?? game.options.map((option) => ({ id: option.id })), [game]);
+  const [target, setTarget] = useState(() => pool[Math.floor(Math.random() * pool.length)]);
+  const option = game.options.find((candidate) => candidate.id === target.id) ?? game.options[0];
   const [score, setScore] = useState(0);
   const [left, setLeft] = useState(ROUND_SECONDS);
   const [flash, setFlash] = useState<"good" | "bad" | null>(null);
   const [served, setServed] = useState(0);
   const [streak, setStreak] = useState(0);
-  const [patience, setPatience] = useState(2400);
+  const [patience, setPatience] = useState(base);
   const scoreRef = useRef(0);
   const streakRef = useRef(0);
   const bestRun = useRef(0);
-  const deadline = useRef(performance.now() + 2400);
+  const deadline = useRef(performance.now() + base);
   const ended = useRef(false);
 
   const next = useCallback(() => {
     setTarget((current) => {
-      const others = game.options.filter((option) => option.id !== current.id);
+      const others = pool.filter((candidate) => candidate !== current);
       // A fresh face most of the time, with the odd repeat to keep players honest.
-      return Math.random() < 0.2 ? current : others[Math.floor(Math.random() * others.length)];
+      return Math.random() < 0.2 && !game.prompts ? current : others[Math.floor(Math.random() * others.length)];
     });
-    const wait = patienceFor(scoreRef.current);
+    const wait = patienceFor(base, scoreRef.current);
     deadline.current = performance.now() + wait;
     setPatience(wait);
     setServed((count) => count + 1);
-  }, [game.options]);
+  }, [game.prompts, pool, base]);
 
   const answer = useCallback(
     (id: string | null) => {
@@ -199,29 +303,33 @@ function QuickPick({ kind, lead, onEnd }: { kind: "coffee" | "seeds"; lead: Lead
         {kind === "coffee" ? (
           <div className="flex items-center gap-5">
             <Portrait look={CUSTOMERS[served % CUSTOMERS.length]} mood={flash === "bad" ? "hurt" : "warm"} className="h-24 w-24" />
-            <span className="scale-[1.5]">{target.icon}</span>
+            <span className="scale-[1.5]">{option.icon}</span>
           </div>
+        ) : target.text ? (
+          <p className="max-w-sm text-center font-story text-2xl leading-snug text-cm-cream" data-answer={target.id}>
+            {target.text}
+          </p>
         ) : (
-          <span className="scale-[1.7]" data-seed={target.id}>
-            {target.icon}
+          <span className="scale-[1.7]" data-answer={target.id}>
+            {option.icon}
           </span>
         )}
-        <p className="mt-6 font-story text-2xl text-cm-cream">{fill(game.ask(target.label), tokensFor(lead))}</p>
+        <p className={`font-story text-cm-cream ${target.text ? "mt-3 text-base text-cm-sand" : "mt-6 text-2xl"}`}>{fill(game.ask(option.label), tokensFor(lead))}</p>
         <span className="mt-5 block h-1.5 w-40 overflow-hidden rounded-full bg-white/10 motion-reduce:hidden" aria-hidden="true">
           <span className="block h-full origin-left animate-cm-drain rounded-full bg-cm-ember" style={{ animationDuration: `${patience}ms` }} />
         </span>
       </div>
 
-      <div className={`mt-5 grid gap-3 ${game.options.length === 2 ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-4"}`}>
-        {game.options.map((option) => (
+      <div className={`mt-5 grid gap-3 ${game.options.length === 2 ? "grid-cols-2" : game.options.length === 3 ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-4"}`}>
+        {game.options.map((choice) => (
           <button
-            key={option.id}
+            key={choice.id}
             type="button"
-            onClick={() => answer(option.id)}
+            onClick={() => answer(choice.id)}
             className="flex min-h-24 flex-col items-center justify-center gap-1 rounded-2xl border border-white/15 bg-white/[0.05] px-3 py-3 text-sm font-semibold text-cm-cream transition active:scale-95 hover:border-cm-ember/70 hover:bg-white/[0.09]"
           >
-            {option.icon}
-            {option.label}
+            {choice.icon}
+            {choice.label}
           </button>
         ))}
       </div>
@@ -386,7 +494,7 @@ export function MiniGame({ id, lead, onDone }: { id: MiniGameId; lead: Lead; onD
         {phase === "result" && (
           <div className="animate-cm-rise">
             <p className="mt-6 font-story text-6xl text-cm-gold">{score}</p>
-            <p className="mt-1 text-sm uppercase tracking-[0.18em] text-cm-sand">{id === "boxes" ? "boxes stacked" : id === "coffee" ? "drinks served" : "seeds sorted"}</p>
+            <p className="mt-1 text-sm uppercase tracking-[0.18em] text-cm-sand">{id === "boxes" ? "boxes stacked" : QUICK[id].done}</p>
             <p className="mt-3 flex flex-wrap items-center gap-2 text-sm text-cm-sand">
               {best.fresh ? <span className="animate-cm-pop rounded-full bg-cm-gold px-3 py-0.5 text-xs font-bold uppercase tracking-wider text-cm-night">New best!</span> : <span>Your best: {best.best}</span>}
               {run >= 3 && <span>· Longest run: {run} in a row</span>}

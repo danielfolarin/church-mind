@@ -275,6 +275,33 @@ export function buildAmbience(ctx: BaseAudioContext, out: AudioNode, id: Ambienc
       noise("lowpass", 300, 0.5, 0.03, [0.05, 0.01]);
       break;
 
+    case "office":
+      // Air conditioning, and somebody typing two desks away.
+      pad([123.47, 185, 246.94, 329.63], 0.011);
+      noise("lowpass", 260, 0.5, 0.07, [0.04, 0.012]);
+      noise("bandpass", 2400, 1.2, 0.006, [0.3, 0.003]);
+      sometimes(0.5, 2.2, () => {
+        hush(ctx, out, { filter: "highpass", frequency: 3400 + Math.random() * 900, level: 0.012, attack: 0.002, decay: 0.025 });
+      });
+      break;
+
+    case "lecture":
+      // A big room full of people being quiet.
+      pad([130.81, 196, 293.66, 392], 0.014);
+      noise("bandpass", 380, 0.6, 0.05, [0.09, 0.02]);
+      sometimes(6, 15, () => {
+        hush(ctx, out, { filter: "bandpass", frequency: 900 + Math.random() * 500, level: 0.02, attack: 0.01, decay: 0.12 });
+      });
+      break;
+
+    case "library":
+      pad([146.83, 220, 277.18, 369.99], 0.016);
+      noise("lowpass", 200, 0.5, 0.03, [0.05, 0.01]);
+      sometimes(7, 18, () => {
+        hush(ctx, out, { filter: "highpass", frequency: 2600, level: 0.012, attack: 0.03, decay: 0.3 });
+      });
+      break;
+
     case "river":
       pad([164.81, 246.94, 293.66, 369.99], 0.015);
       noise("bandpass", 780, 0.5, 0.06, [0.19, 0.022]);

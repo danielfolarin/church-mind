@@ -30,8 +30,8 @@ const s = (scripture: Scripture, extra: Extra = {}): Beat => ({ type: "scripture
 const WEB = "World English Bible";
 
 // How each person is drawn. See `Look` in ../types.ts for the options.
-const NAOMI: Look = { manner: "graceful", build: { height: 0.98, shoulders: 92, hips: 86, limbs: 18 }, stance: "hip", legs: "#2B3A55", shoes: "#E8DCC8", slim: true, skin: "#8E5B3C", shade: "#774A30", hair: "#1D1412", hairStyle: "puff", top: "#2F6F73", topStyle: "collar", accent: "#E8DCC8", lip: "#5A2420", earrings: true };
-const CALEB: Look = { manner: "confident", build: { height: 1.04, shoulders: 114, hips: 88, limbs: 22 }, stance: "akimbo", legs: "#2A2F3A", shoes: "#D9D2C4", skin: "#7C4C30", shade: "#663C25", hair: "#17110F", hairStyle: "short", top: "#3F5A7A", topStyle: "hoodie", accent: "#C9D4E0", lip: "#4E211C" };
+export const NAOMI: Look = { manner: "graceful", build: { height: 0.98, shoulders: 92, hips: 86, limbs: 18 }, stance: "hip", legs: "#2B3A55", shoes: "#E8DCC8", slim: true, skin: "#8E5B3C", shade: "#774A30", hair: "#1D1412", hairStyle: "puff", top: "#2F6F73", topStyle: "collar", accent: "#E8DCC8", lip: "#5A2420", earrings: true };
+export const CALEB: Look = { manner: "confident", build: { height: 1.04, shoulders: 114, hips: 88, limbs: 22 }, stance: "akimbo", legs: "#2A2F3A", shoes: "#D9D2C4", skin: "#7C4C30", shade: "#663C25", hair: "#17110F", hairStyle: "short", top: "#3F5A7A", topStyle: "hoodie", accent: "#C9D4E0", lip: "#4E211C" };
 const MARCUS: Look = { manner: "easy", build: { height: 1.06, shoulders: 106, hips: 84, limbs: 20 }, stance: "pockets", legs: "#6B5A45", shoes: "#3A2A20", eyes: "#4E6A5A", skin: "#D2A27E", shade: "#B98964", hair: "#4A3122", hairStyle: "side", top: "#55704F", topStyle: "collar", accent: "#E8DCC8" };
 const ELENA: Look = { manner: "graceful", build: { height: 1, shoulders: 88, hips: 84, limbs: 17 }, stance: "relaxed", skirt: "#5A3A4A", shoes: "#3A2420", slim: true, eyes: "#5A4630", skin: "#DDB092", shade: "#C59676", hair: "#4B2C20", hairStyle: "wavy", top: "#A8553A", lip: "#8A3A32" };
 const RUTH: Look = { manner: "calm", build: { height: 0.93, shoulders: 92, hips: 92, limbs: 19 }, stance: "clasped", skirt: "#3F3345", longSkirt: true, shoes: "#2A2020", slim: true, skin: "#6F4631", shade: "#5B3827", hair: "#BDB7B0", hairStyle: "bun", top: "#6B3F5A", topStyle: "cardigan", accent: "#E8DCC8", lip: "#4A1F1C", glasses: true, earrings: true };
@@ -116,6 +116,30 @@ export const alderRowWeek: Story = {
   title: "A Week in Alder Row",
   subtitle: "Eight choices about where to be. Everything else follows.",
   minutes: 15,
+
+  world: {
+    name: "The Neighbourhood of Alder Row",
+    tagline: "Love, friendship and rent, on a street where everyone knows your name.",
+    themes: ["Relationships", "Friendship", "Money", "Forgiveness"],
+  },
+  map: { ground: "green", backdrop: "houses" },
+  dog: "Biscuit",
+  banter: [
+    "Lovely day for it.",
+    "Have you tried Priya’s scones? Don’t.",
+    "My tomatoes are winning this year.",
+    "Is it Thursday? It feels like a Thursday.",
+    "Mind the pothole on Main Street.",
+    "I’m walking off a second breakfast.",
+    "Tell Ruth her soup changed my life.",
+    "Lost my hat. Found my hat. Good day overall.",
+    "That dog knows things.",
+    "I waved at the wrong person for ten minutes.",
+    "Someone’s been at the seed library again. Suspicious peas.",
+    "Great Haven’s coffee is terrible. I’ve had three.",
+    "The footbridge creaks in B flat. I checked.",
+    "You look like someone with places to be.",
+  ],
 
   intro: {
     place: "Alder Row",

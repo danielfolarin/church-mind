@@ -1,6 +1,7 @@
 import { useRef, useState, type ReactNode, type RefObject } from "react";
 import { fill, strongestQuality, tokensFor, type GameState } from "./engine";
-import { buy, GAME_NAMES, loadProfile, SHOP, type WeekReward } from "./rewards";
+import { leadFor, type CustomCharacter } from "./Creator";
+import { buy, endingsFound, GAME_NAMES, loadProfile, SHOP, type WeekReward } from "./rewards";
 import { FullFigure } from "./Rig";
 import { shareWeekCard } from "./shareCard";
 import type { Ending, Keepsake, Lead, Story } from "./types";
@@ -94,7 +95,10 @@ export function WeekRewards({ story, lead, game, ending, reward }: { story: Stor
             {reward.coins} coins <span className="text-base text-cm-sand">· {reward.profile.coins} in your purse</span>
           </span>
         </p>
-        <p className="mt-1 text-sm leading-relaxed text-cm-sand">For living the week, for what grew in you, and for each new keepsake. Spend them in your Collection.</p>
+        <p className="mt-1 text-sm leading-relaxed text-cm-sand">
+          {reward.replay ? "You went back and chose differently, so this pays only for what is new: each new keepsake" : "For living the week, for what grew in you, and for each new keepsake"}
+          {reward.newEnding ? ", and ten more for finding an ending you hadn’t seen" : ""}. Spend them in your Collection.
+        </p>
 
         {reward.earned.length > 0 ? (
           <ul className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -106,7 +110,7 @@ export function WeekRewards({ story, lead, game, ending, reward }: { story: Stor
           <p className="mt-5 text-sm leading-relaxed text-cm-cream/75">No keepsakes this time. They come from showing up for people, and from going back to put things right.</p>
         )}
         <p className="mt-4 text-xs text-cm-sand">
-          {reward.profile.keepsakes.length} of {story.keepsakes.length} keepsakes collected.
+          {story.keepsakes.filter((keepsake) => reward.profile.keepsakes.includes(keepsake.id)).length} of {story.keepsakes.length} keepsakes collected in {story.intro.place}.
         </p>
 
         <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-cm-gold/15 pt-5">
@@ -133,11 +137,20 @@ export function WeekRewards({ story, lead, game, ending, reward }: { story: Stor
 }
 
 /** The player's keepsakes and the shop, reached from the title screen. */
-export function CollectionScreen({ story, lead, wordmark, headingRef, onBack }: { story: Story; lead: Lead; wordmark: ReactNode; headingRef: RefObject<HTMLHeadingElement>; onBack: () => void }) {
+export function CollectionScreen({
+  stories,
+  character,
+  wordmark,
+  headingRef,
+  onBack,
+}: {
+  stories: Story[];
+  character: CustomCharacter;
+  wordmark: ReactNode;
+  headingRef: RefObject<HTMLHeadingElement>;
+  onBack: () => void;
+}) {
   const [profile, setProfile] = useState(loadProfile);
-  const text = (raw: string) => fill(raw, tokensFor(lead));
-  const have = story.keepsakes.filter((keepsake) => profile.keepsakes.includes(keepsake.id));
-  const missing = story.keepsakes.length - have.length;
 
   return (
     <div className="min-h-screen bg-cm-night text-cm-cream">
@@ -169,20 +182,29 @@ export function CollectionScreen({ story, lead, wordmark, headingRef, onBack }: 
           </p>
         )}
 
-        <section className="mt-10">
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cm-sand">
-            Keepsakes · {have.length} of {story.keepsakes.length}
-          </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-cm-sand/85">Small things people gave you, or that mark a moment with them. A different week finds different ones.</p>
-          <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-            {have.map((keepsake) => (
-              <Token key={keepsake.id} keepsake={keepsake} text={text} />
-            ))}
-            {Array.from({ length: missing }, (_, index) => (
-              <Token key={index} keepsake={story.keepsakes[0]} text={text} dim />
-            ))}
-          </ul>
-        </section>
+        <p className="mt-8 max-w-2xl text-sm leading-relaxed text-cm-sand/85">Keepsakes are small things people gave you, or that mark a moment with them. A different week finds different ones.</p>
+
+        {stories.map((story) => {
+          const text = (raw: string) => fill(raw, tokensFor(leadFor(story, character)));
+          const have = story.keepsakes.filter((keepsake) => profile.keepsakes.includes(keepsake.id));
+          const missing = story.keepsakes.length - have.length;
+          return (
+            <section key={story.id} className="mt-8">
+              <h2 className="font-story text-2xl text-cm-cream">{story.world.name}</h2>
+              <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-cm-sand">
+                Keepsakes · {have.length} of {story.keepsakes.length} <span className="mx-1 text-cm-sand/50">·</span> Endings found · {endingsFound(story, profile).length} of {story.endings.length}
+              </p>
+              <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+                {have.map((keepsake) => (
+                  <Token key={keepsake.id} keepsake={keepsake} text={text} />
+                ))}
+                {Array.from({ length: missing }, (_, index) => (
+                  <Token key={index} keepsake={story.keepsakes[0]} text={text} dim />
+                ))}
+              </ul>
+            </section>
+          );
+        })}
 
         <section className="mt-12">
           <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cm-sand">Shop</h2>

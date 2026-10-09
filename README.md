@@ -2,14 +2,28 @@
 
 *See life through the way of Jesus.*
 
-Church Mind is a Christian formation game set in a living neighbourhood where
+Church Mind is a Christian formation game set in living communities where
 Christians and non-Christians share ordinary life. It is its own app and does
 not depend on any other project.
 
-## How it plays
+## How it starts
 
-The first story is **A Week in Alder Row**. You live four days, each with a
-morning and an evening: eight turns in all.
+1. **Choose who you are.** Six ready-made characters, or make your own: name,
+   skin, hair, clothes, frame, stance and voice. The character is chosen once
+   and goes into every world (`src/game/Creator.tsx`).
+2. **Choose a world.** Each is a different part of life, lived one at a time:
+   - **The Neighbourhood of Alder Row:** relationships, friendship, rent.
+   - **Wrenfield University:** a first-year far from home, a scholarship, and
+     a leaked exam paper.
+   - **The Offices of Halden Pryce:** a pitch the team needs to win, and a
+     director who wants the honest eleven percent to say eighteen.
+3. **Live the week.** Four days, each with a morning and an evening: eight
+   turns in all.
+4. **You determine the end.** Every world has five endings. The ending screen
+   shows which you have found, and lets you go back to the start of any
+   morning or evening and choose differently.
+
+## How it plays
 
 - **A living town, not a quiz.** Each turn opens on the town: houses, streets,
   a river, neighbours out walking. Whoever is waiting for you stands outside
@@ -28,11 +42,9 @@ morning and an evening: eight turns in all.
   (an over-full till, a cruel customer), money (rent), conflict and
   forgiveness (a debt, an avoided conversation), and faith (prayer, the
   Thursday table, a colleague who asks what you believe).
-- **Your own character.** Players can pick Naomi or Caleb, or make their own:
-  a name, skin, hair, clothes, extras and stance. The character is saved on
-  their device and appears on the map and in every scene. They take the story
-  place of one of the leads, so the recorded voices still work; for that
-  reason spoken lines never include the player's name.
+- **Your own character.** Whoever the player chose appears on the map and in
+  every scene. Each character uses one of two recorded player voices, so
+  spoken lines never include the player's name.
 - **Scripture in context.** Passages arrive where they belong: in a mentor's
   kitchen, in the Sunday reading, on a walk by the river. Each comes with a
   short explanation, and none is used as a punishment.
@@ -130,9 +142,11 @@ Not everything in the week is a decision. Some of it is only there to enjoy.
   The coffee rush has customers with faces and a patience bar; both matching
   games call out a run of right answers. Each player's best score is kept on
   their device and shown in the Collection.
-- **The town answers back.** Tap a neighbour and they say something (the
-  `BANTER` list in `src/game/Town.tsx`). Tap Biscuit the dog for a woof and,
-  once per part of the day, a coin.
+  The library desk at Wrenfield has a book-shelving game and Monday at
+  Halden Pryce has an inbox to triage (`game: "books"` and `game: "inbox"`).
+- **The town answers back.** Tap someone out walking and they say something
+  (each story's `banter` list). Every world has a dog (`dog` in the story
+  file) to tap for a woof and, once per part of the day, a coin.
 - **Confetti** falls when a week ends and on a top score in a quick game.
 
 ## Installing and playing offline
@@ -144,15 +158,29 @@ Church Mind can be downloaded without an app store. On the title screen,
   screen like an app. Android and desktop Chrome or Edge show an Install
   button; on iPhone and iPad it is Share, then "Add to Home Screen" in Safari.
 - **Play without internet.** Saves the whole game, voices included (about
-  25 MB), so it works with no connection.
+  60 MB), so it works with no connection.
 
 `public/manifest.webmanifest` describes the app, `public/sw.js` serves saved
 files when offline, and `src/game/offline.ts` handles installing and saving.
 
-## Edit the story
+## Edit a story, or add a world
 
-Everything a player reads is in `src/game/stories/alderRowWeek.ts`. From top
-to bottom it holds:
+Everything a player reads is in `src/game/stories/`, one file per world:
+`alderRowWeek.ts`, `wrenfieldWeek.ts` and `haldenPryceWeek.ts`. They are listed
+in `index.ts`, which is the order the worlds are offered in. To add a world,
+copy one of the newer files, change its `id`, and add it to that list.
+`kit.ts` holds what every world shares, including the rules of the house:
+Scripture in context and never as punishment, a way back from every wrong
+turn, and nobody written as a villain.
+
+Each story has a `world` card (name, one-line pitch, themes), a `map` style
+(`ground`: green or paved; `backdrop`: houses, halls or towers; `mirror` to
+flip the scenery), and `leads` built with `leadsWith(...)`, which names the
+person at the centre of that world's story. Scenes can be set in a garden,
+café, kitchen, room, riverside, hall, office, lecture theatre or library.
+Keepsake ids must be different in every world.
+
+From top to bottom a story file holds:
 
 - **People:** how each one looks, stands, moves and sounds, plus the short
   `traits` shown beside their full-body figure on the cast screen. Full
@@ -188,14 +216,14 @@ story for broken links and prints any problems in the browser console.
 src/App.tsx                 title, introduction, scene and summary screens
 src/game/MapScreen.tsx      the town screen and the list of things to do
 src/game/Town.tsx           the town artwork, streets, and the walking figures
-src/game/stories/           story content, one file per story
+src/game/stories/           the worlds, one file each, plus kit.ts (shared rules and helpers)
 src/game/types.ts           the shape a story must follow
 src/game/engine.ts          time, money, energy, closeness, branching, checks
 src/game/ui.tsx             dialogue, Scripture panel, growth, week tracker
 src/game/SceneArt.tsx       scene and map illustrations, drawn in code
 src/game/Figure.tsx         the characters' heads: faces, hair, expressions
 src/game/Rig.tsx            full-body characters on a skeleton: poses and movement
-src/game/Creator.tsx        the make-your-own-character screen
+src/game/Creator.tsx        ready-made characters and the make-your-own screen
 src/game/MiniGame.tsx       the quick games: coffee rush, seed sorting, box stacking
 src/game/rewards.ts         coins, keepsakes and the shop: what is earned and kept
 src/game/save.ts            the week in progress, saved so it can be continued later

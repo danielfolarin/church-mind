@@ -196,24 +196,6 @@ const STROLLER_LOOKS: Look[] = [
   { skin: "#8E5B3C", shade: "", hair: "#201512", hairStyle: "short", top: "#4E9A78" },
 ];
 
-// What the neighbours say if you stop them for a chat.
-const BANTER = [
-  "Lovely day for it.",
-  "Have you tried Priya’s scones? Don’t.",
-  "My tomatoes are winning this year.",
-  "Is it Thursday? It feels like a Thursday.",
-  "Mind the pothole on Main Street.",
-  "I’m walking off a second breakfast.",
-  "Tell Ruth her soup changed my life.",
-  "Lost my hat. Found my hat. Good day overall.",
-  "That dog knows things.",
-  "I waved at the wrong person for ten minutes.",
-  "Someone’s been at the seed library again. Suspicious peas.",
-  "Great Haven’s coffee is terrible. I’ve had three.",
-  "The footbridge creaks in B flat. I checked.",
-  "You look like someone with places to be.",
-];
-
 function Bubble({ children }: { children: ReactNode }) {
   return (
     <span className="pointer-events-none absolute bottom-[104%] left-1/2 z-20 w-max max-w-[11rem] -translate-x-1/2 animate-cm-pop rounded-2xl bg-cm-cream px-2.5 py-1 text-center text-[10px] font-semibold leading-tight text-cm-night shadow-lg sm:text-[11px]">
@@ -222,7 +204,7 @@ function Bubble({ children }: { children: ReactNode }) {
   );
 }
 
-/** Biscuit, who wanders the streets and likes being fussed over. */
+/** The dog who wanders the streets and likes being fussed over. */
 function Dog({ story, onPet }: { story: Story; onPet: () => boolean }) {
   const ids = useMemo(() => Object.keys(story.roads.junctions), [story]);
   const [leg, setLeg] = useState<{ from: string; path: Point[] | null }>(() => ({ from: ids[3 % ids.length], path: null }));
@@ -255,7 +237,7 @@ function Dog({ story, onPet }: { story: Story; onPet: () => boolean }) {
       onTap={pet}
       className="z-[5] h-[5%] w-[5.4%]"
       sprite={(walking, facingLeft) => (
-        <svg viewBox="0 0 40 28" role="img" aria-label="Biscuit the dog" className="block h-full w-full overflow-visible" style={{ transform: facingLeft ? "scaleX(-1)" : undefined }}>
+        <svg viewBox="0 0 40 28" role="img" aria-label={`${story.dog} the dog`} className="block h-full w-full overflow-visible" style={{ transform: facingLeft ? "scaleX(-1)" : undefined }}>
           <ellipse cx="20" cy="26.4" rx="13" ry="1.8" fill="#000" opacity="0.25" />
           <g className="animate-cm-wag" style={{ transformBox: "fill-box", transformOrigin: "100% 100%" }}>
             <path d="M8 13 Q3 9 4 4" fill="none" stroke="#B5763C" strokeWidth="2.6" strokeLinecap="round" />
@@ -290,7 +272,7 @@ function Stroller({ story, index }: { story: Story; index: number }) {
   const [leg, setLeg] = useState<{ from: string; path: Point[] | null }>(() => ({ from: ids[(index * 5 + 2) % ids.length], path: null }));
   const [says, setSays] = useState<string | null>(null);
   const chat = () => {
-    setSays(BANTER[Math.floor(Math.random() * BANTER.length)]);
+    setSays(story.banter[Math.floor(Math.random() * story.banter.length)]);
     window.setTimeout(() => setSays(null), 2600);
   };
 
@@ -354,6 +336,10 @@ interface Ink {
 const DAY: Ink = { grass: "#7FA05E", meadow: "#6F9152", road: "#E6D7B5", kerb: "#C9B58B", dash: "#FBF4DE", path: "#D8C8A2", river: "#5FA8CC", shine: "#C6E8F5", leaf: "#4E8447", leafDark: "#3C6C3A", glass: "#BFD9E8", shade: 0 };
 const DUSK: Ink = { grass: "#2B3D38", meadow: "#243430", road: "#5C5770", kerb: "#48445C", dash: "#9690AD", path: "#4E4A62", river: "#253D68", shine: "#6C8FC8", leaf: "#1F4034", leafDark: "#18332A", glass: "#F6C67E", shade: 0.38 };
 
+// A city centre: paving and planters instead of grass and meadow.
+const PAVED_DAY: Ink = { ...DAY, grass: "#CFC8BA", meadow: "#BDB5A6", road: "#8F8C96", kerb: "#77747F", dash: "#E9E4D8", path: "#B3AB9C" };
+const PAVED_DUSK: Ink = { ...DUSK, grass: "#2C2B38", meadow: "#252430", road: "#4A475C", kerb: "#3B394B", dash: "#8A85A3", path: "#3E3C4E" };
+
 const EASE = { transition: "fill 1.2s ease, stroke 1.2s ease" };
 
 function Tree({ x, y, r = 15, ink, sway }: { x: number; y: number; r?: number; ink: Ink; sway: number }) {
@@ -393,6 +379,33 @@ function House({ x, y, build, ink, children }: { x: number; y: number; build: Bu
         <rect key={wx} x={wx} y={top + h * 0.28} width="10" height="10" rx="1.5" fill={ink.glass} style={EASE} />
       ))}
       {children}
+    </g>
+  );
+}
+
+/** An office block in the background of a city. */
+function Tower({ x, y, w, h, wall, ink, evening, seed }: { x: number; y: number; w: number; h: number; wall: string; ink: Ink; evening: boolean; seed: number }) {
+  const cols = Math.max(2, Math.floor(w / 13));
+  const rows = Math.max(3, Math.floor(h / 15));
+  return (
+    <g>
+      <ellipse cx={x + 6} cy={y + 2} rx={w * 0.66} ry={6} fill="#000" opacity="0.2" />
+      <rect x={x - w / 2} y={y - h} width={w} height={h} rx="2" fill={wall} />
+      <rect x={x - w / 2} y={y - h} width={w} height={h} rx="2" fill="#141126" opacity={ink.shade} style={{ transition: "opacity 1.2s ease" }} />
+      {Array.from({ length: rows }, (_, row) =>
+        Array.from({ length: cols }, (_, col) => (
+          <rect
+            key={`${row}-${col}`}
+            x={x - w / 2 + 5 + col * ((w - 10) / cols)}
+            y={y - h + 6 + row * ((h - 14) / rows)}
+            width={(w - 10) / cols - 3}
+            height={(h - 14) / rows - 4}
+            rx="1"
+            fill={evening && (row * 3 + col + seed) % 3 === 0 ? "#FFD58E" : ink.glass}
+            style={EASE}
+          />
+        ))
+      )}
     </g>
   );
 }
@@ -467,6 +480,58 @@ function PlaceArt({ icon, x, y, ink, evening }: { icon: PlaceIcon; x: number; y:
       );
     case "home":
       return <House x={x} y={y} ink={ink} build={{ w: 54, h: 36, rise: 24, wall: "#DCE4E1", roof: "#3F6F78" }} />;
+    case "tower":
+      return (
+        <g>
+          <ellipse cx={x + 8} cy={y + 2} rx="44" ry="8" fill="#000" opacity="0.22" />
+          <rect x={x - 30} y={y - 128} width="60" height="128" rx="3" fill="#7F9DB5" />
+          <rect x={x - 30} y={y - 128} width="60" height="128" rx="3" fill="#141126" opacity={ink.shade} />
+          <rect x={x - 34} y={y - 134} width="68" height="9" rx="2" fill="#3F566B" />
+          {[0, 1, 2, 3, 4].flatMap((row) =>
+            [0, 1, 2].map((col) => (
+              <rect key={`${row}-${col}`} x={x - 23 + col * 17} y={y - 118 + row * 20} width="12" height="14" rx="1.5" fill={evening && (row * 2 + col) % 3 !== 1 ? "#FFD58E" : ink.glass} style={EASE} />
+            ))
+          )}
+          <rect x={x - 12} y={y - 18} width="24" height="18" rx="2" fill="#22303C" />
+          <rect x={x - 1} y={y - 18} width="2" height="18" fill="#7F9DB5" />
+          <rect x={x - 40} y={y - 4} width="80" height="4" rx="1" fill="#3F566B" />
+        </g>
+      );
+    case "hall":
+      return (
+        <g>
+          <ellipse cx={x + 6} cy={y + 2} rx="52" ry="7" fill="#000" opacity="0.2" />
+          <rect x={x - 42} y={y - 52} width="84" height="52" fill="#E4D8BE" />
+          <rect x={x - 42} y={y - 52} width="84" height="52" fill="#141126" opacity={ink.shade} />
+          <path d={`M${x - 48} ${y - 51} L${x} ${y - 82} L${x + 48} ${y - 51}Z`} fill="#CFC0A0" />
+          <path d={`M${x - 48} ${y - 51} L${x} ${y - 82} L${x + 48} ${y - 51}Z`} fill="#141126" opacity={ink.shade * 0.8} />
+          <circle cx={x} cy={y - 62} r="6" fill={evening ? "#FFD58E" : ink.glass} style={EASE} />
+          {[-33, -17, 17, 33].map((dx) => (
+            <rect key={dx} x={x + dx - 3.5} y={y - 50} width="7" height="46" rx="2" fill="#F4EBDD" />
+          ))}
+          <rect x={x - 8} y={y - 26} width="16" height="26" rx="1.5" fill="#3A2A22" />
+          <rect x={x - 46} y={y - 5} width="92" height="5" rx="1" fill="#BCAE90" />
+          {[-25, 25].map((dx) => (
+            <rect key={dx} x={x + dx - 5} y={y - 40} width="10" height="14" rx="1.5" fill={evening ? "#FFD58E" : ink.glass} style={EASE} />
+          ))}
+        </g>
+      );
+    case "green":
+      return (
+        <g>
+          <ellipse cx={x} cy={y - 8} rx="66" ry="36" fill={evening ? "#2F4A3A" : "#8DB868"} style={EASE} />
+          <ellipse cx={x} cy={y - 8} rx="66" ry="36" fill="none" stroke={ink.path} strokeWidth="5" style={EASE} />
+          <circle cx={x} cy={y - 10} r="9" fill={ink.river} style={EASE} />
+          <circle cx={x} cy={y - 10} r="9" fill="none" stroke="#D9D2C4" strokeWidth="3" />
+          <circle cx={x} cy={y - 10} r="2.5" fill="#D9D2C4" />
+          {[-38, 34].map((dx) => (
+            <g key={dx}>
+              <rect x={x + dx - 11} y={y + 2} width="22" height="5" rx="2" fill="#8A6A48" />
+              <path d={`M${x + dx - 9} ${y + 7} v6 M${x + dx + 9} ${y + 7} v6`} stroke="#6B4630" strokeWidth="2.5" />
+            </g>
+          ))}
+        </g>
+      );
     case "leaf":
       return (
         <g>
@@ -494,7 +559,12 @@ function PlaceArt({ icon, x, y, ink, evening }: { icon: PlaceIcon; x: number; y:
 }
 
 export function TownArt({ story, evening, className = "" }: { story: Story; evening: boolean; className?: string }) {
-  const ink = evening ? DUSK : DAY;
+  const { ground, backdrop, mirror } = story.map;
+  const ink = ground === "paved" ? (evening ? PAVED_DUSK : PAVED_DAY) : evening ? DUSK : DAY;
+  // Scenery is laid out once and flipped for worlds that ask for it.
+  const fx = (x: number) => (mirror ? 100 - x : x);
+  const flip = mirror ? `translate(${W} 0) scale(-1 1)` : undefined;
+  const trees = ground === "paved" ? TREES.filter((_, index) => index % 2 === 0) : TREES;
   const { junctions, streets } = story.roads;
   const line = (a: Point, b: Point) => `M${px(a[0])} ${py(a[1])} L${px(b[0])} ${py(b[1])}`;
   const roadPath = streets.map(([a, b]) => line(junctions[a], junctions[b])).join(" ");
@@ -507,16 +577,18 @@ export function TownArt({ story, evening, className = "" }: { story: Story; even
   return (
     <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true" className={`block h-full w-full ${className}`}>
       <rect width={W} height={H} fill={ink.grass} style={EASE} />
-      <g fill={ink.meadow} style={EASE}>
-        <ellipse cx="120" cy="150" rx="150" ry="70" />
-        <ellipse cx="640" cy="330" rx="170" ry="60" />
-        <ellipse cx="330" cy="520" rx="190" ry="60" />
-      </g>
+      <g transform={flip}>
+        <g fill={ink.meadow} style={EASE}>
+          <ellipse cx="120" cy="150" rx="150" ry="70" />
+          <ellipse cx="640" cy="330" rx="170" ry="60" />
+          <ellipse cx="330" cy="520" rx="190" ry="60" />
+        </g>
 
-      <path d="M250 600 C380 536 520 566 800 440 V540 C600 600 460 596 400 600Z" fill={ink.river} style={EASE} />
-      <g fill="none" stroke={ink.shine} strokeWidth="3" strokeLinecap="round" strokeDasharray="22 38" className="animate-cm-flow" opacity="0.7">
-        <path d="M300 596 C420 548 540 568 790 468" />
-        <path d="M360 600 C470 572 580 578 800 500" style={{ animationDelay: "-3s" }} />
+        <path d="M250 600 C380 536 520 566 800 440 V540 C600 600 460 596 400 600Z" fill={ink.river} style={EASE} />
+        <g fill="none" stroke={ink.shine} strokeWidth="3" strokeLinecap="round" strokeDasharray="22 38" className="animate-cm-flow" opacity="0.7">
+          <path d="M300 596 C420 548 540 568 790 468" />
+          <path d="M360 600 C470 572 580 578 800 500" style={{ animationDelay: "-3s" }} />
+        </g>
       </g>
 
       <path d={footpaths} fill="none" stroke={ink.path} strokeWidth="10" strokeLinecap="round" style={EASE} />
@@ -526,21 +598,27 @@ export function TownArt({ story, evening, className = "" }: { story: Story; even
 
       {/* The footbridge where the east road crosses the river */}
       <g>
-        <path d={`M${px(65.2)} ${py(88)} L${px(62.6)} ${py(98)}`} stroke="#8A6A48" strokeWidth="30" strokeLinecap="butt" />
-        <path d={`M${px(65.2)} ${py(88)} L${px(62.6)} ${py(98)}`} stroke="#B58E62" strokeWidth="22" strokeDasharray="5 3" />
+        <path d={`M${px(fx(65.2))} ${py(88)} L${px(fx(62.6))} ${py(98)}`} stroke="#8A6A48" strokeWidth="30" strokeLinecap="butt" />
+        <path d={`M${px(fx(65.2))} ${py(88)} L${px(fx(62.6))} ${py(98)}`} stroke="#B58E62" strokeWidth="22" strokeDasharray="5 3" />
       </g>
 
-      {TREES.filter(([, y]) => y < 40).map(([x, y, r], i) => (
-        <Tree key={`t${i}`} x={px(x)} y={py(y)} r={r} ink={ink} sway={i * 0.7} />
+      {trees.filter(([, y]) => y < 40).map(([x, y, r], i) => (
+        <Tree key={`t${i}`} x={px(fx(x))} y={py(y)} r={r} ink={ink} sway={i * 0.7} />
       ))}
-      {BACKDROP.map(([x, y, wall, roof]) => (
-        <House key={`${x}-${y}`} x={px(x)} y={py(y)} ink={ink} build={{ w: 44, h: 30, rise: 20, wall, roof }} />
-      ))}
+      {BACKDROP.map(([x, y, wall, roof], i) =>
+        backdrop === "towers" ? (
+          <Tower key={`${x}-${y}`} x={px(fx(x))} y={py(y)} w={36 + (i % 3) * 8} h={Math.min(py(y) - 6, 52 + ((i * 37) % 44))} wall={["#9AA7B5", "#B4AFA6", "#8C99A8", "#A9A3B5"][i % 4]} ink={ink} evening={evening} seed={i} />
+        ) : backdrop === "halls" ? (
+          <House key={`${x}-${y}`} x={px(fx(x))} y={py(y)} ink={ink} build={{ w: 56, h: 34, rise: 16, wall: i % 2 ? "#D9CDB2" : "#C9B99A", roof: i % 3 ? "#6E7480" : "#8A5A44" }} />
+        ) : (
+          <House key={`${x}-${y}`} x={px(fx(x))} y={py(y)} ink={ink} build={{ w: 44, h: 30, rise: 20, wall, roof }} />
+        )
+      )}
       {places.map(([id, place]) => (
         <PlaceArt key={id} icon={place.icon} x={px(place.x)} y={py(place.y)} ink={ink} evening={evening} />
       ))}
-      {TREES.filter(([, y]) => y >= 40).map(([x, y, r], i) => (
-        <Tree key={`f${i}`} x={px(x)} y={py(y)} r={r} ink={ink} sway={i * 0.9} />
+      {trees.filter(([, y]) => y >= 40).map(([x, y, r], i) => (
+        <Tree key={`f${i}`} x={px(fx(x))} y={py(y)} r={r} ink={ink} sway={i * 0.9} />
       ))}
 
       {evening && (

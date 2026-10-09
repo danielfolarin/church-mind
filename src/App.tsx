@@ -16,14 +16,15 @@ import {
 } from "./game/engine";
 import { MapScreen } from "./game/MapScreen";
 import { sound } from "./game/audio";
-import { CharacterCreator, customLead, loadCharacter, saveCharacter, type CustomCharacter } from "./game/Creator";
+import { CharacterCreator, leadFor, loadCharacter, loadChoice, PRESETS, saveCharacter, saveChoice, type CustomCharacter } from "./game/Creator";
 import { Coin, CollectionScreen, Confetti, WeekRewards } from "./game/Collection";
 import { DownloadPanel } from "./game/Download";
 import { MiniGame } from "./game/MiniGame";
-import { addCoins, loadProfile, rewardWeek, type WeekReward } from "./game/rewards";
+import { addCoins, endingsFound, loadProfile, rewardWeek, type WeekReward } from "./game/rewards";
 import { FullFigure } from "./game/Rig";
 import { clearWeek, loadWeek, saveWeek, type SavedWeek } from "./game/save";
 import { SceneArt, TitleArt } from "./game/SceneArt";
+import { TownArt } from "./game/Town";
 import { Stage, type StagePerson } from "./game/Stage";
 import { STORIES } from "./game/stories";
 import { QUALITY_IDS, type Beat, type Lead, type Mood, type Story, type StoryNode, type Opportunity } from "./game/types";
@@ -49,8 +50,6 @@ const HUB_LINK =
     ? "../"
     : null;
 
-const story = STORIES[0];
-
 if (import.meta.env.DEV) {
   for (const candidate of STORIES) {
     const problems = validateStory(candidate);
@@ -58,17 +57,25 @@ if (import.meta.env.DEV) {
   }
 }
 
-type Screen = "title" | "intro" | "play" | "collection";
+type Screen = "title" | "character" | "worlds" | "intro" | "play" | "collection";
 
 function joinNames(names: string[]) {
   if (names.length < 2) return names.join("");
   return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
 }
 
+/** The character the player last chose, ready-made or their own. */
+function chosenCharacter(): CustomCharacter {
+  const choice = loadChoice();
+  return choice === "custom" ? loadCharacter() : (PRESETS.find((preset) => preset.id === choice) ?? PRESETS[0]);
+}
+
 export default function App() {
   const [screen, setScreen] = useState<Screen>("title");
-  const [lead, setLead] = useState<Lead>(story.leads[0]);
-  const [game, setGame] = useState<GameState>(() => startWeek(story));
+  const [character, setCharacter] = useState<CustomCharacter>(chosenCharacter);
+  const [story, setStory] = useState<Story>(STORIES[0]);
+  const [lead, setLead] = useState<Lead>(() => leadFor(STORIES[0], chosenCharacter()));
+  const [game, setGame] = useState<GameState>(() => startWeek(STORIES[0]));
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   // Sound and voices always start off; browsers only allow audio after a click anyway.
@@ -122,54 +129,97 @@ export default function App() {
   // A quick game on the way in to some activities.
   const [mini, setMini] = useState<Opportunity | null>(null);
 
+  // How things stood at the start of each morning and evening, so the player
+  // can go back from the ending and choose differently.
+  const [trail, setTrail] = useState<GameState[]>([]);
+  const [rewound, setRewound] = useState(false);
+  useEffect(() => {
+    if (screen === "play" && game.phase !== "summary" && trail.length === game.slot) setTrail([...trail, game]);
+  }, [screen, game, trail]);
+
   // A finished week pays out once: coins and keepsakes, kept for next time.
   const [reward, setReward] = useState<WeekReward | null>(null);
   const rewarded = useRef<GameState | null>(null);
   useEffect(() => {
     if (screen !== "play" || game.phase !== "summary" || rewarded.current === game) return;
     rewarded.current = game;
-    setReward(rewardWeek(story, game));
-  }, [screen, game]);
+    setReward(rewardWeek(story, game, endingFor(story, game), rewound));
+  }, [screen, game, story, rewound]);
 
   // The week is saved after every step, so it can be picked up later.
   useEffect(() => {
     if (screen !== "play") return;
     if (game.phase === "summary") clearWeek();
-    else saveWeek(story, lead, game);
-  }, [screen, lead, game]);
+    else saveWeek(story, lead, game, trail);
+  }, [screen, story, lead, game, trail]);
 
-  function begin(chosen: Lead) {
-    setLead(chosen);
+  function begin() {
+    setLead(leadFor(story, character));
     setGame(startWeek(story));
-    setScreen("play");
-  }
-
-  function resume(saved: SavedWeek) {
-    setLead(saved.lead);
-    setGame(saved.game);
+    setTrail([]);
+    setRewound(false);
     setMini(null);
     setScreen("play");
   }
 
+  function resume(saved: SavedWeek) {
+    setStory(saved.story);
+    setLead(saved.lead);
+    setGame(saved.game);
+    setTrail(saved.trail);
+    setRewound(false);
+    setMini(null);
+    setScreen("play");
+  }
+
+  /** From the ending: back to the start of an earlier morning or evening. */
+  function rewind(slot: number) {
+    if (!trail[slot]) return;
+    setGame(trail[slot]);
+    setTrail(trail.slice(0, slot + 1));
+    setRewound(true);
+    setMini(null);
+  }
+
   if (screen === "title") {
-    return <TitleScreen story={story} audio={audio} headingRef={headingRef} onBegin={() => setScreen("intro")} onContinue={resume} onCollection={() => setScreen("collection")} />;
+    return <TitleScreen audio={audio} headingRef={headingRef} onBegin={() => setScreen("character")} onContinue={resume} onCollection={() => setScreen("collection")} />;
   }
 
   if (screen === "collection") {
-    return <CollectionScreen story={story} lead={lead} wordmark={<Wordmark />} headingRef={headingRef} onBack={() => setScreen("title")} />;
+    return <CollectionScreen stories={STORIES} character={character} wordmark={<Wordmark />} headingRef={headingRef} onBack={() => setScreen("title")} />;
   }
 
-  if (screen === "intro") {
+  if (screen === "character") {
     return (
-      <IntroScreen
-        story={story}
-        initialLead={lead}
+      <CharacterScreen
         audio={audio}
         headingRef={headingRef}
         onBack={() => setScreen("title")}
-        onStart={begin}
+        onDone={(chosen) => {
+          setCharacter(chosen);
+          setScreen("worlds");
+        }}
       />
     );
+  }
+
+  if (screen === "worlds") {
+    return (
+      <WorldsScreen
+        character={character}
+        audio={audio}
+        headingRef={headingRef}
+        onBack={() => setScreen("character")}
+        onChoose={(chosen) => {
+          setStory(chosen);
+          setScreen("intro");
+        }}
+      />
+    );
+  }
+
+  if (screen === "intro") {
+    return <IntroScreen story={story} lead={leadFor(story, character)} audio={audio} headingRef={headingRef} onBack={() => setScreen("worlds")} onStart={begin} />;
   }
 
   const exit = () => setScreen("title");
@@ -181,9 +231,12 @@ export default function App() {
         lead={lead}
         game={game}
         reward={reward}
+        trail={trail}
         audio={audio}
         headingRef={headingRef}
+        onRewind={rewind}
         onReplay={() => setScreen("intro")}
+        onWorlds={() => setScreen("worlds")}
         onTitle={exit}
       />
     );
@@ -276,14 +329,12 @@ function QuietAction({ children, onClick }: { children: ReactNode; onClick: () =
 }
 
 function TitleScreen({
-  story,
   audio,
   headingRef,
   onBegin,
   onContinue,
   onCollection,
 }: {
-  story: Story;
   audio: SoundSettings;
   headingRef: HeadingRef;
   onBegin: () => void;
@@ -291,7 +342,8 @@ function TitleScreen({
   onCollection: () => void;
 }) {
   const profile = loadProfile();
-  const saved = loadWeek(story);
+  const saved = loadWeek(STORIES);
+  const keepsakeCount = STORIES.reduce((sum, story) => sum + story.keepsakes.length, 0);
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden bg-cm-night text-cm-cream">
       <div className="absolute inset-0 animate-cm-fade">
@@ -324,8 +376,9 @@ function TitleScreen({
           See life through the way of Jesus.
         </p>
         <p {...stagger(5, "mt-6 max-w-xl text-base leading-relaxed text-cm-cream/75")}>
-          Live one week in an ordinary neighbourhood. Decide where to be, who to show up for, and what to do with your
-          time, money and energy. Every choice has consequences. None of them is beyond grace.
+          Choose who you are, then choose a world: a neighbourhood, a university, an office. Live one week there. Decide
+          where to be, who to show up for, and what to do with your time, money and energy. You determine how it ends.
+          No ending is beyond grace.
         </p>
 
         {saved ? (
@@ -338,10 +391,10 @@ function TitleScreen({
             </div>
             <p className="mt-4 text-sm text-cm-sand">
               <span className="font-story text-base italic text-cm-cream">
-                {saved.lead.name}, {slotLabel(story.slots[saved.game.slot])}
+                {saved.lead.name}, {slotLabel(saved.story.slots[saved.game.slot])}
               </span>
               <span className="mx-2 text-cm-sand/50">·</span>
-              saved where you stopped
+              {saved.story.intro.place}, saved where you stopped
             </p>
           </div>
         ) : (
@@ -350,9 +403,9 @@ function TitleScreen({
               Begin Story <span aria-hidden="true">→</span>
             </PrimaryAction>
             <p className="text-sm text-cm-sand">
-              <span className="font-story text-base italic text-cm-cream">{story.title}</span>
+              <span className="font-story text-base italic text-cm-cream">{STORIES.length} worlds</span>
               <span className="mx-2 text-cm-sand/50">·</span>
-              about {story.minutes} minutes
+              about {STORIES[0].minutes} minutes each
             </p>
           </div>
         )}
@@ -368,7 +421,7 @@ function TitleScreen({
             onClick={onCollection}
             className="inline-flex min-h-10 items-center gap-2 rounded-full border border-white/15 px-4 py-2 text-xs font-semibold tracking-wide text-cm-cream/80 transition hover:border-white/40 hover:text-cm-cream"
           >
-            <Coin /> {profile.coins} · Collection{profile.keepsakes.length ? ` (${profile.keepsakes.length} of ${story.keepsakes.length})` : ""}
+            <Coin /> {profile.coins} · Collection{profile.keepsakes.length ? ` (${profile.keepsakes.length} of ${keepsakeCount})` : ""}
           </button>
           <DownloadPanel />
         </div>
@@ -377,31 +430,8 @@ function TitleScreen({
   );
 }
 
-function IntroScreen({
-  story,
-  initialLead,
-  audio,
-  headingRef,
-  onBack,
-  onStart,
-}: {
-  story: Story;
-  initialLead: Lead;
-  audio: SoundSettings;
-  headingRef: HeadingRef;
-  onBack: () => void;
-  onStart: (lead: Lead) => void;
-}) {
-  // Either one of the story's own leads, or a character the player makes.
-  const [custom, setCustom] = useState(() => (story.leads.includes(initialLead) ? loadCharacter(story) : { ...loadCharacter(story), look: initialLead.look }));
-  const [choice, setChoice] = useState(() => (story.leads.includes(initialLead) ? initialLead.id : "custom"));
-  const lead = choice === "custom" ? customLead(story, custom) : (story.leads.find((option) => option.id === choice) ?? story.leads[0]);
-  const tokens = tokensFor(lead);
-  const changeCustom = (next: CustomCharacter) => {
-    setCustom(next);
-    saveCharacter(next);
-  };
-
+/** A frame shared by the screens before a week begins. */
+function Prologue({ audio, onBack, children }: { audio: SoundSettings; onBack: () => void; children: ReactNode }) {
   return (
     <div className="relative min-h-screen overflow-hidden bg-cm-night text-cm-cream">
       <div className="absolute inset-x-0 top-0 h-[26rem] opacity-50">
@@ -419,111 +449,214 @@ function IntroScreen({
         </div>
       </header>
 
-      <main className="relative z-10 mx-auto w-full max-w-5xl px-6 pb-16 pt-10 sm:px-10 sm:pt-16">
-        <p {...stagger(0, "text-[11px] font-semibold uppercase tracking-[0.22em] text-cm-gold")}>
-          {story.title}
-        </p>
-        <h1
-          ref={headingRef}
-          tabIndex={-1}
-          {...stagger(1, "mt-3 font-story text-4xl leading-tight outline-none sm:text-5xl")}
-        >
-          Welcome to {story.intro.place}
-        </h1>
-        <div {...stagger(2, "mt-6 max-w-3xl space-y-4")}>
-          {story.intro.paragraphs.map((paragraph) => (
-            <p key={paragraph} className="font-story text-lg leading-[1.75] text-cm-cream/85">
-              {paragraph}
-            </p>
-          ))}
-        </div>
-
-        <section {...stagger(4, "mt-10")}>
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cm-sand">Who will you be?</h2>
-          <div className="mt-3 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-3" role="radiogroup" aria-label="Choose your character">
-            {story.leads.map((option, index) => {
-              const selected = option.id === choice;
-              return (
-                <button
-                  key={option.id}
-                  type="button"
-                  role="radio"
-                  aria-checked={selected}
-                  onClick={() => setChoice(option.id)}
-                  className={`flex flex-col items-center rounded-2xl border px-3 pb-4 pt-4 text-center transition ${
-                    selected ? "border-cm-ember bg-cm-ember/10" : "border-white/10 bg-white/[0.04] hover:border-white/30"
-                  }`}
-                >
-                  <FullFigure look={option.look} mood={selected ? "warm" : "neutral"} delay={`${index * -1.3}s`} className="h-48 w-full sm:h-60" />
-                  <span className="mt-3 block font-story text-2xl text-cm-cream">{option.name}</span>
-                  <span className="mt-0.5 block text-xs text-cm-sand sm:text-sm">dating {option.partner}</span>
-                </button>
-              );
-            })}
-            <button
-              type="button"
-              role="radio"
-              aria-checked={choice === "custom"}
-              onClick={() => setChoice("custom")}
-              className={`col-span-2 flex flex-col items-center rounded-2xl border px-3 pb-4 pt-4 text-center transition sm:col-span-1 ${
-                choice === "custom" ? "border-cm-ember bg-cm-ember/10" : "border-dashed border-white/25 bg-white/[0.02] hover:border-white/50"
-              }`}
-            >
-              <FullFigure look={custom.look} mood={choice === "custom" ? "warm" : "neutral"} delay="-2.1s" className="h-48 w-full sm:h-60" />
-              <span className="mt-3 block font-story text-2xl text-cm-cream">{custom.name.trim() || "Create your own"}</span>
-              <span className="mt-0.5 block text-xs text-cm-sand sm:text-sm">your name, your look</span>
-            </button>
-          </div>
-
-          {choice === "custom" && (
-            <div className="mt-4">
-              <CharacterCreator story={story} value={custom} onChange={changeCustom} />
-            </div>
-          )}
-        </section>
-
-        <section {...stagger(6, "mt-10")}>
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cm-sand">The people in this story</h2>
-          <ul className="mt-3 grid gap-3 md:grid-cols-2">
-            {[
-              { name: lead.name, look: lead.look, traits: story.intro.playerTraits },
-              { name: lead.partner, look: lead.partnerLook, traits: story.intro.partnerTraits },
-              ...story.cast,
-            ].map((person, index) => (
-              <li key={person.name} className="flex items-end gap-4 rounded-2xl border border-white/10 bg-white/[0.03] px-4 pb-4 pt-5 sm:gap-5 sm:px-5">
-                <FullFigure look={person.look} delay={`${index * -0.9}s`} className="h-52 w-24 shrink-0 sm:h-60 sm:w-28" />
-                <div className="min-w-0 self-center">
-                  <h3 className="font-story text-2xl text-cm-cream">{person.name}</h3>
-                  <ul className="mt-2.5 space-y-2">
-                    {person.traits.map((trait) => (
-                      <li key={trait} className="flex gap-2.5 text-[0.9375rem] leading-snug text-cm-cream/80">
-                        <span aria-hidden="true" className="mt-[0.5em] h-1.5 w-1.5 shrink-0 rounded-full bg-cm-gold" />
-                        {fill(trait, tokens)}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <div {...stagger(8, "mt-10")}>
-          <p className="max-w-xl text-sm leading-relaxed text-cm-sand">
-            {story.intro.howToPlay}
-          </p>
-          <p className="mt-3 max-w-xl text-sm leading-relaxed text-cm-sand">
-            Along the way five qualities quietly take shape: wisdom, integrity, compassion, courage and trust. They are
-            not a score, and they do not measure how much God loves you.
-          </p>
-          <div className="mt-6">
-            <PrimaryAction onClick={() => onStart(lead)}>
-              Step into {story.intro.place} <span aria-hidden="true">→</span>
-            </PrimaryAction>
-          </div>
-        </div>
-      </main>
+      <main className="relative z-10 mx-auto w-full max-w-5xl px-6 pb-16 pt-10 sm:px-10 sm:pt-16">{children}</main>
     </div>
+  );
+}
+
+/** First of all: who will you be? A ready-made character, or one of your own. */
+function CharacterScreen({ audio, headingRef, onBack, onDone }: { audio: SoundSettings; headingRef: HeadingRef; onBack: () => void; onDone: (character: CustomCharacter) => void }) {
+  const [custom, setCustom] = useState(loadCharacter);
+  const [choice, setChoice] = useState(loadChoice);
+  const chosen: CustomCharacter = choice === "custom" ? custom : (PRESETS.find((preset) => preset.id === choice) ?? PRESETS[0]);
+  const changeCustom = (next: CustomCharacter) => {
+    setCustom(next);
+    saveCharacter(next);
+  };
+  const pick = (next: string) => {
+    setChoice(next);
+    saveChoice(next);
+  };
+
+  return (
+    <Prologue audio={audio} onBack={onBack}>
+      <p {...stagger(0, "text-[11px] font-semibold uppercase tracking-[0.22em] text-cm-gold")}>Step 1 of 2</p>
+      <h1 ref={headingRef} tabIndex={-1} {...stagger(1, "mt-3 font-story text-4xl leading-tight outline-none sm:text-5xl")}>
+        Who will you be?
+      </h1>
+      <p {...stagger(2, "mt-5 max-w-2xl font-story text-lg leading-[1.75] text-cm-cream/85")}>
+        Choose someone to live this week as, or make your own. Whoever you pick goes with you into every world.
+      </p>
+
+      <section {...stagger(4, "mt-8")}>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4" role="radiogroup" aria-label="Choose your character">
+          {PRESETS.map((option, index) => {
+            const selected = option.id === choice;
+            return (
+              <button
+                key={option.id}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                onClick={() => pick(option.id)}
+                className={`flex flex-col items-center rounded-2xl border px-3 pb-4 pt-4 text-center transition ${
+                  selected ? "border-cm-ember bg-cm-ember/10" : "border-white/10 bg-white/[0.04] hover:border-white/30"
+                }`}
+              >
+                <FullFigure look={option.look} mood={selected ? "warm" : "neutral"} delay={`${index * -1.3}s`} className="h-44 w-full sm:h-56" />
+                <span className="mt-3 block font-story text-2xl text-cm-cream">{option.name}</span>
+                <span className="mt-0.5 block text-xs leading-snug text-cm-sand sm:text-sm">{option.about}</span>
+              </button>
+            );
+          })}
+          <button
+            type="button"
+            role="radio"
+            aria-checked={choice === "custom"}
+            onClick={() => pick("custom")}
+            className={`col-span-2 flex flex-col items-center rounded-2xl border px-3 pb-4 pt-4 text-center transition ${
+              choice === "custom" ? "border-cm-ember bg-cm-ember/10" : "border-dashed border-white/25 bg-white/[0.02] hover:border-white/50"
+            }`}
+          >
+            <FullFigure look={custom.look} mood={choice === "custom" ? "warm" : "neutral"} delay="-2.1s" className="h-44 w-full sm:h-56" />
+            <span className="mt-3 block font-story text-2xl text-cm-cream">{custom.name.trim() || "Create your own"}</span>
+            <span className="mt-0.5 block text-xs text-cm-sand sm:text-sm">your name, your look, your way of standing</span>
+          </button>
+        </div>
+
+        {choice === "custom" && (
+          <div className="mt-4">
+            <CharacterCreator value={custom} onChange={changeCustom} />
+          </div>
+        )}
+      </section>
+
+      <div {...stagger(6, "mt-10")}>
+        <PrimaryAction onClick={() => onDone(chosen)}>
+          Choose a world as {chosen.name.trim() || "yourself"} <span aria-hidden="true">→</span>
+        </PrimaryAction>
+      </div>
+    </Prologue>
+  );
+}
+
+/** Then: where will you live a week? One world at a time. */
+function WorldsScreen({
+  character,
+  audio,
+  headingRef,
+  onBack,
+  onChoose,
+}: {
+  character: CustomCharacter;
+  audio: SoundSettings;
+  headingRef: HeadingRef;
+  onBack: () => void;
+  onChoose: (story: Story) => void;
+}) {
+  const profile = loadProfile();
+  return (
+    <Prologue audio={audio} onBack={onBack}>
+      <p {...stagger(0, "text-[11px] font-semibold uppercase tracking-[0.22em] text-cm-gold")}>Step 2 of 2</p>
+      <h1 ref={headingRef} tabIndex={-1} {...stagger(1, "mt-3 font-story text-4xl leading-tight outline-none sm:text-5xl")}>
+        Where will you live this week?
+      </h1>
+      <p {...stagger(2, "mt-5 max-w-2xl font-story text-lg leading-[1.75] text-cm-cream/85")}>
+        Each world is a different part of life, with its own people and its own pressures. Pick one, {character.name.trim() || "friend"}. The others
+        will be here when you come back.
+      </p>
+
+      <ul {...stagger(4, "mt-8 grid gap-5 lg:grid-cols-3")}>
+        {STORIES.map((world) => {
+          const found = endingsFound(world, profile).length;
+          const kept = world.keepsakes.filter((keepsake) => profile.keepsakes.includes(keepsake.id)).length;
+          return (
+            <li key={world.id}>
+              <button
+                type="button"
+                onClick={() => onChoose(world)}
+                className="group flex h-full w-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] text-left transition hover:-translate-y-0.5 hover:border-cm-ember/70 hover:bg-white/[0.07]"
+              >
+                <span className="relative block aspect-[4/3] w-full overflow-hidden bg-cm-dusk">
+                  <TownArt story={world} evening={false} />
+                  <span className="absolute inset-0 bg-gradient-to-t from-cm-night/80 via-transparent to-transparent" />
+                  <span className="absolute bottom-3 left-4 right-4 font-story text-2xl leading-tight text-cm-cream">{world.world.name}</span>
+                </span>
+                <span className="flex flex-1 flex-col px-4 pb-4 pt-3">
+                  <span className="text-[0.9375rem] leading-snug text-cm-cream/85">{world.world.tagline}</span>
+                  <span className="mt-3 flex flex-wrap gap-1.5">
+                    {world.world.themes.map((theme) => (
+                      <span key={theme} className="rounded-full border border-white/15 px-2.5 py-0.5 text-[11px] font-medium text-cm-sand">
+                        {theme}
+                      </span>
+                    ))}
+                  </span>
+                  <span className="mt-auto flex items-center justify-between pt-4 text-xs text-cm-sand">
+                    <span>
+                      Endings found: {found} of {world.endings.length} · Keepsakes: {kept} of {world.keepsakes.length}
+                    </span>
+                    <span aria-hidden="true" className="text-base text-cm-ember transition group-hover:translate-x-0.5">
+                      →
+                    </span>
+                  </span>
+                </span>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </Prologue>
+  );
+}
+
+function IntroScreen({ story, lead, audio, headingRef, onBack, onStart }: { story: Story; lead: Lead; audio: SoundSettings; headingRef: HeadingRef; onBack: () => void; onStart: () => void }) {
+  const tokens = tokensFor(lead);
+
+  return (
+    <Prologue audio={audio} onBack={onBack}>
+      <p {...stagger(0, "text-[11px] font-semibold uppercase tracking-[0.22em] text-cm-gold")}>
+        {story.title}
+      </p>
+      <h1 ref={headingRef} tabIndex={-1} {...stagger(1, "mt-3 font-story text-4xl leading-tight outline-none sm:text-5xl")}>
+        Welcome to {story.intro.place}
+      </h1>
+      <div {...stagger(2, "mt-6 max-w-3xl space-y-4")}>
+        {story.intro.paragraphs.map((paragraph) => (
+          <p key={paragraph} className="font-story text-lg leading-[1.75] text-cm-cream/85">
+            {paragraph}
+          </p>
+        ))}
+      </div>
+
+      <section {...stagger(4, "mt-10")}>
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cm-sand">The people in this story</h2>
+        <ul className="mt-3 grid gap-3 md:grid-cols-2">
+          {[
+            { name: lead.name, look: lead.look, traits: story.intro.playerTraits },
+            { name: lead.partner, look: lead.partnerLook, traits: story.intro.partnerTraits },
+            ...story.cast,
+          ].map((person, index) => (
+            <li key={person.name} className="flex items-end gap-4 rounded-2xl border border-white/10 bg-white/[0.03] px-4 pb-4 pt-5 sm:gap-5 sm:px-5">
+              <FullFigure look={person.look} delay={`${index * -0.9}s`} className="h-52 w-24 shrink-0 sm:h-60 sm:w-28" />
+              <div className="min-w-0 self-center">
+                <h3 className="font-story text-2xl text-cm-cream">{person.name}</h3>
+                <ul className="mt-2.5 space-y-2">
+                  {person.traits.map((trait) => (
+                    <li key={trait} className="flex gap-2.5 text-[0.9375rem] leading-snug text-cm-cream/80">
+                      <span aria-hidden="true" className="mt-[0.5em] h-1.5 w-1.5 shrink-0 rounded-full bg-cm-gold" />
+                      {fill(trait, tokens)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <div {...stagger(6, "mt-10")}>
+        <p className="max-w-xl text-sm leading-relaxed text-cm-sand">{story.intro.howToPlay}</p>
+        <p className="mt-3 max-w-xl text-sm leading-relaxed text-cm-sand">
+          Along the way five qualities quietly take shape: wisdom, integrity, compassion, courage and trust. They are not a score, and they do not measure
+          how much God loves you. How the week ends is yours to decide, and you can always go back and choose differently.
+        </p>
+        <div className="mt-6">
+          <PrimaryAction onClick={onStart}>
+            Step into {story.intro.place} <span aria-hidden="true">→</span>
+          </PrimaryAction>
+        </div>
+      </div>
+    </Prologue>
   );
 }
 
@@ -820,21 +953,28 @@ function EndingScreen({
   lead,
   game,
   reward,
+  trail,
   audio,
   headingRef,
+  onRewind,
   onReplay,
+  onWorlds,
   onTitle,
 }: {
   story: Story;
   lead: Lead;
   game: GameState;
   reward: WeekReward | null;
+  trail: GameState[];
   audio: SoundSettings;
   headingRef: HeadingRef;
+  onRewind: (slot: number) => void;
   onReplay: () => void;
+  onWorlds: () => void;
   onTitle: () => void;
 }) {
   const ending = endingFor(story, game);
+  const found = reward ? endingsFound(story, reward.profile) : [];
   const tokens = tokensFor(lead, game.money);
   const voices = voicesFor(story, lead.partner);
   const text = (raw: string) => fill(raw, tokens);
@@ -943,10 +1083,50 @@ function EndingScreen({
             </ul>
           </section>
 
-          <section className="flex flex-col gap-3 border-t border-white/10 pt-8 sm:flex-row sm:items-center">
+          <section>
+            <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cm-sand">
+              The ways this week can end · {found.length} of {story.endings.length} found
+            </h2>
+            <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+              {story.endings.map((option) => {
+                const seen = found.includes(option);
+                return (
+                  <li
+                    key={option.id}
+                    className={`rounded-xl border px-4 py-3 ${option === ending ? "border-cm-gold/60 bg-cm-gold/[0.07]" : seen ? "border-white/15 bg-white/[0.03]" : "border-dashed border-white/15"}`}
+                  >
+                    <span className={`block font-story text-lg leading-snug ${seen ? "text-cm-cream" : "text-cm-cream/40"}`}>{seen ? option.title : "An ending you haven’t found"}</span>
+                    <span className="mt-0.5 block text-xs text-cm-sand">{option === ending ? "This week" : seen ? option.kind : "Another choice leads here"}</span>
+                  </li>
+                );
+              })}
+            </ul>
+
+            {trail.length > 1 && (
+              <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+                <h3 className="font-story text-xl text-cm-cream">Go back and choose differently</h3>
+                <p className="mt-1 text-sm leading-relaxed text-cm-sand">Return to the start of any morning or evening. Everything before it stays as it was; everything after it is yours to decide again.</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {trail.map((_, slot) => (
+                    <button
+                      key={slot}
+                      type="button"
+                      onClick={() => onRewind(slot)}
+                      className="min-h-10 rounded-full border border-white/15 px-4 py-2 text-sm text-cm-cream/85 transition hover:border-cm-ember/70 hover:bg-white/5"
+                    >
+                      {story.slots[slot].day} {story.slots[slot].time.toLowerCase()}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </section>
+
+          <section className="flex flex-col gap-3 border-t border-white/10 pt-8 sm:flex-row sm:flex-wrap sm:items-center">
             <PrimaryAction onClick={onReplay}>Play Again</PrimaryAction>
+            <QuietAction onClick={onWorlds}>Choose another world</QuietAction>
             <QuietAction onClick={onTitle}>Back to title</QuietAction>
-            <p className="text-sm text-cm-sand sm:ml-2">A different week is waiting. You can’t be everywhere, so try being somewhere else.</p>
+            <p className="w-full text-sm text-cm-sand">A different week is waiting. You can’t be everywhere, so try being somewhere else.</p>
           </section>
         </div>
       </main>

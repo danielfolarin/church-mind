@@ -1,20 +1,62 @@
 import type { ReactNode } from "react";
 import { loadProfile } from "./rewards";
 import { FullFigure } from "./Rig";
+import { CALEB, NAOMI } from "./stories/alderRowWeek";
 import type { HairStyle, Lead, Look, Manner, Stance, Story, TopStyle } from "./types";
 
-// Lets a player make their own character instead of choosing a ready-made one.
-// A custom character borrows the story role of one of the leads (the same
-// partner and the same recorded voice) and brings their own name and looks.
+// Who the player is. A character is chosen (or made) once, before any world,
+// and then lives a week wherever the player takes them. Each one speaks with
+// one of the two recorded player voices, which is what `base` records.
 
 export interface CustomCharacter {
   name: string;
-  /** The lead whose place in the story they take. */
+  /** Which recorded voice speaks their lines: the id of a story lead. */
   base: string;
   look: Look;
 }
 
+/** The two recorded player voices. Every story has a lead with each of these ids. */
+export const VOICES: { id: string; label: string }[] = [
+  { id: "naomi", label: "A woman’s voice" },
+  { id: "caleb", label: "A man’s voice" },
+];
+
+/** Ready-made characters, for players who would rather get straight to the story. */
+export const PRESETS: (CustomCharacter & { id: string; about: string })[] = [
+  { id: "naomi", name: "Naomi", base: "naomi", about: "Thoughtful, steady, hard to hurry", look: NAOMI },
+  { id: "caleb", name: "Caleb", base: "caleb", about: "Sure of himself, softer than he looks", look: CALEB },
+  {
+    id: "sofia",
+    name: "Sofia",
+    base: "naomi",
+    about: "Quick to laugh, quicker to help",
+    look: { skin: "#DDB092", shade: "#C59676", hair: "#4B2C20", hairStyle: "long", top: "#B8862F", topStyle: "cardigan", accent: "#F4EBDD", lip: "#8A3A32", earrings: true, slim: true, manner: "lively", stance: "wave", build: { height: 0.97, shoulders: 90, hips: 86, limbs: 18 }, skirt: "#3F3345", shoes: "#3A2420" },
+  },
+  {
+    id: "jun",
+    name: "Jun",
+    base: "caleb",
+    about: "Quiet, observant, dry sense of humour",
+    look: { skin: "#E3BC98", shade: "#CBA17E", hair: "#17110F", hairStyle: "side", top: "#55704F", topStyle: "collar", accent: "#E8DCC8", glasses: true, manner: "calm", stance: "pockets", build: { height: 1.02, shoulders: 102, hips: 84, limbs: 19 }, legs: "#2A2F3A", shoes: "#3A2A20" },
+  },
+  {
+    id: "amara",
+    name: "Amara",
+    base: "naomi",
+    about: "Warm, direct, says the true thing",
+    look: { skin: "#6F4631", shade: "#5B3827", hair: "#17110F", hairStyle: "bun", top: "#A8553A", topStyle: "plain", accent: "#F4EBDD", lip: "#4A1F1C", earrings: true, slim: true, manner: "warm", stance: "clasped", build: { height: 1, shoulders: 94, hips: 90, limbs: 19 }, legs: "#2B3A55", shoes: "#E8DCC8" },
+  },
+  {
+    id: "mateo",
+    name: "Mateo",
+    base: "caleb",
+    about: "Easy-going, loyal, always early",
+    look: { skin: "#C99672", shade: "#B07E5A", hair: "#3A2A20", hairStyle: "curly", top: "#6B3F5A", topStyle: "hoodie", accent: "#E8DCC8", beard: true, manner: "easy", stance: "relaxed", build: { height: 1.03, shoulders: 112, hips: 90, limbs: 22 }, legs: "#2B3A55", shoes: "#D9D2C4" },
+  },
+];
+
 const STORAGE_KEY = "church-mind:character";
+const CHOICE_KEY = "church-mind:player";
 const NAME_LIMIT = 14;
 
 const SKINS: { skin: string; shade: string }[] = [
@@ -47,23 +89,41 @@ const BOTTOMS: [string, string, Partial<Look>][] = [
   ["long", "Long skirt", { skirt: "#3F3345", longSkirt: true }],
 ];
 
-export function defaultCharacter(story: Story): CustomCharacter {
-  const base = story.leads[0];
+export function defaultCharacter(): CustomCharacter {
   return {
     name: "",
-    base: base.id,
+    base: VOICES[0].id,
     look: { ...SKINS[3], hair: HAIR_COLOURS[0], hairStyle: "curly", top: TOP_COLOURS[5], topStyle: "plain", accent: "#F4EBDD", stance: "relaxed", manner: "easy", build: FRAMES[1][2], legs: "#2B3A55", shoes: "#E8DCC8" },
   };
 }
 
-export function loadCharacter(story: Story): CustomCharacter {
+export function loadCharacter(): CustomCharacter {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "null") as CustomCharacter | null;
-    if (saved && typeof saved.name === "string" && saved.look?.skin && story.leads.some((lead) => lead.id === saved.base)) return saved;
+    if (saved && typeof saved.name === "string" && saved.look?.skin && VOICES.some((voice) => voice.id === saved.base)) return saved;
   } catch {
     // Nothing saved, or storage is unavailable: start fresh.
   }
-  return defaultCharacter(story);
+  return defaultCharacter();
+}
+
+/** Which character the player last chose: a ready-made one's id, or "custom". */
+export function loadChoice(): string {
+  try {
+    const saved = localStorage.getItem(CHOICE_KEY);
+    if (saved === "custom" || PRESETS.some((preset) => preset.id === saved)) return saved as string;
+  } catch {
+    // Storage is unavailable.
+  }
+  return PRESETS[0].id;
+}
+
+export function saveChoice(choice: string) {
+  try {
+    localStorage.setItem(CHOICE_KEY, choice);
+  } catch {
+    // Private browsing: the choice lasts for this visit only.
+  }
 }
 
 export function saveCharacter(character: CustomCharacter) {
@@ -74,8 +134,8 @@ export function saveCharacter(character: CustomCharacter) {
   }
 }
 
-/** The lead a custom character plays as: their own name and looks in a ready-made role. */
-export function customLead(story: Story, character: CustomCharacter): Lead {
+/** The player's character, placed in a world: their name and looks, in that story's leading role. */
+export function leadFor(story: Story, character: CustomCharacter): Lead {
   const base = story.leads.find((lead) => lead.id === character.base) ?? story.leads[0];
   return { ...base, name: character.name.trim() || "You", look: character.look };
 }
@@ -118,7 +178,7 @@ function Swatch({ colour, label, on, onClick }: { colour: string; label: string;
   );
 }
 
-export function CharacterCreator({ story, value, onChange }: { story: Story; value: CustomCharacter; onChange: (next: CustomCharacter) => void }) {
+export function CharacterCreator({ value, onChange }: { value: CustomCharacter; onChange: (next: CustomCharacter) => void }) {
   const look = value.look;
   const set = (change: Partial<Look>) => onChange({ ...value, look: { ...look, ...change } });
   const bottom = look.skirt ? (look.longSkirt ? "long" : "skirt") : look.legs === "#2B3A55" ? "jeans" : "trousers";
@@ -150,10 +210,10 @@ export function CharacterCreator({ story, value, onChange }: { story: Story; val
           />
         </div>
 
-        <Group label="You are dating">
-          {story.leads.map((lead) => (
-            <Pill key={lead.id} on={value.base === lead.id} onClick={() => onChange({ ...value, base: lead.id })}>
-              {lead.partner}
+        <Group label="Your voice, when lines are read aloud">
+          {VOICES.map((voice) => (
+            <Pill key={voice.id} on={value.base === voice.id} onClick={() => onChange({ ...value, base: voice.id })}>
+              {voice.label}
             </Pill>
           ))}
         </Group>

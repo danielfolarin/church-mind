@@ -39,7 +39,12 @@ const { speechFor } = await vite.ssrLoadModule("/src/game/speech.ts");
 // Play the week many times over, taking every path, and note every line heard.
 const lines = new Map();
 let seed = 20261008;
-const random = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+const random = () => {
+  seed = (seed + 0x6d2b79f5) | 0;
+  let x = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+  x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x;
+  return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+};
 const pick = (list) => list[Math.floor(random() * list.length)];
 
 for (const story of STORIES) {

@@ -445,6 +445,168 @@ function Hall() {
   );
 }
 
+function Office() {
+  const towers: [number, number, number, number][] = [
+    [40, 150, 70, 200], [118, 96, 60, 254], [186, 176, 84, 174], [300, 120, 64, 230], [372, 190, 90, 160],
+    [480, 104, 58, 246], [546, 168, 80, 182], [640, 132, 66, 218], [712, 184, 70, 166],
+  ];
+  return (
+    <>
+      <defs>
+        <linearGradient id="office-sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#1B2440" />
+          <stop offset="0.6" stopColor="#6A4A6E" />
+          <stop offset="1" stopColor="#E59A5E" />
+        </linearGradient>
+        <linearGradient id="office-floor" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#1E1C26" />
+          <stop offset="1" stopColor="#0F0E14" />
+        </linearGradient>
+        <radialGradient id="office-screen">
+          <stop offset="0" stopColor="#BFD6FF" stopOpacity="0.5" />
+          <stop offset="1" stopColor="#BFD6FF" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <rect width="800" height="500" fill="#14131B" />
+      <rect x="20" y="40" width="760" height="320" fill="url(#office-sky)" />
+      <g fill="#121627">
+        {towers.map(([x, y, w, h]) => (
+          <rect key={x} x={x} y={y} width={w} height={h} />
+        ))}
+      </g>
+      {towers.flatMap(([x, y, w], t) =>
+        Array.from({ length: 5 }, (_, i) => {
+          const wx = x + 8 + ((i * 17 + t * 7) % Math.max(12, w - 20));
+          const wy = y + 14 + ((i * 31 + t * 13) % 120);
+          return <rect key={`${x}-${i}`} x={wx} y={wy} width="7" height="9" fill="#FFD796" opacity="0.8" className="animate-cm-twinkle" style={{ animationDelay: TWINKLE_DELAYS[(i + t) % TWINKLE_DELAYS.length], animationDuration: "7s" }} />;
+        })
+      )}
+      {[20, 210, 400, 590, 780].map((x) => (
+        <rect key={x} x={x - 5} y="40" width="10" height="320" fill="#0D0C12" />
+      ))}
+      <rect x="20" y="34" width="760" height="10" fill="#0D0C12" />
+      <rect y="356" width="800" height="144" fill="url(#office-floor)" />
+      <rect y="352" width="800" height="8" fill="#0D0C12" />
+      {[90, 330, 570].map((x, i) => (
+        <g key={x}>
+          <rect x={x} y="392" width="180" height="12" rx="3" fill="#3A3442" />
+          <rect x={x + 8} y="404" width="8" height="96" fill="#26222E" />
+          <rect x={x + 164} y="404" width="8" height="96" fill="#26222E" />
+          <circle cx={x + 62} cy="356" r="70" fill="url(#office-screen)" className="animate-cm-twinkle" style={{ animationDelay: TWINKLE_DELAYS[i * 3], animationDuration: "8s" }} />
+          <rect x={x + 30} y="330" width="64" height="44" rx="3" fill="#0D0C12" />
+          <rect x={x + 34} y="334" width="56" height="34" rx="1" fill="#9DB8E8" opacity="0.85" />
+          <rect x={x + 58} y="374" width="8" height="18" fill="#0D0C12" />
+          <rect x={x + 120} y="372" width="16" height="20" rx="2" fill="#F4EBDD" opacity="0.85" />
+          <Steam x={x + 128} y={366} delay={`${i * 1.1}s`} />
+        </g>
+      ))}
+      <rect x="704" y="250" width="30" height="110" rx="4" fill="#1F3A2E" />
+      <ellipse cx="719" cy="238" rx="34" ry="30" fill="#2C5A43" />
+      <ellipse cx="704" cy="226" rx="20" ry="18" fill="#3A7355" />
+    </>
+  );
+}
+
+function Lecture() {
+  return (
+    <>
+      <defs>
+        <linearGradient id="lecture-wall" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#2A2630" />
+          <stop offset="1" stopColor="#16131A" />
+        </linearGradient>
+        <linearGradient id="lecture-beam" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#FFE9BF" stopOpacity="0.28" />
+          <stop offset="1" stopColor="#FFE9BF" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <rect width="800" height="500" fill="url(#lecture-wall)" />
+      <rect x="150" y="60" width="500" height="200" rx="6" fill="#1D3B33" />
+      <rect x="150" y="60" width="500" height="200" rx="6" fill="none" stroke="#5B4632" strokeWidth="12" />
+      <g stroke="#E9E4D4" strokeWidth="3" strokeLinecap="round" fill="none" opacity="0.75">
+        <path d="M200 110 h120 M200 140 h180 M200 170 h90" />
+        <path d="M440 190 q30 -90 60 0 t60 0" />
+        <path d="M430 210 h190 M430 100 v110" opacity="0.6" />
+      </g>
+      <rect x="150" y="262" width="500" height="10" rx="3" fill="#3E2F22" />
+      <rect x="60" y="20" width="16" height="250" fill="#0F0D12" opacity="0.6" />
+      <rect x="724" y="20" width="16" height="250" fill="#0F0D12" opacity="0.6" />
+      {[250, 400, 550].map((x, i) => (
+        <g key={x}>
+          <rect x={x - 22} y="0" width="44" height="10" rx="3" fill="#0F0D12" />
+          <path d={`M${x - 18} 10 L${x - 90} 330 H${x + 90} L${x + 18} 10Z`} fill="url(#lecture-beam)" className="animate-cm-twinkle" style={{ animationDelay: TWINKLE_DELAYS[i * 2], animationDuration: "10s" }} />
+        </g>
+      ))}
+      <rect x="330" y="290" width="140" height="56" rx="4" fill="#3E2F22" />
+      <rect x="320" y="284" width="160" height="10" rx="3" fill="#5B4632" />
+      <rect y="344" width="800" height="156" fill="#0F0D12" opacity="0.5" />
+      {[372, 414, 458].map((y, row) => (
+        <g key={y}>
+          <rect x="0" y={y} width="800" height="16" fill={["#3A2C22", "#2E231B", "#221A14"][row]} />
+          {Array.from({ length: 10 }, (_, i) => {
+            const x = 14 + i * 82 - row * 26;
+            return <path key={i} d={`M${x} ${y} v-18 q0 -10 10 -10 h34 q10 0 10 10 v18Z`} fill={["#211813", "#19120E", "#120D0A"][row]} />;
+          })}
+        </g>
+      ))}
+    </>
+  );
+}
+
+function Library() {
+  const spines = ["#7A4A3A", "#3F5A7A", "#55704F", "#B8862F", "#6B3F5A", "#2F6F73", "#A8553A", "#4A3F5E"];
+  return (
+    <>
+      <defs>
+        <linearGradient id="library-wall" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#2B211B" />
+          <stop offset="1" stopColor="#140F0C" />
+        </linearGradient>
+        <radialGradient id="library-lamp">
+          <stop offset="0" stopColor="#B9F0C4" stopOpacity="0.5" />
+          <stop offset="1" stopColor="#B9F0C4" stopOpacity="0" />
+        </radialGradient>
+        <linearGradient id="library-glass" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#2B3A66" />
+          <stop offset="1" stopColor="#C98A5E" />
+        </linearGradient>
+      </defs>
+      <rect width="800" height="500" fill="url(#library-wall)" />
+      <path d="M340 330 V130 a60 60 0 0 1 120 0 V330Z" fill="url(#library-glass)" />
+      <path d="M400 72 V330 M340 180 H460 M340 256 H460" stroke="#17100D" strokeWidth="5" fill="none" />
+      <path d="M340 330 V130 a60 60 0 0 1 120 0 V330Z" fill="none" stroke="#17100D" strokeWidth="10" />
+      {[30, 500].map((x0) => (
+        <g key={x0}>
+          <rect x={x0} y="50" width="270" height="290" fill="#3A2A1E" />
+          {[0, 1, 2, 3].map((shelf) => (
+            <g key={shelf}>
+              <rect x={x0 + 8} y={58 + shelf * 70} width="254" height="60" fill="#1A120D" />
+              {Array.from({ length: 17 }, (_, i) => {
+                const tall = 34 + ((i * 7 + shelf * 5 + x0) % 20);
+                return <rect key={i} x={x0 + 12 + i * 14.6} y={58 + shelf * 70 + (60 - tall)} width={11} height={tall} rx="1" fill={spines[(i * 3 + shelf + (x0 > 100 ? 2 : 0)) % spines.length]} opacity="0.9" />;
+              })}
+            </g>
+          ))}
+        </g>
+      ))}
+      <rect y="338" width="800" height="8" fill="#17100D" />
+      <rect y="346" width="800" height="154" fill="#120C09" opacity="0.6" />
+      {[150, 620].map((x, i) => (
+        <g key={x}>
+          <rect x={x - 130} y="400" width="260" height="14" rx="3" fill="#4A3628" />
+          <rect x={x - 118} y="414" width="10" height="86" fill="#2E2119" />
+          <rect x={x + 108} y="414" width="10" height="86" fill="#2E2119" />
+          <circle cx={x} cy="372" r="64" fill="url(#library-lamp)" className="animate-cm-twinkle" style={{ animationDelay: TWINKLE_DELAYS[i * 4], animationDuration: "9s" }} />
+          <rect x={x - 3} y="374" width="6" height="26" fill="#8A6A2E" />
+          <path d={`M${x - 30} 374 q30 -22 60 0Z`} fill="#3F8F5A" />
+          <rect x={x + 50} y="390" width="44" height="10" rx="2" fill="#7A4A3A" />
+          <rect x={x + 54} y="382" width="40" height="8" rx="2" fill="#3F5A7A" />
+        </g>
+      ))}
+    </>
+  );
+}
+
 const SCENES: Record<SettingId, () => ReactNode> = {
   garden: Garden,
   cafe: Cafe,
@@ -452,6 +614,9 @@ const SCENES: Record<SettingId, () => ReactNode> = {
   room: Room,
   river: River,
   hall: Hall,
+  office: Office,
+  lecture: Lecture,
+  library: Library,
 };
 
 export function SceneArt({ setting, className = "" }: { setting: SettingId; className?: string }) {

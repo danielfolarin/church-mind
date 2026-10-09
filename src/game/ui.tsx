@@ -319,6 +319,9 @@ const PLACE_ICONS: Record<PlaceIcon, string> = {
   water: "M3 9c3-3 6 3 9 0s6 3 9 0M3 15c3-3 6 3 9 0s6 3 9 0",
   chapel: "M12 2v5M10 4h4M5 21V12l7-5 7 5v9zM10 21v-5a2 2 0 0 1 4 0v5",
   door: "M7 21V4h10v17M4 21h16M14 12h.01",
+  tower: "M6 21V3h12v18M3 21h18M10 7h.01M14 7h.01M10 11h.01M14 11h.01M10 15h.01M14 15h.01",
+  hall: "M3 9l9-5 9 5M4 9h16M6 9v9M10 9v9M14 9v9M18 9v9M3 21h18M4 18h16",
+  green: "M12 21v-7M12 14c-4 0-6-2.5-6-5.5S8.5 3 12 3s6 2.500 6 5.500S16 14 12 14zM5 21h14",
 };
 
 export function PlaceGlyph({ icon, className = "h-5 w-5" }: { icon: PlaceIcon; className?: string }) {

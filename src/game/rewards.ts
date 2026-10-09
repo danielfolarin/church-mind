@@ -1,5 +1,5 @@
 import { matches, type GameState } from "./engine";
-import { QUALITY_IDS, type Keepsake, type Story } from "./types";
+import { QUALITY_IDS, type Ending, type Keepsake, type Story } from "./types";
 
 // What a player keeps between weeks: coins, keepsakes, and things bought with
 // coins. Saved on the device, so it is still there next time they play.
@@ -19,6 +19,8 @@ export interface Profile {
   weeks: number;
   /** Best score in each quick game, by game id. */
   best: Record<string, number>;
+  /** Endings reached, as `story id:ending id`. */
+  endings: string[];
 }
 
 export interface ShopItem {
@@ -41,12 +43,12 @@ export function loadProfile(): Profile {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "null") as Partial<Profile> | null;
     if (saved && typeof saved.coins === "number") {
-      return { coins: saved.coins, keepsakes: saved.keepsakes ?? [], owned: saved.owned ?? [], weeks: saved.weeks ?? 0, best: saved.best ?? {} };
+      return { coins: saved.coins, keepsakes: saved.keepsakes ?? [], owned: saved.owned ?? [], weeks: saved.weeks ?? 0, best: saved.best ?? {}, endings: saved.endings ?? [] };
     }
   } catch {
     // Nothing saved, or storage is unavailable: start fresh.
   }
-  return { coins: 0, keepsakes: [], owned: [], weeks: 0, best: {} };
+  return { coins: 0, keepsakes: [], owned: [], weeks: 0, best: {}, endings: [] };
 }
 
 function saveProfile(profile: Profile) {
@@ -63,24 +65,40 @@ export interface WeekReward {
   earned: Keepsake[];
   /** The ones the player did not already have. */
   fresh: Keepsake[];
+  /** This is the first time the player has reached this ending. */
+  newEnding: boolean;
+  /** The week was reached by going back and choosing differently. */
+  replay: boolean;
   profile: Profile;
 }
 
-/** Works out what a finished week is worth, saves it, and returns it. */
-export function rewardWeek(story: Story, state: GameState): WeekReward {
+const endingKey = (story: Story, ending: Ending) => `${story.id}:${ending.id}`;
+
+/** The endings of a story the player has reached so far. */
+export function endingsFound(story: Story, profile: Profile): Ending[] {
+  return story.endings.filter((ending) => profile.endings.includes(endingKey(story, ending)));
+}
+
+/**
+ * Works out what a finished week is worth, saves it, and returns it. A week
+ * reached by going back and choosing differently pays only for what is new.
+ */
+export function rewardWeek(story: Story, state: GameState, ending: Ending, replay = false): WeekReward {
   const profile = loadProfile();
   const earned = story.keepsakes.filter((keepsake) => matches(keepsake.when, state));
   const fresh = earned.filter((keepsake) => !profile.keepsakes.includes(keepsake.id));
+  const newEnding = !profile.endings.includes(endingKey(story, ending));
   const growth = QUALITY_IDS.reduce((sum, id) => sum + state.qualities[id], 0);
-  const coins = 25 + growth * 4 + fresh.length * 8;
+  const coins = (replay ? 0 : 25 + growth * 4) + fresh.length * 8 + (newEnding ? 10 : 0);
   const next: Profile = {
     ...profile,
     coins: profile.coins + coins,
     keepsakes: [...profile.keepsakes, ...fresh.map((keepsake) => keepsake.id)],
-    weeks: profile.weeks + 1,
+    weeks: profile.weeks + (replay ? 0 : 1),
+    endings: newEnding ? [...profile.endings, endingKey(story, ending)] : profile.endings,
   };
   saveProfile(next);
-  return { coins, earned, fresh, profile: next };
+  return { coins, earned, fresh, newEnding, replay, profile: next };
 }
 
 /** Adds coins won in passing: a mini-game, or a dog who was glad to see you. */
@@ -93,7 +111,7 @@ export function addCoins(coins: number): Profile {
 }
 
 /** The quick games, by the name players see. */
-export const GAME_NAMES: Record<string, string> = { coffee: "The 9:15 rush", seeds: "Beans from peas", boxes: "Third floor, no lift" };
+export const GAME_NAMES: Record<string, string> = { coffee: "The 9:15 rush", seeds: "Beans from peas", boxes: "Third floor, no lift", books: "The returns trolley", inbox: "Inbox, 8:58 a.m." };
 
 /** Notes a quick-game score. Returns the player's best, and whether this score just beat it. */
 export function recordBest(game: string, score: number): { best: number; fresh: boolean } {

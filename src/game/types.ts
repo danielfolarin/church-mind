@@ -11,7 +11,7 @@ export const QUALITY_IDS = ["wisdom", "integrity", "compassion", "courage", "tru
 export type QualityId = (typeof QUALITY_IDS)[number];
 export type Qualities = Record<QualityId, number>;
 
-export type SettingId = "garden" | "cafe" | "kitchen" | "room" | "river" | "hall";
+export type SettingId = "garden" | "cafe" | "kitchen" | "room" | "river" | "hall" | "office" | "lecture" | "library";
 
 /** The expression on a character's face. */
 export type Mood = "neutral" | "warm" | "sad" | "hurt" | "thoughtful" | "worried";
@@ -203,7 +203,7 @@ export interface StoryNode {
 }
 
 export type PlaceId = string;
-export type PlaceIcon = "home" | "cup" | "leaf" | "table" | "water" | "chapel" | "door";
+export type PlaceIcon = "home" | "cup" | "leaf" | "table" | "water" | "chapel" | "door" | "tower" | "hall" | "green";
 
 export interface Place {
   name: string;
@@ -244,8 +244,8 @@ export interface Opportunity extends Effects {
   /** Marks a moment the story is waiting on. */
   key?: boolean;
   tempt?: Tempt;
-  /** A quick game played on the way in: `coffee`, `seeds` or `boxes`. See MiniGame.tsx. */
-  game?: "coffee" | "seeds" | "boxes";
+  /** A quick game played on the way in. See MiniGame.tsx. */
+  game?: "coffee" | "seeds" | "boxes" | "books" | "inbox";
   /** Can be done more than once (rest, prayer). */
   repeatable?: boolean;
   /** Happens by itself at the start of the slot and doesn't use up the time. */
@@ -311,11 +311,34 @@ export interface Character {
   voice: VoiceStyle;
 }
 
+/** How a world's map is drawn. */
+export interface MapStyle {
+  /** Grass and gardens, or the paving of a city centre. */
+  ground: "green" | "paved";
+  /** What stands between the places that matter: houses, college halls or office towers. */
+  backdrop: "houses" | "halls" | "towers";
+  /** Flips the scenery left to right, so two worlds don't share a skyline. */
+  mirror?: boolean;
+}
+
 export interface Story {
   id: string;
   title: string;
   subtitle: string;
   minutes: number;
+  /** How this world is introduced when the player chooses where to live a week. */
+  world: {
+    name: string;
+    /** One line on what life here asks of you. */
+    tagline: string;
+    /** The parts of life this world is about, e.g. "Work", "Money". */
+    themes: string[];
+  };
+  map: MapStyle;
+  /** Things people out walking say if you stop them. */
+  banter: string[];
+  /** The name of the dog who wanders this world's streets. */
+  dog: string;
   intro: {
     place: string;
     paragraphs: string[];
