@@ -11,7 +11,9 @@ not depend on any other project.
 1. **Choose who you are.** Six ready-made characters, or make your own: name,
    skin, hair, clothes, frame, stance and voice. The character is chosen once
    and goes into every world (`src/game/Creator.tsx`).
-2. **Choose a world.** Each is a different part of life, lived one at a time:
+2. **Choose a world.** Three small circles with a name under each; the one
+   you tap unfolds to show its map, what it is about, and a button to go
+   there. Each is a different part of life, lived one at a time:
    - **The Neighbourhood of Alder Row:** relationships, friendship, rent.
    - **Wrenfield University:** a first-year far from home, a scholarship, and
      a leaked exam paper.

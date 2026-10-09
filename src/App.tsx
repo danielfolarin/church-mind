@@ -545,6 +545,16 @@ function WorldsScreen({
   onChoose: (story: Story) => void;
 }) {
   const profile = loadProfile();
+  // Nothing is open at first: three circles, and the one you pick unfolds.
+  const [open, setOpen] = useState<string | null>(null);
+  const shown = STORIES.find((world) => world.id === open) ?? null;
+  // Bring the unfolded world into view, so its button is never left below the screen.
+  const panel = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const timer = window.setTimeout(() => panel.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 350);
+    return () => window.clearTimeout(timer);
+  }, [open]);
   return (
     <Prologue audio={audio} onBack={onBack}>
       <p {...stagger(0, "text-[11px] font-semibold uppercase tracking-[0.22em] text-cm-gold")}>Step 2 of 2</p>
@@ -552,49 +562,74 @@ function WorldsScreen({
         Where will you live this week?
       </h1>
       <p {...stagger(2, "mt-5 max-w-2xl font-story text-lg leading-[1.75] text-cm-cream/85")}>
-        Each world is a different part of life, with its own people and its own pressures. Pick one, {character.name.trim() || "friend"}. The others
-        will be here when you come back.
+        Each world is a different part of life, with its own people and its own pressures. Tap one to open it, {character.name.trim() || "friend"}. The
+        others will be here when you come back.
       </p>
 
-      <ul {...stagger(4, "mt-8 grid gap-5 lg:grid-cols-3")}>
+      <div {...stagger(4, "mt-10 grid grid-cols-3 gap-2 sm:flex sm:gap-10")} role="radiogroup" aria-label="Choose a world">
         {STORIES.map((world) => {
-          const found = endingsFound(world, profile).length;
-          const kept = world.keepsakes.filter((keepsake) => profile.keepsakes.includes(keepsake.id)).length;
+          const selected = world.id === open;
           return (
-            <li key={world.id}>
-              <button
-                type="button"
-                onClick={() => onChoose(world)}
-                className="group flex h-full w-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] text-left transition hover:-translate-y-0.5 hover:border-cm-ember/70 hover:bg-white/[0.07]"
+            <button
+              key={world.id}
+              type="button"
+              role="radio"
+              aria-checked={selected}
+              onClick={() => setOpen(selected ? null : world.id)}
+              className="group flex flex-col items-center pt-2 text-center sm:w-28"
+            >
+              <span
+                className={`relative block h-20 w-20 overflow-hidden rounded-full bg-cm-dusk ring-2 ring-offset-4 ring-offset-cm-night transition duration-300 sm:h-24 sm:w-24 ${
+                  selected ? "scale-110 ring-cm-ember" : "ring-white/20 group-hover:scale-105 group-hover:ring-white/60"
+                }`}
               >
-                <span className="relative block aspect-[4/3] w-full overflow-hidden bg-cm-dusk">
+                <span className="absolute left-1/2 top-0 block aspect-[4/3] h-full -translate-x-1/2">
                   <TownArt story={world} evening={false} />
-                  <span className="absolute inset-0 bg-gradient-to-t from-cm-night/80 via-transparent to-transparent" />
-                  <span className="absolute bottom-3 left-4 right-4 font-story text-2xl leading-tight text-cm-cream">{world.world.name}</span>
                 </span>
-                <span className="flex flex-1 flex-col px-4 pb-4 pt-3">
-                  <span className="text-[0.9375rem] leading-snug text-cm-cream/85">{world.world.tagline}</span>
-                  <span className="mt-3 flex flex-wrap gap-1.5">
-                    {world.world.themes.map((theme) => (
-                      <span key={theme} className="rounded-full border border-white/15 px-2.5 py-0.5 text-[11px] font-medium text-cm-sand">
-                        {theme}
-                      </span>
-                    ))}
-                  </span>
-                  <span className="mt-auto flex items-center justify-between pt-4 text-xs text-cm-sand">
-                    <span>
-                      Endings found: {found} of {world.endings.length} · Keepsakes: {kept} of {world.keepsakes.length}
-                    </span>
-                    <span aria-hidden="true" className="text-base text-cm-ember transition group-hover:translate-x-0.5">
-                      →
-                    </span>
-                  </span>
-                </span>
-              </button>
-            </li>
+              </span>
+              <span className={`mt-4 block font-story text-base leading-tight transition-colors sm:text-lg ${selected ? "text-cm-cream" : "text-cm-cream/75 group-hover:text-cm-cream"}`}>
+                {world.world.name}
+              </span>
+            </button>
           );
         })}
-      </ul>
+      </div>
+
+      {/* The chosen world unfolds beneath the three circles. */}
+      <div ref={panel} className={`grid scroll-mb-6 transition-[grid-template-rows] duration-500 ease-out ${shown ? "mt-8 grid-rows-[1fr]" : "grid-rows-[0fr]"}`} aria-live="polite">
+        <div className="overflow-hidden">
+          {shown && (
+            <div key={shown.id} className="animate-cm-rise overflow-hidden rounded-2xl border border-cm-ember/40 bg-white/[0.04] md:grid md:grid-cols-2">
+              <div className="relative h-44 w-full overflow-hidden bg-cm-dusk md:h-auto md:aspect-[4/3]">
+                <div className="absolute inset-x-0 top-1/2 aspect-[4/3] -translate-y-1/2 md:static md:translate-y-0">
+                  <TownArt story={shown} evening={false} />
+                </div>
+              </div>
+              <div className="flex flex-col p-5 sm:p-7">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cm-gold">{shown.title}</p>
+                <h2 className="mt-2 font-story text-3xl leading-tight text-cm-cream">{shown.world.name}</h2>
+                <p className="mt-3 text-base leading-relaxed text-cm-cream/85">{shown.world.tagline}</p>
+                <p className="mt-4 flex flex-wrap gap-1.5">
+                  {shown.world.themes.map((theme) => (
+                    <span key={theme} className="rounded-full border border-white/15 px-2.5 py-0.5 text-[11px] font-medium text-cm-sand">
+                      {theme}
+                    </span>
+                  ))}
+                </p>
+                <p className="mt-4 text-xs text-cm-sand">
+                  Endings found: {endingsFound(shown, profile).length} of {shown.endings.length} · Keepsakes: {shown.keepsakes.filter((keepsake) => profile.keepsakes.includes(keepsake.id)).length} of{" "}
+                  {shown.keepsakes.length} · about {shown.minutes} minutes
+                </p>
+                <div className="mt-auto pt-6">
+                  <PrimaryAction onClick={() => onChoose(shown)}>
+                    Go to {shown.intro.place} <span aria-hidden="true">→</span>
+                  </PrimaryAction>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </Prologue>
   );
 }
