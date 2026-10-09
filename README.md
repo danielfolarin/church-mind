@@ -158,7 +158,7 @@ Church Mind can be downloaded without an app store. On the title screen,
   screen like an app. Android and desktop Chrome or Edge show an Install
   button; on iPhone and iPad it is Share, then "Add to Home Screen" in Safari.
 - **Play without internet.** Saves the whole game, voices included (about
-  60 MB), so it works with no connection.
+  55 MB), so it works with no connection.
 
 `public/manifest.webmanifest` describes the app, `public/sw.js` serves saved
 files when offline, and `src/game/offline.ts` handles installing and saving.
