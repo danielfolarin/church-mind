@@ -83,8 +83,13 @@ Then open <http://127.0.0.1:5174>.
 
 The game is published free with GitHub Pages. Every push to `main` runs
 `.github/workflows/deploy.yml`, which builds the game and puts it online at
-<https://game.thecuriousseekers.com>. Nothing else needs doing to release a
-change.
+<https://games.thecuriousseekers.com/church-mind/>. Nothing else needs doing to
+release a change.
+
+The address comes from the account's games page (the `danielfolarin.github.io`
+repository, which owns the `games.thecuriousseekers.com` domain): every game
+repository with Pages turned on appears as a folder under it. This repository
+must therefore have no custom domain of its own.
 
 ## Rewards
 

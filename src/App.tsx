@@ -42,6 +42,13 @@ import {
 import { speechFor } from "./game/speech";
 import { voice } from "./game/voice";
 
+// The games page one folder up, when this game is served from a folder of a bigger site
+// (games.thecuriousseekers.com/church-mind/). At a domain of its own there is nothing to link to.
+const HUB_LINK =
+  location.protocol.startsWith("http") && location.pathname.split("/").some((part) => part && !part.endsWith(".html"))
+    ? "../"
+    : null;
+
 const story = STORIES[0];
 
 if (import.meta.env.DEV) {
@@ -293,8 +300,16 @@ function TitleScreen({
       <div className="absolute inset-0 bg-gradient-to-t from-cm-night via-cm-night/65 to-cm-night/10" />
       <div className="absolute inset-0 hidden bg-gradient-to-r from-cm-night/60 via-cm-night/20 to-transparent sm:block" />
 
-      <header className="relative z-10 px-6 py-5 sm:px-10">
+      <header className="relative z-10 flex items-center justify-between px-6 py-5 sm:px-10">
         <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-cm-cream/70">A story game</span>
+        {HUB_LINK && (
+          <a
+            href={HUB_LINK}
+            className="text-[11px] font-semibold uppercase tracking-[0.22em] text-cm-cream/70 underline-offset-4 hover:text-cm-cream hover:underline"
+          >
+            All games
+          </a>
+        )}
       </header>
 
       <main className="relative z-10 mx-auto flex w-full max-w-3xl flex-1 flex-col justify-end px-6 pb-12 pt-24 sm:px-10 sm:pb-20">
