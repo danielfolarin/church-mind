@@ -23,6 +23,7 @@ import {
   type Ledger,
 } from "./content";
 import { HouseView } from "./House";
+import { scriptureSpeech, useReadAloud } from "./speech";
 import {
   buildRoom,
   buyItem,
@@ -138,6 +139,25 @@ export function LifeScreen({ me, audio, headingRef, onExit }: { me: Me; audio: S
   const event = useMemo(() => EVENTS.find((candidate) => candidate.id === eventId) ?? null, [eventId]);
   const reviewing = !ledger && !after && !started && life.pending === "review";
 
+  // The sound of wherever this moment is happening.
+  useEffect(() => {
+    sound.setAmbience(event ? event.setting : view === "journal" ? "hall" : life.turn % 4 >= 2 ? "room" : "garden");
+  }, [event, view, life.turn]);
+
+  // What the narrator reads, when voices are on: the scene, then what came of it, then what was just done.
+  const pendingName = childName.trim() || (event?.naming === "pet" ? "the dog" : "your child");
+  const unnamed = (raw: string) => (event?.naming ? raw.split(event.naming === "pet" ? "{pet}" : "{child}").join(pendingName) : raw);
+  const aloud = event
+    ? [...(typeof event.beats === "function" ? event.beats(life) : event.beats).filter(Boolean).map((beat) => say(unnamed(beat), life, me)), ...(event.scripture ? [scriptureSpeech(event.scripture)] : [])]
+    : after
+      ? [...after.text, ...(after.scripture ? [scriptureSpeech(after.scripture)] : [])]
+      : reviewing
+        ? []
+        : told && view !== "decorate"
+          ? [...told.text, ...(told.scripture ? [scriptureSpeech(told.scripture)] : [])]
+          : [];
+  useReadAloud(aloud, audio.voiceOn && !ledger, event ? `event:${event.id}:${life.turn}` : after ? `after:${after.title}:${life.turn}` : told ? `told:${told.title}:${life.season.length}:${life.turn}` : "quiet");
+
   /** Remembers a milestone with a few coins, the same as keepsakes elsewhere. */
   function update(next: LifeState) {
     if (next.scrapbook.length > life.scrapbook.length) addCoins(MILESTONE_COINS * (next.scrapbook.length - life.scrapbook.length));
@@ -181,9 +201,10 @@ export function LifeScreen({ me, audio, headingRef, onExit }: { me: Me; audio: S
     const beats = typeof event.beats === "function" ? event.beats(life) : event.beats;
     const faces = (event.with ?? []).map(lookOf).filter((look): look is Look => Boolean(look));
     const choices = event.choices.map((choice, index) => ({ choice, index })).filter(({ choice }) => !choice.when || choice.when(life));
-    const named = !event.naming || childName.trim().length > 0;
-    // The name isn't on a child yet, so show it in the lines as it is typed.
-    const line = (raw: string) => text(event.naming ? raw.split("{child}").join(childName.trim() || "your child") : raw);
+    // A child must be named. A dog can be named later, by being called something.
+    const named = !event.naming || event.naming === "pet" || childName.trim().length > 0;
+    // The name isn't on anyone yet, so show it in the lines as it is typed.
+    const line = (raw: string) => text(unnamed(raw));
     return (
       <Frame audio={audio} onExit={onExit} life={life}>
         <div className="mx-auto max-w-3xl">
@@ -215,7 +236,7 @@ export function LifeScreen({ me, audio, headingRef, onExit }: { me: Me; audio: S
           {event.naming && (
             <div className="mt-6">
               <label htmlFor="child-name" className="text-[11px] font-semibold uppercase tracking-[0.16em] text-cm-sand">
-                What will you call them?
+                {event.naming === "pet" ? "What would you call him?" : "What will you call them?"}
               </label>
               <input
                 id="child-name"
@@ -393,7 +414,7 @@ export function LifeScreen({ me, audio, headingRef, onExit }: { me: Me; audio: S
           </div>
 
           <div className="mt-4">
-            <HouseView state={life} me={me} partnerLook={partner?.look ?? null} selected={view === "decorate" ? room : null} onSelect={view === "decorate" ? setRoom : undefined} />
+            <HouseView state={life} me={me} partnerLook={partner?.look ?? null} waltLook={WALT} selected={view === "decorate" ? room : null} onSelect={view === "decorate" ? setRoom : undefined} />
           </div>
 
           <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">

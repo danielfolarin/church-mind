@@ -58,8 +58,17 @@ never time for everything.
 It is saved on the device as it goes. The code is in `src/game/life/`:
 `model.ts` (what a life is made of, the rooms and things), `content.ts`
 (people, activities, events, the prayer list, how a season ends), `House.tsx`
-(the drawing) and `LifeScreen.tsx` (the screen). Lines here are not recorded;
-this world is read, not spoken.
+(the drawing) and `LifeScreen.tsx` (the screen).
+
+The family and the dog wander the house by themselves. There is a dog to
+adopt from the shelter (and name, and walk), a few days away by the sea, and,
+once the mortgage is paid, a fund towards somebody else's deposit.
+
+This world is narrated by one voice, like an audiobook. `lines.ts` lives
+several hundred lives to find every line the narrator could read, and
+`npm run voices` records them with the rest. Lines that carry something only
+the player knows (a child's name, the dog's name, a bank balance) can't be
+recorded in advance, so the device's own voice reads those.
 
 ## How it plays
 

@@ -1,4 +1,5 @@
-import type { ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { sound } from "../audio";
 import { MiniPerson } from "../Town";
 import type { Look } from "../types";
 import { ageOf, ROOMS, type LifeState, type Me, type RoomId } from "./model";
@@ -63,8 +64,19 @@ function thing(id: string, tint: string | undefined, state: LifeState): ReactNod
     case "plant":
       return (
         <g>
-          <rect x="180" y="452" width="12" height="14" rx="2" fill="#A8553A" />
-          <path d="M186 452 q-10 -16 -4 -26 M186 452 q8 -14 5 -24 M186 452 q0 -18 0 -30" stroke="#4E8447" strokeWidth="3.5" fill="none" strokeLinecap="round" />
+          <rect x="234" y="378" width="12" height="11" rx="2" fill="#A8553A" />
+          <path d="M240 378 q-9 -12 -4 -20 M240 378 q8 -11 5 -19 M240 378 q0 -14 0 -24" stroke="#4E8447" strokeWidth="3" fill="none" strokeLinecap="round" />
+        </g>
+      );
+    case "stove":
+      return (
+        <g>
+          <rect x="180" y="312" width="6" height="114" fill="#2A2523" />
+          <rect x="172" y="424" width="22" height="36" rx="3" fill="#2A2523" />
+          <rect x="176" y="432" width="14" height="14" rx="2" fill="#E8622C" className="animate-cm-twinkle" />
+          <rect x="174" y="460" width="4" height="6" fill="#14110F" />
+          <rect x="188" y="460" width="4" height="6" fill="#14110F" />
+          <circle cx="183" cy="440" r="26" fill="#FFB25E" opacity="0.14" className="animate-cm-twinkle" />
         </g>
       );
     case "picture":
@@ -351,6 +363,16 @@ function thing(id: string, tint: string | undefined, state: LifeState): ReactNod
           ))}
         </g>
       );
+    case "greenhouse":
+      return (
+        <g>
+          <path d="M818 470 V410 L855 386 L892 410 V470Z" fill="#DDF3F8" opacity="0.7" />
+          <path d="M818 470 V410 L855 386 L892 410 V470 M818 410 H892 M855 386 V470 M836 410 V470 M874 410 V470 M818 440 H892" stroke="#FFFFFF" strokeWidth="3.500" fill="none" />
+          {[828, 846, 864, 882].map((x, i) => (
+            <circle key={x} cx={x} cy={458 - (i % 2) * 6} r="4" fill={i % 2 ? "#C2553F" : "#7FB04F"} />
+          ))}
+        </g>
+      );
     case "fence":
       return (
         <g>
@@ -382,6 +404,8 @@ export function HouseArt({ state, dusk = false, className = "" }: { state: LifeS
   const shade = dusk ? 0.3 : 0;
   const trim = exterior.trim;
   const draw = (room: RoomId) => (rooms[room].built ? rooms[room].items.map((id) => <g key={id}>{thing(id, rooms[room].tints[id], state)}</g>) : null);
+  // The garden is drawn back to front, whatever order things were bought in.
+  const garden = (ids: string[]) => ids.filter((id) => rooms.garden.items.includes(id)).map((id) => <g key={id}>{thing(id, undefined, state)}</g>);
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true" className={`block h-full w-full ${className}`}>
@@ -396,7 +420,7 @@ export function HouseArt({ state, dusk = false, className = "" }: { state: LifeS
       <rect y={GROUND} width={W} height={H - GROUND} fill={dusk ? "#33503F" : "#7FA05E"} style={{ transition: "fill 1.2s ease" }} />
       <ellipse cx="450" cy="600" rx="520" ry="70" fill={dusk ? "#2B4436" : "#6F9152"} />
 
-      {draw("garden")?.filter((_, index) => rooms.garden.items[index] === "tree")}
+      {garden(["tree", "greenhouse"])}
 
       {/* Back walls */}
       <rect x="170" y="150" width="240" height="160" fill={rooms.bedroom.wall} />
@@ -458,17 +482,9 @@ export function HouseArt({ state, dusk = false, className = "" }: { state: LifeS
         </g>
       )}
 
-      {draw("garden")?.filter((_, index) => rooms.garden.items[index] !== "tree")}
+      {garden(["swing", "bench", "veg", "blooms", "fence"])}
     </svg>
   );
-}
-
-interface Standing {
-  key: string;
-  look: Look;
-  x: number;
-  floor: number;
-  scale: number;
 }
 
 /** Looks for the children: their parent's colouring, in smaller clothes. */
@@ -476,51 +492,172 @@ function childLook(me: Me, index: number): Look {
   return { skin: me.look.skin, shade: me.look.shade, hair: me.look.hair, hairStyle: index % 2 ? "puff" : "short", top: ["#E0B84C", "#C2553F", "#4F86A8"][index % 3] };
 }
 
+/** Someone in the house: stands a while, then wanders to another spot on the same floor. */
+function Roamer({
+  spots,
+  floor,
+  width,
+  height,
+  still,
+  dusk,
+  onTap,
+  children,
+}: {
+  /** Places to stand, across the house, in drawing units. The first is where they start. */
+  spots: number[];
+  floor: number;
+  /** Size, as a percentage of the picture. */
+  width: number;
+  height: number;
+  still: boolean;
+  dusk: boolean;
+  onTap?: () => void;
+  children: (walking: boolean, facingLeft: boolean) => ReactNode;
+}) {
+  const [x, setX] = useState(spots[0]);
+  const [walk, setWalk] = useState({ walking: false, left: false, ms: 0 });
+  const at = useRef(spots[0]);
+  const places = spots.join(",");
+
+  useEffect(() => {
+    const list = places.split(",").map(Number);
+    if (still || list.length < 2) return;
+    let pause = 0;
+    let arrive = 0;
+    const wander = () => {
+      pause = window.setTimeout(
+        () => {
+          const others = list.filter((spot) => spot !== at.current);
+          const next = others[Math.floor(Math.random() * others.length)];
+          const ms = Math.abs(next - at.current) * 22;
+          setWalk({ walking: true, left: next < at.current, ms });
+          at.current = next;
+          setX(next);
+          arrive = window.setTimeout(() => {
+            setWalk((current) => ({ ...current, walking: false }));
+            wander();
+          }, ms);
+        },
+        4000 + Math.random() * 9000
+      );
+    };
+    wander();
+    return () => {
+      window.clearTimeout(pause);
+      window.clearTimeout(arrive);
+    };
+  }, [places, still]);
+
+  return (
+    <div
+      onClick={onTap}
+      className={`absolute -translate-x-1/2 -translate-y-full ${onTap ? "cursor-pointer" : "pointer-events-none"}`}
+      style={{ left: `${(x / W) * 100}%`, top: `${(floor / H) * 100}%`, width: `${width}%`, height: `${height}%`, transition: `left ${walk.ms}ms linear`, filter: dusk ? "brightness(0.8)" : undefined }}
+    >
+      {children(walk.walking, walk.left)}
+    </div>
+  );
+}
+
+function DogSprite({ walking, facingLeft }: { walking: boolean; facingLeft: boolean }) {
+  return (
+    <svg viewBox="0 0 40 28" className="block h-full w-full overflow-visible" style={{ transform: facingLeft ? "scaleX(-1)" : undefined }}>
+      <g className="animate-cm-wag" style={{ transformBox: "fill-box", transformOrigin: "100% 100%" }}>
+        <path d="M8 13 Q3 9 4 4" fill="none" stroke="#6B4630" strokeWidth="2.600" strokeLinecap="round" />
+      </g>
+      {[10, 14, 24, 28].map((leg, index) => (
+        <g key={leg} className={walking ? "animate-cm-step" : undefined} style={{ transformBox: "fill-box", transformOrigin: "50% 0%", animationDirection: index % 2 ? "alternate-reverse" : "alternate" }}>
+          <rect x={leg} y="17" width="2.800" height="8.500" rx="1.200" fill="#5E3A22" />
+        </g>
+      ))}
+      <rect x="7" y="10" width="24" height="10" rx="5" fill="#8A5A36" />
+      <circle cx="32" cy="10" r="6" fill="#8A5A36" />
+      <path d="M29 5 L27 0 L33 4Z" fill="#5E3A22" />
+      <path d="M34 6 L37 9 L33 9Z" fill="#5E3A22" />
+      <rect x="35" y="9.500" width="5" height="4" rx="2" fill="#B5855A" />
+      <circle cx="39.400" cy="10.600" r="1.100" fill="#1E1512" />
+      <circle cx="33" cy="8.600" r="1" fill="#1E1512" />
+    </svg>
+  );
+}
+
 /** The house with the family in it, and (when decorating) rooms that can be tapped. */
 export function HouseView({
   state,
   me,
   partnerLook,
+  waltLook,
   selected,
   onSelect,
 }: {
   state: LifeState;
   me: Me;
   partnerLook: Look | null;
+  waltLook?: Look;
   selected?: RoomId | null;
   onSelect?: (room: RoomId) => void;
 }) {
   const dusk = state.turn % 4 >= 2;
-  const people: Standing[] = [{ key: "you", look: me.look, x: 250, floor: 466, scale: 1 }];
-  if (state.stage === "married" && partnerLook) people.push({ key: "partner", look: partnerLook, x: 505, floor: 466, scale: 1 });
-  const spots: [number, number][] = state.rooms.second.built
-    ? [
-        [545, 306],
-        [330, 306],
-        [372, 466],
-      ]
-    : [
-        [330, 306],
-        [372, 466],
-        [600, 466],
-      ];
-  state.children.forEach((child, index) => {
-    const age = ageOf(state, child);
-    people.push({ key: `child-${index}`, look: childLook(me, index), x: spots[index % 3][0], floor: spots[index % 3][1], scale: age < 4 ? 0.4 : age < 20 ? 0.58 : 0.78 });
-  });
+  const still = useMemo(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches, []);
+  const [woof, setWoof] = useState(false);
+  const downstairs = [250, 372, 470, 590, ...(state.rooms.study.built ? [712] : [])];
+  const upstairs = [330, 240, ...(state.rooms.second.built ? [545, 500] : [])];
+  const person = (look: Look) => (walking: boolean, facingLeft: boolean) => <MiniPerson look={look} walking={walking} facingLeft={facingLeft} className="h-full w-full" />;
 
   return (
     <div className="relative aspect-[3/2] w-full overflow-hidden rounded-2xl bg-cm-dusk shadow-2xl shadow-black/40 ring-1 ring-white/10">
       <HouseArt state={state} dusk={dusk} />
-      {people.map((person) => (
-        <div
-          key={person.key}
-          className="pointer-events-none absolute -translate-x-1/2 -translate-y-full"
-          style={{ left: `${(person.x / W) * 100}%`, top: `${(person.floor / H) * 100}%`, width: `${6 * person.scale}%`, height: `${15 * person.scale}%`, filter: dusk ? "brightness(0.8)" : undefined }}
+
+      {waltLook && state.bonds.walt >= 2 && (
+        <Roamer spots={[30]} floor={474} width={6} height={15} still dusk={dusk}>
+          {person(waltLook)}
+        </Roamer>
+      )}
+      <Roamer spots={downstairs} floor={466} width={6} height={15} still={still || Boolean(onSelect)} dusk={dusk}>
+        {person(me.look)}
+      </Roamer>
+      {state.stage === "married" && partnerLook && (
+        <Roamer spots={[505, ...downstairs.filter((spot) => spot !== 505).reverse()]} floor={466} width={6} height={15} still={still || Boolean(onSelect)} dusk={dusk}>
+          {person(partnerLook)}
+        </Roamer>
+      )}
+      {state.children.map((child, index) => {
+        const age = ageOf(state, child);
+        const scale = age < 4 ? 0.4 : age < 20 ? 0.58 : 0.78;
+        // Babies stay in the cot, if there is one; everyone else has the run of a floor.
+        const baby = age < 4;
+        const inCot = baby && state.rooms.second.built && state.rooms.second.items.includes("cot");
+        const up = index % 2 === 0;
+        const spots = baby ? [inCot ? 448 : 545 + index * 14] : up ? [...upstairs.slice(index % upstairs.length), ...upstairs.slice(0, index % upstairs.length)] : [...downstairs].reverse();
+        return (
+          <Roamer key={`${child.name}-${index}`} spots={spots} floor={baby ? (inCot ? 298 : 466) : up ? 306 : 466} width={6 * scale} height={15 * scale} still={still || baby || Boolean(onSelect)} dusk={dusk}>
+            {person(childLook(me, index))}
+          </Roamer>
+        );
+      })}
+      {state.pet && (
+        <Roamer
+          spots={[300, 440, 560, 215]}
+          floor={468}
+          width={4.800}
+          height={5}
+          still={still || Boolean(onSelect)}
+          dusk={dusk}
+          onTap={() => {
+            sound.play("woof");
+            setWoof(true);
+            window.setTimeout(() => setWoof(false), 1300);
+          }}
         >
-          <MiniPerson look={person.look} walking={false} className="h-full w-full" />
-        </div>
-      ))}
+          {(walking, facingLeft) => (
+            <>
+              {woof && <span className="pointer-events-none absolute -top-3 left-1/2 animate-cm-heart text-xs">❤️</span>}
+              <DogSprite walking={walking} facingLeft={facingLeft} />
+            </>
+          )}
+        </Roamer>
+      )}
+
       {onSelect &&
         (Object.keys(ROOM_BOXES) as RoomId[]).map((id) => {
           const box = ROOM_BOXES[id];

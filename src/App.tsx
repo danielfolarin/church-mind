@@ -107,6 +107,7 @@ export default function App() {
 
   // The atmosphere follows wherever the story is.
   useEffect(() => {
+    if (screen === "life") return; // Juniper Lane sets its own.
     if (screen !== "play" || game.phase === "map") sound.setAmbience("title");
     else if (game.phase === "summary") sound.setAmbience(endingFor(story, game).setting);
     else if (game.nodeId) sound.setAmbience(story.nodes[game.nodeId].setting);

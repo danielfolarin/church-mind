@@ -60,7 +60,7 @@ export function partnerOf(state: LifeState, me: Me): Person | null {
   return candidatesFor(me).find((person) => person.id === state.partner) ?? null;
 }
 
-/** Fills {you}, {partner}, {he}, {him}, {his}, {He}, {child} and {eldest} in a line. */
+/** Fills {you}, {partner}, {he}, {him}, {his}, {He}, {child}, {eldest} and {pet} in a line. */
 export function say(text: string, state: LifeState, me: Me): string {
   const partner = partnerOf(state, me);
   const cap = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
@@ -74,6 +74,7 @@ export function say(text: string, state: LifeState, me: Me): string {
     His: cap(partner?.pronouns.his ?? "their"),
     child: state.children[state.children.length - 1]?.name ?? "the little one",
     eldest: state.children[0]?.name ?? "the little one",
+    pet: state.pet?.name ?? "the dog",
     money: `$${state.money}`,
   };
   return text.replace(/\{(\w+)\}/g, (match, key: string) => words[key] ?? match);
@@ -593,6 +594,85 @@ export const ACTIVITIES: Activity[] = [
     }),
   },
   {
+    id: "give_more",
+    group: "Faith",
+    title: "Give generously",
+    blurb: "Two hundred and fifty dollars, to the same envelope. You have more than you need.",
+    time: 0,
+    limit: 1,
+    costs: 250,
+    show: (state) => count(state, "give") >= 2 && state.money >= 1500,
+    run: (state) => ({
+      effects: { grow: count(state, "give_more") === 0 ? { compassion: 1, trust: 1 } : undefined },
+      text: [
+        nth(
+          [
+            "Two hundred and fifty dollars. Your hand is slower putting it in than it was with sixty. You notice that, and put it in anyway.",
+            "You have started to think of some of your money as passing through. It is a lighter way to hold it.",
+          ],
+          count(state, "give_more")
+        ),
+      ],
+    }),
+  },
+  {
+    id: "deposit",
+    group: "Faith",
+    title: "Put $500 towards someone else’s front door",
+    blurb: "What used to go to the bank could become somebody’s deposit.",
+    time: 0,
+    limit: 1,
+    costs: 500,
+    show: (state) => state.mortgage === 0 && count(state, "deposit") < 4,
+    run: (state) =>
+      count(state, "deposit") === 3
+        ? { text: [], event: "front_door" }
+        : { text: [nth(["Five hundred dollars into an account marked “someone’s front door”. You don’t know yet whose door it is.", "Another five hundred. The chapel treasurer has started calling it “the Juniper fund”, which embarrasses you.", "Fifteen hundred in the fund now. Mrs. Abara says she knows of a young family in a damp flat on Mill Street."], count(state, "deposit"))] },
+  },
+  {
+    id: "walk",
+    group: "Rest",
+    title: "Walk {pet}",
+    blurb: "Round the Lane, down to the river, and back the long way.",
+    time: 1,
+    limit: 1,
+    show: (state) => state.pet !== null,
+    run: (state) => ({
+      effects: { energy: 2, bond: count(state, "walk") % 2 === 0 ? { walt: 1 } : undefined },
+      text: [
+        rotate(
+          [
+            "{pet} has to greet every lamp post on Juniper Lane personally. Walt is at his gate, and has a biscuit in his cardigan pocket that he claims is a coincidence.",
+            "Down to the river and back. You meet four neighbours you have never spoken to. It turns out a dog is a way of being introduced.",
+            "It rains. {pet} does not care. By the second mile, neither do you.",
+          ],
+          count(state, "walk")
+        ),
+      ],
+    }),
+  },
+  {
+    id: "away",
+    group: "Rest",
+    title: "A few days away",
+    blurb: "A borrowed caravan by the sea. No signal, on purpose.",
+    time: 2,
+    limit: 1,
+    costs: 450,
+    show: (state) => state.turn >= 4,
+    run: (state) => ({
+      effects: { energy: 4, bond: { partner: state.stage === "married" ? 1 : 0, kids: state.children.length ? 1 : 0 }, flags: ["rested"] },
+      text: [
+        state.children.length
+          ? "Four days in a caravan that smells of gas and wet towels. Everyone is sandy, nobody sleeps properly, and on the last night {eldest} says it was the best holiday in the world."
+          : state.stage === "married"
+            ? "Four days by the sea with {partner}, and nothing to do. By the second day you have run out of things to say about work. By the third you are talking about everything else."
+            : "Four days by the sea on your own. You take three books and read half of one. Mostly you walk, and find that you are better company than you had expected.",
+        "The house is exactly where you left it. So is everything in it that you were worried about. It looks smaller.",
+      ],
+    }),
+  },
+  {
     id: "rest",
     group: "Rest",
     title: "A slow day at home",
@@ -985,6 +1065,30 @@ export const EVENTS: LifeEvent[] = [
     ],
   },
   {
+    id: "shelter",
+    title: "The dog at the shelter",
+    setting: "garden",
+    with: ["you"],
+    naming: "pet",
+    beats: [
+      "The shelter has a stall at the chapel fête. In a pen at the back there is a dog of no known make: brown, one ear up, and looking at you as if you were late.",
+      "“Nobody wants him,” says the volunteer. “He’s four, and he’s not pretty, and he eats shoes.” The dog puts a paw on your foot.",
+    ],
+    choices: [
+      { label: "Take him home. ($80)", when: (state) => state.money >= 80, effects: { money: -80, energy: 1, memory: { icon: "🐕", text: "{pet} came home from the shelter." } }, then: (state, name) => ({ ...state, pet: { name: name.trim() || "Scout" } }), result: ["He sits in the footwell the whole way home with his chin on your shoe. By evening he has chosen the warmest spot in the house and is asleep in it.", "A dog is for years. You have just promised him yours. It feels, oddly, like being trusted with something."] },
+      { label: "Not now. A dog is for years, and you’d want to do it properly.", effects: { grow: { wisdom: 1 } }, result: ["You scratch his ears and say sorry, and mean it. Saying no to a good thing you can’t do well is not unkindness.", "A fortnight later Mrs. Abara mentions that he has gone to a farm. An actual farm, she says, seeing your face."] },
+    ],
+  },
+  {
+    id: "front_door",
+    title: "Someone’s front door",
+    setting: "hall",
+    with: ["you"],
+    beats: ["The last five hundred makes two thousand. Mrs. Abara has been waiting for exactly that number.", "A young couple with a baby, in a damp flat on Mill Street, a deposit two thousand dollars short. They do not know your name, and you have asked that they never do."],
+    scripture: CHEERFUL,
+    choices: [{ label: "Hand it over.", effects: { grow: { compassion: 1, trust: 1 }, bond: { church: 1 }, memory: { icon: "🚪", text: "Your fund became somebody else’s front door." } }, result: ["A month later, walking down Mill Street, you pass a house with a pram in the hall and somebody up a ladder painting a window frame the wrong colour.", "It isn’t yours. That is the best part. Nothing has come back to you for it, and you find you would do it again tomorrow."] }],
+  },
+  {
     id: "mortgage_paid",
     title: "The last payment",
     setting: "kitchen",
@@ -1116,6 +1220,7 @@ const OVERDRAFT = -1500;
 
 const POOL: { id: string; when: (state: LifeState) => boolean }[] = [
   { id: "catalogue", when: (state) => state.turn >= 1 },
+  { id: "shelter", when: (state) => state.turn >= 3 && state.pet === null },
   { id: "rate_rise", when: (state) => state.turn >= 2 && state.mortgage > 0 },
   { id: "walt_fence", when: (state) => state.turn >= 3 && state.bonds.walt >= 1 },
   { id: "roof", when: (state) => state.turn >= 3 },
@@ -1264,16 +1369,21 @@ export function doActivity(state: LifeState, activity: Activity, me: Me): { stat
   return { state: next, outcome };
 }
 
+/** What a choice leads to, before the names are filled in. */
+export function resultLines(choice: LifeEvent["choices"][number], state: LifeState): string[] {
+  return (typeof choice.result === "function" ? choice.result(state) : choice.result).filter(Boolean);
+}
+
 /** Lives through a choice: what it changes, what is remembered, and what it leads to. */
 export function resolveChoice(state: LifeState, event: LifeEvent, choiceIndex: number, me: Me, childName: string): { state: LifeState; text: string[]; scripture?: Scripture } {
   const choice = event.choices[choiceIndex];
-  let next = event.naming ? addChild(state, childName, event.naming) : state;
-  const memory = choice.effects?.memory ? { ...choice.effects.memory, text: say(choice.effects.memory.text, next, me) } : undefined;
+  let next = event.naming === "born" || event.naming === "adopted" ? addChild(state, childName, event.naming) : state;
   // Something lived through a second time still costs what it costs, but it isn't a lesson twice.
   const again = state.seen.includes(event.id);
-  next = applyEffects(next, { ...choice.effects, memory, grow: again ? undefined : choice.effects?.grow });
-  if (choice.then) next = choice.then(next);
+  next = applyEffects(next, { ...choice.effects, memory: undefined, grow: again ? undefined : choice.effects?.grow });
+  if (choice.then) next = choice.then(next, childName);
+  // Remembered last, so that the memory can name whoever has just arrived.
+  if (choice.effects?.memory) next = applyEffects(next, { memory: { ...choice.effects.memory, text: say(choice.effects.memory.text, next, me) } });
   next = { ...next, seen: next.seen.includes(event.id) ? next.seen : [...next.seen, event.id], pending: null };
-  const lines = typeof choice.result === "function" ? choice.result(next) : choice.result;
-  return { state: next, text: lines.filter(Boolean).map((line) => say(line, next, me)), scripture: choice.scripture };
+  return { state: next, text: resultLines(choice, next).map((line) => say(line, next, me)), scripture: choice.scripture };
 }

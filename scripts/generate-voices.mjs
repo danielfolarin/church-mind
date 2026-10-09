@@ -69,6 +69,15 @@ for (const story of STORIES) {
     }
   }
 }
+
+// Juniper Lane is one long narration; its lines are gathered the same way.
+const { collectLifeLines } = await vite.ssrLoadModule("/src/game/life/lines.ts");
+const { NARRATOR } = await vite.ssrLoadModule("/src/game/life/speech.ts");
+const { clipId } = await vite.ssrLoadModule("/src/game/speech.ts");
+for (const text of collectLifeLines()) {
+  const clip = clipId("narrator", text);
+  if (!lines.has(clip)) lines.set(clip, { text, style: NARRATOR, voiceId: "narrator", clip });
+}
 await vite.close();
 
 const config = JSON.parse(readFileSync(join(root, "voices.config.json"), "utf8"));

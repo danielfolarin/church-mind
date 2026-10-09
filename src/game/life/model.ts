@@ -93,6 +93,8 @@ export interface LifeState {
   scrapbook: Memory[];
   /** An event waiting to be played before the season is planned. */
   pending: string | null;
+  /** The dog, if there is one. */
+  pet: { name: string } | null;
   /** The mortgage at the start of this year, for the year's review. */
   yearStart: { mortgage: number; hosted: number; prayed: number };
 }
@@ -125,8 +127,8 @@ export interface LifeChoice {
   /** Only offered when this passes. */
   when?: (state: LifeState) => boolean;
   effects?: LifeEffects;
-  /** Anything the effects above can't express. */
-  then?: (state: LifeState) => LifeState;
+  /** Anything the effects above can't express. `name` is whatever the player typed, if the scene asked for a name. */
+  then?: (state: LifeState, name: string) => LifeState;
   result: string[] | ((state: LifeState) => string[]);
   scripture?: Scripture;
 }
@@ -139,8 +141,8 @@ export interface LifeEvent {
   with?: string[];
   beats: string[] | ((state: LifeState) => string[]);
   scripture?: Scripture;
-  /** Asks the player to name a child before the choices are shown. */
-  naming?: "born" | "adopted";
+  /** Asks the player for a name before the choices are shown: a child, or a dog. */
+  naming?: "born" | "adopted" | "pet";
   choices: LifeChoice[];
 }
 
@@ -178,6 +180,7 @@ export const ITEMS: Record<string, Item> = {
   plant: { room: "living", name: "A plant you will try to keep alive", price: 25 },
   picture: { room: "living", name: "A picture for the wall", price: 30 },
   piano: { room: "living", name: "Second-hand piano", price: 400 },
+  stove: { room: "living", name: "A wood-burning stove", price: 450, note: "Somewhere for everyone to end up in winter." },
 
   table: { room: "kitchen", name: "Kitchen table and chairs", price: 150, note: "Lets you have people round for dinner." },
   fridge: { room: "kitchen", name: "A fridge that doesn’t hum", price: 200 },
@@ -209,6 +212,7 @@ export const ITEMS: Record<string, Item> = {
   veg: { room: "garden", name: "Vegetable patch", price: 60, note: "Takes a little off the shopping every season." },
   blooms: { room: "garden", name: "A border of flowers", price: 30 },
   fence: { room: "garden", name: "A new front fence", price: 80 },
+  greenhouse: { room: "garden", name: "A small greenhouse", price: 380, note: "Walt will have views about your tomatoes." },
 };
 
 // ——— A new life ———
@@ -251,6 +255,7 @@ export function newLife(): LifeState {
     marks: {},
     scrapbook: [],
     pending: "welcome",
+    pet: null,
     yearStart: { mortgage: 12000, hosted: 0, prayed: 0 },
   };
 }
