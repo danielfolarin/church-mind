@@ -112,6 +112,9 @@ Not everything in the week is a decision. Some of it is only there to enjoy.
   skipped, and never changes the story. An activity gets one by adding
   `game: "coffee" | "seeds" | "boxes"` to it in the story file; the games
   themselves are in `src/game/MiniGame.tsx`.
+  The coffee rush has customers with faces and a patience bar; both matching
+  games call out a run of right answers. Each player's best score is kept on
+  their device and shown in the Collection.
 - **The town answers back.** Tap a neighbour and they say something (the
   `BANTER` list in `src/game/Town.tsx`). Tap Biscuit the dog for a woof and,
   once per part of the day, a coin.

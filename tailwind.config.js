@@ -116,6 +116,10 @@ export default {
           "20%": { opacity: "1" },
           "100%": { transform: "translateY(-34px) scale(1.2)", opacity: "0" },
         },
+        "cm-drain": {
+          from: { transform: "scaleX(1)" },
+          to: { transform: "scaleX(0)" },
+        },
         "cm-confetti": {
           "0%": { transform: "translate3d(0, 0, 0) rotate(0deg)", opacity: "1" },
           "85%": { opacity: "1" },
@@ -143,6 +147,7 @@ export default {
         "cm-shake": "cm-shake 0.22s ease-in-out 2",
         "cm-wag": "cm-wag 0.22s ease-in-out infinite alternate",
         "cm-heart": "cm-heart 1.3s ease-out both",
+        "cm-drain": "cm-drain 2.4s linear both",
         "cm-confetti": "cm-confetti 2.8s cubic-bezier(0.3, 0.2, 0.6, 1) both",
         "cm-coin": "cm-coin 1.6s ease-in-out infinite",
         "cm-sparkle": "cm-sparkle 1.8s ease-in-out infinite",

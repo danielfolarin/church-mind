@@ -1,6 +1,6 @@
 import { useRef, useState, type ReactNode, type RefObject } from "react";
 import { fill, strongestQuality, tokensFor, type GameState } from "./engine";
-import { buy, loadProfile, SHOP, type WeekReward } from "./rewards";
+import { buy, GAME_NAMES, loadProfile, SHOP, type WeekReward } from "./rewards";
 import { FullFigure } from "./Rig";
 import { shareWeekCard } from "./shareCard";
 import type { Ending, Keepsake, Lead, Story } from "./types";
@@ -158,6 +158,16 @@ export function CollectionScreen({ story, lead, wordmark, headingRef, onBack }: 
         <p className="mt-4 flex items-center gap-2.5 font-story text-2xl">
           <Coin className="h-6 w-6" /> {profile.coins} coins
         </p>
+
+        {Object.keys(profile.best).length > 0 && (
+          <p className="mt-3 flex flex-wrap gap-2 text-sm text-cm-sand">
+            {Object.entries(profile.best).map(([game, score]) => (
+              <span key={game} className="rounded-full border border-white/10 px-3 py-1">
+                {GAME_NAMES[game] ?? game}: best <span className="font-semibold text-cm-cream">{score}</span>
+              </span>
+            ))}
+          </p>
+        )}
 
         <section className="mt-10">
           <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cm-sand">

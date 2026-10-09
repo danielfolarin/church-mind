@@ -17,6 +17,8 @@ export interface Profile {
   /** Ids of shop items bought. */
   owned: string[];
   weeks: number;
+  /** Best score in each quick game, by game id. */
+  best: Record<string, number>;
 }
 
 export interface ShopItem {
@@ -39,12 +41,12 @@ export function loadProfile(): Profile {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "null") as Partial<Profile> | null;
     if (saved && typeof saved.coins === "number") {
-      return { coins: saved.coins, keepsakes: saved.keepsakes ?? [], owned: saved.owned ?? [], weeks: saved.weeks ?? 0 };
+      return { coins: saved.coins, keepsakes: saved.keepsakes ?? [], owned: saved.owned ?? [], weeks: saved.weeks ?? 0, best: saved.best ?? {} };
     }
   } catch {
     // Nothing saved, or storage is unavailable: start fresh.
   }
-  return { coins: 0, keepsakes: [], owned: [], weeks: 0 };
+  return { coins: 0, keepsakes: [], owned: [], weeks: 0, best: {} };
 }
 
 function saveProfile(profile: Profile) {
@@ -88,6 +90,18 @@ export function addCoins(coins: number): Profile {
   const next = { ...profile, coins: profile.coins + coins };
   saveProfile(next);
   return next;
+}
+
+/** The quick games, by the name players see. */
+export const GAME_NAMES: Record<string, string> = { coffee: "The 9:15 rush", seeds: "Beans from peas", boxes: "Third floor, no lift" };
+
+/** Notes a quick-game score. Returns the player's best, and whether this score just beat it. */
+export function recordBest(game: string, score: number): { best: number; fresh: boolean } {
+  const profile = loadProfile();
+  const before = profile.best[game] ?? 0;
+  if (score <= before) return { best: before, fresh: false };
+  saveProfile({ ...profile, best: { ...profile.best, [game]: score } });
+  return { best: score, fresh: before > 0 };
 }
 
 /** Buys a shop item if the player can afford it. Returns the updated profile. */

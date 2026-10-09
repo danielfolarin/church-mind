@@ -2,7 +2,9 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { sound } from "./audio";
 import { Confetti } from "./Collection";
 import { fill, tokensFor } from "./engine";
-import type { Lead } from "./types";
+import { Portrait } from "./Figure";
+import { recordBest } from "./rewards";
+import type { Lead, Look } from "./types";
 
 // Quick games tucked inside the week: a coffee rush on a shift, sorting seeds
 // in the potting shed, stacking boxes on moving day. They are here for fun.
@@ -78,16 +80,33 @@ const QUICK: Record<"coffee" | "seeds", { title: string; who: string; intro: str
   },
 };
 
+// The regulars in the Kindling queue.
+const CUSTOMERS: Look[] = [
+  { skin: "#C99672", shade: "#B07F5C", hair: "#3A2A20", hairStyle: "short", top: "#C2553F", beard: true },
+  { skin: "#7E4E33", shade: "#683D26", hair: "#17110F", hairStyle: "puff", top: "#E0B84C", earrings: true, lip: "#5A2420" },
+  { skin: "#E0B596", shade: "#C89B7B", hair: "#8A5A32", hairStyle: "long", top: "#4F86A8", glasses: true, lip: "#8A3A32" },
+  { skin: "#A8744C", shade: "#915F3B", hair: "#BDB7B0", hairStyle: "bun", top: "#7A5AA6", topStyle: "cardigan", accent: "#E8DCC8", glasses: true },
+  { skin: "#8E5B3C", shade: "#774A30", hair: "#201512", hairStyle: "curly", top: "#4E9A78", topStyle: "hoodie", accent: "#E8DCC8" },
+  { skin: "#D8AC8A", shade: "#C09270", hair: "#5A3A26", hairStyle: "wavy", top: "#B5673A", lip: "#8A3A32", earrings: true },
+  { skin: "#6F4631", shade: "#5B3827", hair: "#19120F", hairStyle: "short", top: "#2C3E57", topStyle: "collar", accent: "#E8DCC8", glasses: true },
+];
+
 const ROUND_SECONDS = 20;
+const patienceFor = (score: number) => Math.max(950, 2400 - score * 80);
 
 /** Something appears; tap what matches before the time runs out. */
-function QuickPick({ kind, lead, onEnd }: { kind: "coffee" | "seeds"; lead: Lead; onEnd: (score: number) => void }) {
+function QuickPick({ kind, lead, onEnd }: { kind: "coffee" | "seeds"; lead: Lead; onEnd: (score: number, run: number) => void }) {
   const game = QUICK[kind];
   const [target, setTarget] = useState(() => game.options[Math.floor(Math.random() * game.options.length)]);
   const [score, setScore] = useState(0);
   const [left, setLeft] = useState(ROUND_SECONDS);
   const [flash, setFlash] = useState<"good" | "bad" | null>(null);
+  const [served, setServed] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [patience, setPatience] = useState(2400);
   const scoreRef = useRef(0);
+  const streakRef = useRef(0);
+  const bestRun = useRef(0);
   const deadline = useRef(performance.now() + 2400);
   const ended = useRef(false);
 
@@ -97,7 +116,10 @@ function QuickPick({ kind, lead, onEnd }: { kind: "coffee" | "seeds"; lead: Lead
       // A fresh face most of the time, with the odd repeat to keep players honest.
       return Math.random() < 0.2 ? current : others[Math.floor(Math.random() * others.length)];
     });
-    deadline.current = performance.now() + Math.max(950, 2400 - scoreRef.current * 80);
+    const wait = patienceFor(scoreRef.current);
+    deadline.current = performance.now() + wait;
+    setPatience(wait);
+    setServed((count) => count + 1);
   }, [game.options]);
 
   const answer = useCallback(
@@ -108,6 +130,9 @@ function QuickPick({ kind, lead, onEnd }: { kind: "coffee" | "seeds"; lead: Lead
         scoreRef.current += 1;
         setScore(scoreRef.current);
       }
+      streakRef.current = right ? streakRef.current + 1 : 0;
+      bestRun.current = Math.max(bestRun.current, streakRef.current);
+      setStreak(streakRef.current);
       sound.play(right ? "good" : "bad");
       setFlash(right ? "good" : "bad");
       window.setTimeout(() => setFlash(null), 220);
@@ -128,7 +153,7 @@ function QuickPick({ kind, lead, onEnd }: { kind: "coffee" | "seeds"; lead: Lead
       if (remaining <= 0 && !ended.current) {
         ended.current = true;
         window.clearInterval(timer);
-        onEnd(scoreRef.current);
+        onEnd(scoreRef.current, bestRun.current);
       } else if (now > deadline.current) {
         deadline.current = now + 99999; // one miss per customer
         answerRef.current(null);
@@ -154,6 +179,11 @@ function QuickPick({ kind, lead, onEnd }: { kind: "coffee" | "seeds"; lead: Lead
     <div>
       <div className="flex items-center justify-between text-sm font-semibold text-cm-cream">
         <span>Score {score}</span>
+        {streak >= 3 && (
+          <span key={streak} className="animate-cm-pop rounded-full bg-cm-ember/20 px-3 py-0.5 text-xs text-cm-gold">
+            {streak} in a row!
+          </span>
+        )}
         <span className="tabular-nums text-cm-sand">{Math.ceil(left)}s</span>
       </div>
       <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
@@ -161,13 +191,25 @@ function QuickPick({ kind, lead, onEnd }: { kind: "coffee" | "seeds"; lead: Lead
       </div>
 
       <div
-        key={`${target.id}-${score}`}
+        key={served}
         className={`mt-6 flex animate-cm-pop flex-col items-center rounded-3xl border-2 px-6 py-8 transition-colors ${
           flash === "good" ? "border-cm-gold bg-cm-gold/15" : flash === "bad" ? "animate-cm-shake border-red-400/70 bg-red-400/10" : "border-white/10 bg-white/[0.04]"
         }`}
       >
-        <span className="scale-[1.7]">{target.icon}</span>
+        {kind === "coffee" ? (
+          <div className="flex items-center gap-5">
+            <Portrait look={CUSTOMERS[served % CUSTOMERS.length]} mood={flash === "bad" ? "hurt" : "warm"} className="h-24 w-24" />
+            <span className="scale-[1.5]">{target.icon}</span>
+          </div>
+        ) : (
+          <span className="scale-[1.7]" data-seed={target.id}>
+            {target.icon}
+          </span>
+        )}
         <p className="mt-6 font-story text-2xl text-cm-cream">{fill(game.ask(target.label), tokensFor(lead))}</p>
+        <span className="mt-5 block h-1.5 w-40 overflow-hidden rounded-full bg-white/10 motion-reduce:hidden" aria-hidden="true">
+          <span className="block h-full origin-left animate-cm-drain rounded-full bg-cm-ember" style={{ animationDuration: `${patience}ms` }} />
+        </span>
       </div>
 
       <div className={`mt-5 grid gap-3 ${game.options.length === 2 ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-4"}`}>
@@ -299,20 +341,27 @@ const BOX_GAME = {
 export function MiniGame({ id, lead, onDone }: { id: MiniGameId; lead: Lead; onDone: (result: Result) => void }) {
   const [phase, setPhase] = useState<"intro" | "play" | "result">("intro");
   const [score, setScore] = useState(0);
+  const [run, setRun] = useState(0);
+  const [best, setBest] = useState({ best: 0, fresh: false });
   const game = id === "boxes" ? BOX_GAME : QUICK[id];
   const tokens = tokensFor(lead);
   const coins = id === "boxes" ? score * 2 : Math.min(score, 16);
   const tier = score < game.tiers[0] ? 0 : score < game.tiers[1] ? 1 : 2;
 
-  const finish = useCallback((final: number) => {
-    setScore(final);
-    setPhase("result");
-    sound.play("win");
-  }, []);
+  const finish = useCallback(
+    (final: number, bestRun = 0) => {
+      setScore(final);
+      setRun(bestRun);
+      setBest(recordBest(id, final));
+      setPhase("result");
+      sound.play("win");
+    },
+    [id]
+  );
 
   return (
     <div className="min-h-screen bg-cm-night text-cm-cream">
-      {phase === "result" && tier === 2 && <Confetti />}
+      {phase === "result" && (tier === 2 || best.fresh) && <Confetti />}
       <main className="mx-auto max-w-xl px-5 pb-16 pt-10 sm:pt-16">
         <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-cm-gold">A quick game</p>
         <h1 className="mt-2 font-story text-4xl sm:text-5xl">{game.title}</h1>
@@ -338,6 +387,10 @@ export function MiniGame({ id, lead, onDone }: { id: MiniGameId; lead: Lead; onD
           <div className="animate-cm-rise">
             <p className="mt-6 font-story text-6xl text-cm-gold">{score}</p>
             <p className="mt-1 text-sm uppercase tracking-[0.18em] text-cm-sand">{id === "boxes" ? "boxes stacked" : id === "coffee" ? "drinks served" : "seeds sorted"}</p>
+            <p className="mt-3 flex flex-wrap items-center gap-2 text-sm text-cm-sand">
+              {best.fresh ? <span className="animate-cm-pop rounded-full bg-cm-gold px-3 py-0.5 text-xs font-bold uppercase tracking-wider text-cm-night">New best!</span> : <span>Your best: {best.best}</span>}
+              {run >= 3 && <span>· Longest run: {run} in a row</span>}
+            </p>
             <div className="mt-6 border-l-2 border-cm-gold/50 pl-4">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-cm-gold">{fill(game.who, tokens)}</p>
               <p className="mt-1 font-story text-xl leading-relaxed text-cm-cream">{game.quips[tier]}</p>
