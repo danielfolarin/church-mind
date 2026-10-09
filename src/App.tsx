@@ -22,6 +22,7 @@ import { DownloadPanel } from "./game/Download";
 import { MiniGame } from "./game/MiniGame";
 import { addCoins, loadProfile, rewardWeek, type WeekReward } from "./game/rewards";
 import { FullFigure } from "./game/Rig";
+import { clearWeek, loadWeek, saveWeek, type SavedWeek } from "./game/save";
 import { SceneArt, TitleArt } from "./game/SceneArt";
 import { Stage, type StagePerson } from "./game/Stage";
 import { STORIES } from "./game/stories";
@@ -123,14 +124,28 @@ export default function App() {
     setReward(rewardWeek(story, game));
   }, [screen, game]);
 
+  // The week is saved after every step, so it can be picked up later.
+  useEffect(() => {
+    if (screen !== "play") return;
+    if (game.phase === "summary") clearWeek();
+    else saveWeek(story, lead, game);
+  }, [screen, lead, game]);
+
   function begin(chosen: Lead) {
     setLead(chosen);
     setGame(startWeek(story));
     setScreen("play");
   }
 
+  function resume(saved: SavedWeek) {
+    setLead(saved.lead);
+    setGame(saved.game);
+    setMini(null);
+    setScreen("play");
+  }
+
   if (screen === "title") {
-    return <TitleScreen story={story} audio={audio} headingRef={headingRef} onBegin={() => setScreen("intro")} onCollection={() => setScreen("collection")} />;
+    return <TitleScreen story={story} audio={audio} headingRef={headingRef} onBegin={() => setScreen("intro")} onContinue={resume} onCollection={() => setScreen("collection")} />;
   }
 
   if (screen === "collection") {
@@ -258,15 +273,18 @@ function TitleScreen({
   audio,
   headingRef,
   onBegin,
+  onContinue,
   onCollection,
 }: {
   story: Story;
   audio: SoundSettings;
   headingRef: HeadingRef;
   onBegin: () => void;
+  onContinue: (saved: SavedWeek) => void;
   onCollection: () => void;
 }) {
   const profile = loadProfile();
+  const saved = loadWeek(story);
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden bg-cm-night text-cm-cream">
       <div className="absolute inset-0 animate-cm-fade">
@@ -295,16 +313,34 @@ function TitleScreen({
           time, money and energy. Every choice has consequences. None of them is beyond grace.
         </p>
 
-        <div {...stagger(7, "mt-9 flex flex-col gap-5 sm:flex-row sm:items-center")}>
-          <PrimaryAction onClick={onBegin}>
-            Begin Story <span aria-hidden="true">→</span>
-          </PrimaryAction>
-          <p className="text-sm text-cm-sand">
-            <span className="font-story text-base italic text-cm-cream">{story.title}</span>
-            <span className="mx-2 text-cm-sand/50">·</span>
-            about {story.minutes} minutes
-          </p>
-        </div>
+        {saved ? (
+          <div {...stagger(7, "mt-9")}>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <PrimaryAction onClick={() => onContinue(saved)}>
+                Continue your week <span aria-hidden="true">→</span>
+              </PrimaryAction>
+              <QuietAction onClick={onBegin}>Start a new week</QuietAction>
+            </div>
+            <p className="mt-4 text-sm text-cm-sand">
+              <span className="font-story text-base italic text-cm-cream">
+                {saved.lead.name}, {slotLabel(story.slots[saved.game.slot])}
+              </span>
+              <span className="mx-2 text-cm-sand/50">·</span>
+              saved where you stopped
+            </p>
+          </div>
+        ) : (
+          <div {...stagger(7, "mt-9 flex flex-col gap-5 sm:flex-row sm:items-center")}>
+            <PrimaryAction onClick={onBegin}>
+              Begin Story <span aria-hidden="true">→</span>
+            </PrimaryAction>
+            <p className="text-sm text-cm-sand">
+              <span className="font-story text-base italic text-cm-cream">{story.title}</span>
+              <span className="mx-2 text-cm-sand/50">·</span>
+              about {story.minutes} minutes
+            </p>
+          </div>
+        )}
 
         <div {...stagger(9, "mt-8 flex flex-wrap items-center gap-x-4 gap-y-2")}>
           <SoundControls settings={audio} />

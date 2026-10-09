@@ -102,6 +102,16 @@ Finishing a week pays out, and what is earned is kept on the player's device.
 Rewards mark showing up for people and making repairs. They are deliberately
 not a measure of how good the player was.
 
+## Picking up where you stopped
+
+The week in progress is saved on the player's device after every step: each
+choice, each scene, each quick game. Closing the game and coming back shows
+**Continue your week** on the title screen, which returns to the same moment
+with the same character, money, energy and choices. "Start a new week" is
+still there, and replaces the saved week once the new one begins. The save is
+cleared when a week is finished. It lives in `src/game/save.ts`, and is
+dropped quietly if a story update means it no longer fits.
+
 ## Just for fun
 
 Not everything in the week is a decision. Some of it is only there to enjoy.
@@ -183,6 +193,7 @@ src/game/Rig.tsx            full-body characters on a skeleton: poses and moveme
 src/game/Creator.tsx        the make-your-own-character screen
 src/game/MiniGame.tsx       the quick games: coffee rush, seed sorting, box stacking
 src/game/rewards.ts         coins, keepsakes and the shop: what is earned and kept
+src/game/save.ts            the week in progress, saved so it can be continued later
 src/game/Collection.tsx     the end-of-week rewards and the Collection screen
 src/game/shareCard.ts       draws the picture for "Share your week"
 src/game/Stage.tsx          places the characters in the scene and lights them
