@@ -13,6 +13,9 @@ export interface WeekCard {
   grew: string | null;
 }
 
+/** Where this game lives, whether at a domain of its own or in a folder of a bigger site. */
+const home = () => new URL("./", window.location.href);
+
 const WIDTH = 1080;
 const HEIGHT = 1350;
 const SERIF = '"Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif';
@@ -132,7 +135,7 @@ async function draw(card: WeekCard): Promise<HTMLCanvasElement> {
   ctx.fillStyle = "#E2B36B";
   ctx.font = `600 26px ${SANS}`;
   ctx.textAlign = "right";
-  ctx.fillText(window.location.host, WIDTH - 80, 1290);
+  ctx.fillText(`${home().host}${home().pathname}`.replace(/\/$/, ""), WIDTH - 80, 1290);
   ctx.textAlign = "left";
   return canvas;
 }
@@ -145,7 +148,7 @@ export async function shareWeekCard(card: WeekCard): Promise<void> {
 
   if (navigator.canShare?.({ files: [file] })) {
     try {
-      await navigator.share({ files: [file], title: "Church Mind", text: `My week in ${card.place}. Play yours: ${window.location.origin}` });
+      await navigator.share({ files: [file], title: "Church Mind", text: `My week in ${card.place}. Play yours: ${home().href}` });
       return;
     } catch (error) {
       // Closing the share sheet is not a failure; anything else falls back to saving.
