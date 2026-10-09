@@ -78,7 +78,7 @@ export function DownloadPanel() {
                 <p className="mt-2 text-sm leading-relaxed text-cm-cream/85">Saved. The whole game, voices included, now plays on this device with no connection.</p>
               ) : (
                 <>
-                  <p className="mt-2 text-sm leading-relaxed text-cm-cream/85">Save the whole game, voices included, to this device. About 55 MB; best done on Wi-Fi.</p>
+                  <p className="mt-2 text-sm leading-relaxed text-cm-cream/85">Save the whole game, voices included, to this device. About 80 MB; best done on Wi-Fi.</p>
                   {progress === null ? (
                     <button type="button" onClick={save} className="mt-3 inline-flex min-h-10 items-center rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-cm-cream transition hover:border-white/50 hover:bg-white/5">
                       Save for offline play
