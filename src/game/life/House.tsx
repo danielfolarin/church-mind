@@ -501,6 +501,8 @@ function Roamer({
   still,
   dusk,
   onTap,
+  goTo,
+  onArrive,
   children,
 }: {
   /** Places to stand, across the house, in drawing units. The first is where they start. */
@@ -512,16 +514,39 @@ function Roamer({
   still: boolean;
   dusk: boolean;
   onTap?: () => void;
+  /** Somewhere to walk to now; `n` changes each time they are sent. */
+  goTo?: { x: number; n: number } | null;
+  onArrive?: () => void;
   children: (walking: boolean, facingLeft: boolean) => ReactNode;
 }) {
   const [x, setX] = useState(spots[0]);
   const [walk, setWalk] = useState({ walking: false, left: false, ms: 0 });
   const at = useRef(spots[0]);
   const places = spots.join(",");
+  const arrived = useRef(onArrive);
+  arrived.current = onArrive;
+  const sent = goTo?.n ?? null;
+
+  // Sent somewhere: walk there briskly, and say so on arrival.
+  useEffect(() => {
+    if (!goTo) return;
+    const to = Math.max(190, Math.min(790, goTo.x));
+    const ms = still ? 0 : Math.min(1000, Math.abs(to - at.current) * 5);
+    setWalk({ walking: ms > 0, left: to < at.current, ms });
+    at.current = to;
+    setX(to);
+    const timer = window.setTimeout(() => {
+      setWalk((current) => ({ ...current, walking: false }));
+      arrived.current?.();
+    }, ms + 80);
+    return () => window.clearTimeout(timer);
+    // Only a new errand starts a new walk.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sent]);
 
   useEffect(() => {
     const list = places.split(",").map(Number);
-    if (still || list.length < 2) return;
+    if (still || list.length < 2 || sent !== null) return;
     let pause = 0;
     let arrive = 0;
     const wander = () => {
@@ -546,7 +571,7 @@ function Roamer({
       window.clearTimeout(pause);
       window.clearTimeout(arrive);
     };
-  }, [places, still]);
+  }, [places, still, sent]);
 
   return (
     <div
@@ -581,7 +606,19 @@ function DogSprite({ walking, facingLeft }: { walking: boolean; facingLeft: bool
   );
 }
 
-/** The house with the family in it, and (when decorating) rooms that can be tapped. */
+export interface Pin {
+  id: string;
+  label: string;
+  icon: string;
+  x: number;
+  y: number;
+  /** Something can be done here right now. */
+  open: boolean;
+  /** This is the one the player has picked. */
+  on: boolean;
+}
+
+/** The house with the family in it. Things in it can be tapped; when decorating, whole rooms can. */
 export function HouseView({
   state,
   me,
@@ -589,6 +626,10 @@ export function HouseView({
   waltLook,
   selected,
   onSelect,
+  pins,
+  onPin,
+  goTo,
+  onArrive,
 }: {
   state: LifeState;
   me: Me;
@@ -596,6 +637,12 @@ export function HouseView({
   waltLook?: Look;
   selected?: RoomId | null;
   onSelect?: (room: RoomId) => void;
+  /** Things in and around the house that can be tapped to do something. */
+  pins?: Pin[];
+  onPin?: (id: string) => void;
+  /** Sends the player's figure across the ground floor. */
+  goTo?: { x: number; n: number } | null;
+  onArrive?: () => void;
 }) {
   const dusk = state.turn % 4 >= 2;
   const still = useMemo(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches, []);
@@ -613,7 +660,7 @@ export function HouseView({
           {person(waltLook)}
         </Roamer>
       )}
-      <Roamer spots={downstairs} floor={466} width={6} height={15} still={still || Boolean(onSelect)} dusk={dusk}>
+      <Roamer spots={downstairs} floor={466} width={6} height={15} still={still || Boolean(onSelect)} dusk={dusk} goTo={goTo} onArrive={onArrive}>
         {person(me.look)}
       </Roamer>
       {state.stage === "married" && partnerLook && (
@@ -647,6 +694,7 @@ export function HouseView({
             sound.play("woof");
             setWoof(true);
             window.setTimeout(() => setWoof(false), 1300);
+            onPin?.("dog");
           }}
         >
           {(walking, facingLeft) => (
@@ -657,6 +705,27 @@ export function HouseView({
           )}
         </Roamer>
       )}
+
+      {!onSelect &&
+        (pins ?? [])
+          .filter((pin) => pin.x >= 0)
+          .map((pin) => (
+            <button
+              key={pin.id}
+              type="button"
+              onClick={() => onPin?.(pin.id)}
+              aria-pressed={pin.on}
+              aria-label={`${pin.label}${pin.open ? "" : ", nothing to do here just now"}`}
+              title={pin.label}
+              className={`absolute grid h-8 w-8 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 text-[15px] leading-none shadow-lg shadow-black/40 transition sm:h-9 sm:w-9 sm:text-base ${
+                pin.on ? "z-10 scale-125 border-cm-ember bg-cm-cream" : pin.open ? "border-cm-cream bg-cm-night/85 hover:scale-110 hover:bg-cm-night" : "border-white/25 bg-cm-night/60 opacity-60 hover:opacity-100"
+              }`}
+              style={{ left: `${(pin.x / W) * 100}%`, top: `${(pin.y / H) * 100}%` }}
+            >
+              {pin.open && !pin.on && !still && <span className="absolute inset-0 animate-ping rounded-full border border-cm-cream/60" style={{ animationDuration: "2.600s" }} aria-hidden="true" />}
+              <span aria-hidden="true">{pin.icon}</span>
+            </button>
+          ))}
 
       {onSelect &&
         (Object.keys(ROOM_BOXES) as RoomId[]).map((id) => {

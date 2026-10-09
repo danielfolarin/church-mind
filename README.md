@@ -33,6 +33,17 @@ This one works differently. The player lives season after season (four to a
 year) and decides what to do with each: there are four parts to a season, and
 never time for everything.
 
+- **The house is the controls.** Things to do live where you would do them:
+  work is out through the front gate, prayer is in the quiet chair, dinner is
+  at the kitchen table, Walt is at the fence. Tap a marker on the house, pick
+  what to do there, and your figure walks over and does it. `spots.ts` says
+  what is where. A plain list of everything is one tap away for anyone who
+  prefers it.
+- **Something to aim at.** Each season shows three or four things "on your
+  mind" (the money that has to be found, a neighbour to look in on, a table
+  to save for), ticked as they are seen to, and a bar showing how much of the
+  house is paid for. They are prompts, not a score.
+
 - **Build and decorate.** The house is drawn with a wall taken off. Rooms can
   be built (a second bedroom, a study), walls painted, and about thirty things
   bought and coloured, from a sofa to an apple tree. A few open things up: a
@@ -57,8 +68,9 @@ never time for everything.
 
 It is saved on the device as it goes. The code is in `src/game/life/`:
 `model.ts` (what a life is made of, the rooms and things), `content.ts`
-(people, activities, events, the prayer list, how a season ends), `House.tsx`
-(the drawing) and `LifeScreen.tsx` (the screen).
+(people, activities, events, the prayer list, how a season ends), `spots.ts`
+(what can be tapped in the house, and each season's goals), `House.tsx` (the
+drawing) and `LifeScreen.tsx` (the screen).
 
 The family and the dog wander the house by themselves. There is a dog to
 adopt from the shelter (and name, and walk), a few days away by the sea, and,

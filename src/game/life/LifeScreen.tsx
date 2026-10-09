@@ -24,6 +24,7 @@ import {
 } from "./content";
 import { HouseView } from "./House";
 import { scriptureSpeech, useReadAloud } from "./speech";
+import { actsAt, goalsFor, spotOpen, spotsFor } from "./spots";
 import {
   buildRoom,
   buyItem,
@@ -63,6 +64,8 @@ interface Told {
 }
 
 const GROUPS: Activity["group"][] = ["Work and money", "People", "Faith", "Rest"];
+/** What the house cost: for showing how much of it is the player's. */
+const HOUSE_PRICE = 12000;
 const MILESTONE_COINS = 10;
 
 function Pips({ value, max, on = "bg-cm-ember" }: { value: number; max: number; on?: string }) {
@@ -112,6 +115,14 @@ export function LifeScreen({ me, audio, headingRef, onExit }: { me: Me; audio: S
   const [childName, setChildName] = useState("");
   const [own, setOwn] = useState("");
   const [sure, setSure] = useState(false);
+  /** The thing in the house the player has tapped. */
+  const [spot, setSpot] = useState<string | null>(null);
+  /** Something chosen, while the player's figure walks over to do it. */
+  const [going, setGoing] = useState<{ activity: Activity; x: number; n: number } | null>(null);
+  const [showAll, setShowAll] = useState(false);
+  /** What the last thing done added or took, shown for a moment beside the totals. */
+  const [flash, setFlash] = useState<{ money: number; energy: number; n: number } | null>(null);
+  const still = useMemo(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches, []);
 
   useEffect(() => saveLife(life), [life]);
   useEffect(() => {
@@ -125,9 +136,24 @@ export function LifeScreen({ me, audio, headingRef, onExit }: { me: Me; audio: S
       first.current = false;
       return;
     }
-    if (window.innerWidth < 1024) side.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (window.innerWidth < 1024 && view !== "home") side.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     else window.scrollTo(0, 0);
-  }, [view, told]);
+  }, [view]);
+
+  // What was just gained or spent shows for a moment, then goes.
+  useEffect(() => {
+    if (!flash) return;
+    const timer = window.setTimeout(() => setFlash(null), 2200);
+    return () => window.clearTimeout(timer);
+  }, [flash]);
+
+  // A small sound when something on the player's mind is seen to.
+  const seenTo = goalsFor(life, me).filter((goal) => goal.done).length;
+  const seenBefore = useRef({ turn: life.turn, done: seenTo });
+  useEffect(() => {
+    if (seenBefore.current.turn === life.turn && seenTo > seenBefore.current.done) sound.play("good");
+    seenBefore.current = { turn: life.turn, done: seenTo };
+  }, [seenTo, life.turn]);
 
   const partner = partnerOf(life, me);
   const text = (raw: string) => say(raw, life, me);
@@ -164,9 +190,19 @@ export function LifeScreen({ me, audio, headingRef, onExit }: { me: Me; audio: S
     setLife(next);
   }
 
-  function act(activity: Activity) {
+  /** Walks over to where the thing is done, then does it. */
+  function start(activity: Activity, x: number | null) {
+    if (going || blockedReason(life, activity)) return;
     sound.play("choice");
+    if (x === null || still) act(activity);
+    else setGoing({ activity, x, n: Date.now() });
+  }
+
+  function act(activity: Activity) {
     const { state, outcome } = doActivity(life, activity, me);
+    setGoing(null);
+    setFlash({ money: state.money - life.money, energy: state.energy - life.energy, n: Date.now() });
+    if (state.money > life.money) sound.play("good");
     update(state);
     if (outcome.event) {
       setTold(null);
@@ -385,6 +421,57 @@ export function LifeScreen({ me, audio, headingRef, onExit }: { me: Me; audio: S
   }
 
   // ——— An ordinary season ———
+  const spots = spotsFor(life, me);
+  const picked = spots.find((candidate) => candidate.id === spot) ?? null;
+  const goals = goalsFor(life, me);
+  const yours = Math.round(((HOUSE_PRICE - life.mortgage) / HOUSE_PRICE) * 100);
+  const card = (activity: Activity, x: number | null) => {
+    const blocked = blockedReason(life, activity);
+    const earns = activity.earns?.(life) ?? 0;
+    return (
+      <li key={activity.id} className={`rounded-2xl border px-4 py-3 ${activity.tempt ? "cm-tempt cm-tempt-money border-cm-gold/40" : "border-white/10 bg-white/[0.03]"}`}>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="font-story text-lg leading-snug text-cm-cream">{naming(activity.title)}</p>
+            <p className="mt-0.5 text-sm leading-snug text-cm-cream/70">{naming(activity.blurb)}</p>
+            <p className="mt-2 flex flex-wrap gap-1.5">
+              {activity.time > 0 ? <Chip>takes time</Chip> : <Chip>no time needed</Chip>}
+              {earns > 0 && <Chip good>+${earns}</Chip>}
+              {(activity.costs ?? 0) > 0 && <Chip>−${activity.costs}</Chip>}
+              {(activity.tiring ?? 0) > 0 && <Chip>−{activity.tiring} energy</Chip>}
+            </p>
+            {blocked && <p className="mt-2 text-xs text-cm-gold">{blocked}</p>}
+          </div>
+          <Button onClick={() => start(activity, x)} disabled={Boolean(blocked) || Boolean(going)}>
+            Do it
+          </Button>
+        </div>
+      </li>
+    );
+  };
+  const toldCard = told && (
+    <div className="animate-cm-rise rounded-2xl border border-cm-gold/25 bg-cm-gold/[0.05] p-5">
+      <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cm-gold">{told.title}</h2>
+      {told.text.map((entry) => (
+        <p key={entry} className="mt-3 font-story text-[1.0625rem] leading-relaxed text-cm-cream/90">
+          {entry}
+        </p>
+      ))}
+      {told.scripture && (
+        <div className="mt-4">
+          <ScripturePanel scripture={told.scripture} />
+        </div>
+      )}
+    </div>
+  );
+  const pickedPanel = picked && (
+    <div className="animate-cm-rise">
+      <h2 className="flex items-center gap-2 font-story text-2xl text-cm-cream">
+        <span aria-hidden="true">{picked.icon}</span> {picked.label}
+      </h2>
+      {actsAt(picked, life, me).length > 0 ? <ul className="mt-3 space-y-2">{actsAt(picked, life, me).map((activity) => card(activity, picked.stand))}</ul> : <p className="mt-2 text-sm leading-relaxed text-cm-cream/75">{picked.hint ?? "Nothing to do here just now."}</p>}
+    </div>
+  );
   const open = life.prayers.filter((prayer) => prayer.answer !== "yes" && prayer.answer !== "other");
   const answered = life.prayers.filter((prayer) => prayer.answer === "yes" || prayer.answer === "other");
   const people: { name: string; look: Look | null; bond: number }[] = [
@@ -414,11 +501,54 @@ export function LifeScreen({ me, audio, headingRef, onExit }: { me: Me; audio: S
           </div>
 
           <div className="mt-4">
-            <HouseView state={life} me={me} partnerLook={partner?.look ?? null} waltLook={WALT} selected={view === "decorate" ? room : null} onSelect={view === "decorate" ? setRoom : undefined} />
+            <HouseView
+              state={life}
+              me={me}
+              partnerLook={partner?.look ?? null}
+              waltLook={WALT}
+              selected={view === "decorate" ? room : null}
+              onSelect={view === "decorate" ? setRoom : undefined}
+              pins={view === "home" ? spots.map((entry) => ({ id: entry.id, label: entry.label, icon: entry.icon, x: entry.x, y: entry.y, open: spotOpen(entry, life, me), on: entry.id === spot })) : []}
+              onPin={(id) => {
+                sound.play("advance");
+                setView("home");
+                setTold(null);
+                setSpot(id);
+              }}
+              goTo={going ? { x: going.x, n: going.n } : null}
+              onArrive={() => going && act(going.activity)}
+            />
           </div>
+          {view === "home" && <p className="mt-2 text-xs text-cm-sand/80">Tap around the house to do things: the gate, the sofa, the table, Walt at the fence.</p>}
+          {/* On a phone, what you tapped and what came of it sit right under the house. */}
+          {view === "home" && (toldCard || pickedPanel) && (
+            <div className="mt-4 space-y-4 lg:hidden">
+              {toldCard}
+              {pickedPanel}
+            </div>
+          )}
+
+          {life.mortgage > 0 && (
+            <div className="mt-4" role="img" aria-label={`The house is ${yours} percent yours`}>
+              <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.14em] text-cm-sand">
+                <span>The house is {yours}% yours</span>
+                <span className="normal-case tracking-normal text-cm-sand/80">{Math.ceil(life.mortgage / Math.max(1, Math.min(life.payment, life.mortgage)))} payments to go</span>
+              </div>
+              <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-white/10">
+                <div className="h-full rounded-full bg-cm-gold transition-[width] duration-700" style={{ width: `${yours}%` }} />
+              </div>
+            </div>
+          )}
 
           <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
-            <span className="font-semibold tabular-nums text-cm-cream">${life.money.toLocaleString()}</span>
+            <span className="font-semibold tabular-nums text-cm-cream">
+              ${life.money.toLocaleString()}
+              {flash && flash.money !== 0 && (
+                <span key={flash.n} className={`ml-2 inline-block animate-cm-pop rounded-full px-2 text-xs ${flash.money > 0 ? "bg-cm-gold/20 text-cm-gold" : "bg-white/10 text-cm-cream/80"}`}>
+                  {flash.money > 0 ? "+" : "−"}${Math.abs(flash.money)}
+                </span>
+              )}
+            </span>
             <span className="text-cm-sand">
               {life.mortgage > 0 ? (
                 <>
@@ -430,6 +560,12 @@ export function LifeScreen({ me, audio, headingRef, onExit }: { me: Me; audio: S
             </span>
             <span className="flex items-center gap-2 text-cm-sand">
               Energy <Pips value={life.energy} max={MAX_ENERGY} on="bg-cm-gold" />
+              {flash && flash.energy !== 0 && (
+                <span key={flash.n} className="inline-block animate-cm-pop text-xs text-cm-cream/80">
+                  {flash.energy > 0 ? "+" : "−"}
+                  {Math.abs(flash.energy)}
+                </span>
+              )}
             </span>
           </div>
 
@@ -478,58 +614,47 @@ export function LifeScreen({ me, audio, headingRef, onExit }: { me: Me; audio: S
         <section ref={side} className="mt-10 scroll-mt-16 lg:mt-0">
           {view === "home" && (
             <>
-              {told && (
-                <div className="mb-6 animate-cm-rise rounded-2xl border border-cm-gold/25 bg-cm-gold/[0.05] p-5">
-                  <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cm-gold">{told.title}</h2>
-                  {told.text.map((entry) => (
-                    <p key={entry} className="mt-3 font-story text-[1.0625rem] leading-relaxed text-cm-cream/90">
-                      {entry}
-                    </p>
+              {toldCard && <div className="mb-6 hidden lg:block">{toldCard}</div>}
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+                <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cm-sand">On your mind this {seasonOf(life.turn).toLowerCase()}</h2>
+                <ul className="mt-3 space-y-2">
+                  {goals.map((goal) => (
+                    <li key={goal.id} className="flex items-start gap-2.5 text-[0.9375rem] leading-snug">
+                      <span aria-hidden="true" className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full border text-[11px] font-bold ${goal.done ? "animate-cm-pop border-cm-gold bg-cm-gold text-cm-night" : "border-white/25 text-transparent"}`}>
+                        ✓
+                      </span>
+                      <span className={goal.done ? "text-cm-cream/55 line-through decoration-cm-gold/50" : "text-cm-cream/90"}>
+                        {goal.text}
+                        <span className="sr-only">{goal.done ? " (done)" : ""}</span>
+                      </span>
+                    </li>
                   ))}
-                  {told.scripture && (
-                    <div className="mt-4">
-                      <ScripturePanel scripture={told.scripture} />
-                    </div>
-                  )}
-                </div>
+                </ul>
+                <p className="mt-3 text-xs text-cm-sand/80">Not a checklist to finish. Just what this season is asking of you.</p>
+              </div>
+
+              {pickedPanel ? (
+                <div className="mt-5 hidden lg:block">{pickedPanel}</div>
+              ) : (
+                <p className="mt-5 rounded-2xl border border-dashed border-white/15 px-5 py-4 text-sm leading-relaxed text-cm-cream/75">
+                  It’s your life. Tap something in the house to see what you could do there. You have {life.time} {life.time === 1 ? "part" : "parts"} of the season left, and there is never time for everything.
+                </p>
               )}
-              <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cm-sand">This {seasonOf(life.turn).toLowerCase()} you could</h2>
-              <p className="mt-1 text-sm text-cm-sand/85">It’s your life. Spend the season however you like; there is never time for everything.</p>
-              {GROUPS.map((group) => {
-                const list = ACTIVITIES.filter((activity) => activity.group === group && activity.show(life, me));
-                if (!list.length) return null;
-                return (
-                  <div key={group} className="mt-5">
-                    <h3 className="text-xs font-semibold text-cm-cream/60">{group}</h3>
-                    <ul className="mt-2 space-y-2">
-                      {list.map((activity) => {
-                        const blocked = blockedReason(life, activity);
-                        const earns = activity.earns?.(life) ?? 0;
-                        return (
-                          <li key={activity.id} className={`rounded-2xl border px-4 py-3 ${activity.tempt ? "cm-tempt cm-tempt-money border-cm-gold/40" : "border-white/10 bg-white/[0.03]"}`}>
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="min-w-0">
-                                <p className="font-story text-lg leading-snug text-cm-cream">{naming(activity.title)}</p>
-                                <p className="mt-0.5 text-sm leading-snug text-cm-cream/70">{naming(activity.blurb)}</p>
-                                <p className="mt-2 flex flex-wrap gap-1.5">
-                                  {activity.time > 0 ? <Chip>takes time</Chip> : <Chip>no time needed</Chip>}
-                                  {earns > 0 && <Chip good>+${earns}</Chip>}
-                                  {(activity.costs ?? 0) > 0 && <Chip>−${activity.costs}</Chip>}
-                                  {(activity.tiring ?? 0) > 0 && <Chip>−{activity.tiring} energy</Chip>}
-                                </p>
-                                {blocked && <p className="mt-2 text-xs text-cm-gold">{blocked}</p>}
-                              </div>
-                              <Button onClick={() => act(activity)} disabled={Boolean(blocked)}>
-                                Do it
-                              </Button>
-                            </div>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                );
-              })}
+
+              <button type="button" onClick={() => setShowAll(!showAll)} aria-expanded={showAll} className="mt-5 text-xs font-medium text-cm-sand underline-offset-4 hover:text-cm-cream hover:underline">
+                {showAll ? "Hide the full list" : "See everything you could do, as a list"}
+              </button>
+              {showAll &&
+                GROUPS.map((group) => {
+                  const list = ACTIVITIES.filter((activity) => activity.group === group && activity.show(life, me));
+                  if (!list.length) return null;
+                  return (
+                    <div key={group} className="mt-5">
+                      <h3 className="text-xs font-semibold text-cm-cream/60">{group}</h3>
+                      <ul className="mt-2 space-y-2">{list.map((activity) => card(activity, spots.find((entry) => entry.acts.includes(activity.id))?.stand ?? null))}</ul>
+                    </div>
+                  );
+                })}
               <div className="mt-7 flex flex-wrap items-center gap-3 border-t border-white/10 pt-6">
                 <Button onClick={finishSeason} quiet={life.time > 0}>
                   End the season <span aria-hidden="true">→</span>
