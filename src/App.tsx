@@ -19,6 +19,9 @@ import { sound } from "./game/audio";
 import { CharacterCreator, leadFor, loadCharacter, loadChoice, PRESETS, saveCharacter, saveChoice, type CustomCharacter } from "./game/Creator";
 import { Coin, CollectionScreen, Confetti, WeekRewards } from "./game/Collection";
 import { DownloadPanel } from "./game/Download";
+import { HouseArt } from "./game/life/House";
+import { LifeScreen } from "./game/life/LifeScreen";
+import { loadLife, newLife, when as lifeWhen } from "./game/life/model";
 import { MiniGame } from "./game/MiniGame";
 import { addCoins, endingsFound, loadProfile, rewardWeek, type WeekReward } from "./game/rewards";
 import { FullFigure } from "./game/Rig";
@@ -57,7 +60,7 @@ if (import.meta.env.DEV) {
   }
 }
 
-type Screen = "title" | "character" | "worlds" | "intro" | "play" | "collection";
+type Screen = "title" | "character" | "worlds" | "intro" | "play" | "collection" | "life";
 
 function joinNames(names: string[]) {
   if (names.length < 2) return names.join("");
@@ -214,8 +217,13 @@ export default function App() {
           setStory(chosen);
           setScreen("intro");
         }}
+        onLife={() => setScreen("life")}
       />
     );
+  }
+
+  if (screen === "life") {
+    return <LifeScreen me={{ name: character.name, base: character.base, look: character.look }} audio={audio} headingRef={headingRef} onExit={() => setScreen("worlds")} />;
   }
 
   if (screen === "intro") {
@@ -537,14 +545,19 @@ function WorldsScreen({
   headingRef,
   onBack,
   onChoose,
+  onLife,
 }: {
   character: CustomCharacter;
   audio: SoundSettings;
   headingRef: HeadingRef;
   onBack: () => void;
   onChoose: (story: Story) => void;
+  onLife: () => void;
 }) {
   const profile = loadProfile();
+  // The fourth world is a whole life, and shows the player's own house.
+  const life = useMemo(() => loadLife(), []);
+  const house = life ?? newLife();
   // Nothing is open at first: three circles, and the one you pick unfolds.
   const [open, setOpen] = useState<string | null>(null);
   const shown = STORIES.find((world) => world.id === open) ?? null;
@@ -559,14 +572,14 @@ function WorldsScreen({
     <Prologue audio={audio} onBack={onBack}>
       <p {...stagger(0, "text-[11px] font-semibold uppercase tracking-[0.22em] text-cm-gold")}>Step 2 of 2</p>
       <h1 ref={headingRef} tabIndex={-1} {...stagger(1, "mt-3 font-story text-4xl leading-tight outline-none sm:text-5xl")}>
-        Where will you live this week?
+        Where will you live?
       </h1>
       <p {...stagger(2, "mt-5 max-w-2xl font-story text-lg leading-[1.75] text-cm-cream/85")}>
         Each world is a different part of life, with its own people and its own pressures. Tap one to open it, {character.name.trim() || "friend"}. The
         others will be here when you come back.
       </p>
 
-      <div {...stagger(4, "mt-10 grid grid-cols-3 gap-2 sm:flex sm:gap-10")} role="radiogroup" aria-label="Choose a world">
+      <div {...stagger(4, "mt-10 grid grid-cols-4 gap-1 sm:flex sm:gap-10")} role="radiogroup" aria-label="Choose a world">
         {STORIES.map((world) => {
           const selected = world.id === open;
           return (
@@ -579,7 +592,7 @@ function WorldsScreen({
               className="group flex flex-col items-center pt-2 text-center sm:w-28"
             >
               <span
-                className={`relative block h-20 w-20 overflow-hidden rounded-full bg-cm-dusk ring-2 ring-offset-4 ring-offset-cm-night transition duration-300 sm:h-24 sm:w-24 ${
+                className={`relative block h-16 w-16 overflow-hidden rounded-full bg-cm-dusk ring-2 ring-offset-4 ring-offset-cm-night transition duration-300 sm:h-24 sm:w-24 ${
                   selected ? "scale-110 ring-cm-ember" : "ring-white/20 group-hover:scale-105 group-hover:ring-white/60"
                 }`}
               >
@@ -587,17 +600,58 @@ function WorldsScreen({
                   <TownArt story={world} evening={false} />
                 </span>
               </span>
-              <span className={`mt-4 block font-story text-base leading-tight transition-colors sm:text-lg ${selected ? "text-cm-cream" : "text-cm-cream/75 group-hover:text-cm-cream"}`}>
+              <span className={`mt-4 block font-story text-[13px] leading-tight transition-colors sm:text-lg ${selected ? "text-cm-cream" : "text-cm-cream/75 group-hover:text-cm-cream"}`}>
                 {world.world.name}
               </span>
             </button>
           );
         })}
+        <button type="button" role="radio" aria-checked={open === "life"} onClick={() => setOpen(open === "life" ? null : "life")} className="group flex flex-col items-center pt-2 text-center sm:w-28">
+          <span
+            className={`relative block h-16 w-16 overflow-hidden rounded-full bg-cm-dusk ring-2 ring-offset-4 ring-offset-cm-night transition duration-300 sm:h-24 sm:w-24 ${
+              open === "life" ? "scale-110 ring-cm-ember" : "ring-white/20 group-hover:scale-105 group-hover:ring-white/60"
+            }`}
+          >
+            <span className="absolute left-[46%] top-[-22%] block aspect-[3/2] h-[150%] -translate-x-1/2">
+              <HouseArt state={house} />
+            </span>
+          </span>
+          <span className={`mt-4 block font-story text-[13px] leading-tight transition-colors sm:text-lg ${open === "life" ? "text-cm-cream" : "text-cm-cream/75 group-hover:text-cm-cream"}`}>A Home on Juniper Lane</span>
+        </button>
       </div>
 
       {/* The chosen world unfolds beneath the three circles. */}
-      <div ref={panel} className={`grid scroll-mb-6 transition-[grid-template-rows] duration-500 ease-out ${shown ? "mt-8 grid-rows-[1fr]" : "grid-rows-[0fr]"}`} aria-live="polite">
+      <div ref={panel} className={`grid scroll-mb-6 transition-[grid-template-rows] duration-500 ease-out ${open ? "mt-8 grid-rows-[1fr]" : "grid-rows-[0fr]"}`} aria-live="polite">
         <div className="overflow-hidden">
+          {open === "life" && (
+            <div className="animate-cm-rise overflow-hidden rounded-2xl border border-cm-ember/40 bg-white/[0.04] md:grid md:grid-cols-2">
+              <div className="relative h-44 w-full overflow-hidden bg-cm-dusk md:h-auto md:aspect-[3/2]">
+                <div className="absolute inset-x-0 top-1/2 aspect-[3/2] -translate-y-1/2 md:static md:translate-y-0">
+                  <HouseArt state={house} />
+                </div>
+              </div>
+              <div className="flex flex-col p-5 sm:p-7">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cm-gold">A life, season by season</p>
+                <h2 className="mt-2 font-story text-3xl leading-tight text-cm-cream">A Home on Juniper Lane</h2>
+                <p className="mt-3 text-base leading-relaxed text-cm-cream/85">
+                  Build and decorate a house, work to pay the mortgage, love your neighbour, marry, raise children, pray. There is no plot and no last day. What you do with it is up to you.
+                </p>
+                <p className="mt-4 flex flex-wrap gap-1.5">
+                  {["Home", "Work", "Family", "Prayer"].map((theme) => (
+                    <span key={theme} className="rounded-full border border-white/15 px-2.5 py-0.5 text-[11px] font-medium text-cm-sand">
+                      {theme}
+                    </span>
+                  ))}
+                </p>
+                <p className="mt-4 text-xs text-cm-sand">{life ? `Your life so far: ${lifeWhen(life.turn).toLowerCase()} · saved as you go` : "Starts on moving day · play as long as you like · saved as you go"}</p>
+                <div className="mt-auto pt-6">
+                  <PrimaryAction onClick={onLife}>
+                    {life ? "Go home to Juniper Lane" : "Go to Juniper Lane"} <span aria-hidden="true">→</span>
+                  </PrimaryAction>
+                </div>
+              </div>
+            </div>
+          )}
           {shown && (
             <div key={shown.id} className="animate-cm-rise overflow-hidden rounded-2xl border border-cm-ember/40 bg-white/[0.04] md:grid md:grid-cols-2">
               <div className="relative h-44 w-full overflow-hidden bg-cm-dusk md:h-auto md:aspect-[4/3]">

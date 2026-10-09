@@ -19,11 +19,47 @@ not depend on any other project.
      a leaked exam paper.
    - **The Offices of Halden Pryce:** a pitch the team needs to win, and a
      director who wants the honest eleven percent to say eighteen.
+   - **A Home on Juniper Lane:** not a week but a whole life, season after
+     season, with no plot and no last day. See "The fourth world" below.
 3. **Live the week.** Four days, each with a morning and an evening: eight
    turns in all.
 4. **You determine the end.** Every world has five endings. The ending screen
    shows which you have found, and lets you go back to the start of any
    morning or evening and choose differently.
+
+## The fourth world: A Home on Juniper Lane
+
+This one works differently. The player lives season after season (four to a
+year) and decides what to do with each: there are four parts to a season, and
+never time for everything.
+
+- **Build and decorate.** The house is drawn with a wall taken off. Rooms can
+  be built (a second bedroom, a study), walls painted, and about thirty things
+  bought and coloured, from a sofa to an apple tree. A few open things up: a
+  kitchen table lets you have people round; an armchair or garden bench makes
+  rest and prayer do more.
+- **Work and the mortgage.** Work pays; bills and the mortgage come out when
+  the season ends. Miss a payment and the bank writes, and there are honest
+  ways through. Debt never spirals: past a point, the chapel food bank covers
+  the gap.
+- **Family.** Meet someone at the chapel, court, marry (or don't: a single
+  life is a whole one here). Hope for a child or adopt, name them, raise them.
+- **Neighbours.** Walt at number 12 doesn't believe, and takes years to know.
+- **Prayer.** A prayer list the player writes. Answers come as "yes", "not
+  yet" and "something different", and are never earned by praying harder.
+  Giving money away never pays it back.
+- **Life comes to the door.** About thirty events with choices and Scripture
+  in context: a rate rise, a catalogue, a leaking roof, a quarrel, envy of a
+  friend's kitchen, a hard question from Walt. Wrong turns come round again
+  later with a way to put them right.
+- **Looking back.** Every fourth season reviews the year, with a passage and
+  a question.
+
+It is saved on the device as it goes. The code is in `src/game/life/`:
+`model.ts` (what a life is made of, the rooms and things), `content.ts`
+(people, activities, events, the prayer list, how a season ends), `House.tsx`
+(the drawing) and `LifeScreen.tsx` (the screen). Lines here are not recorded;
+this world is read, not spoken.
 
 ## How it plays
 
