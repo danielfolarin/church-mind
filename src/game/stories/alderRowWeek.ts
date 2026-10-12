@@ -107,6 +107,17 @@ const READY_ANSWER: Scripture = {
   ],
 };
 
+const WHILE_SINNERS: Scripture = {
+  reference: "Romans 5:8",
+  translation: WEB,
+  text: "But God commends his own love toward us, in that while we were yet sinners, Christ died for us.",
+  contextTitle: "In context",
+  context: [
+    "Paul is explaining why a Christian’s confidence does not rest on their own record. God did not wait for people to improve. The cross happened while we were still in the wrong.",
+    "That is the order the gospel always runs in. Love first. Then, because of it, a changed life.",
+  ],
+};
+
 const ALL_DAYS = ["mon-day", "mon-eve", "thu-day", "thu-eve", "sat-day", "sat-eve", "sun-day", "sun-eve"];
 const EVENINGS = ["mon-eve", "thu-eve", "sat-eve", "sun-eve"];
 const HARM = ["path_pause", "path_compromise", "path_pressure", "path_text"];
@@ -136,7 +147,7 @@ export const alderRowWeek: Story = {
     "That dog knows things.",
     "I waved at the wrong person for ten minutes.",
     "Someone’s been at the seed library again. Suspicious peas.",
-    "Great Haven’s coffee is terrible. I’ve had three.",
+    "Best coffee on the Row is at Great Haven. I’ve had three.",
     "The footbridge creaks in B flat. I checked.",
     "You look like someone with places to be.",
   ],
@@ -144,7 +155,7 @@ export const alderRowWeek: Story = {
   intro: {
     place: "Alder Row",
     paragraphs: [
-      "Alder Row is the kind of neighbourhood where people still know each other’s names. There is a community garden behind the old fire hall, a café called Kindling that stays open late, and Great Haven Assembly, the brick church on the corner whose doors are open more days than they are shut.",
+      "Alder Row is the kind of neighbourhood where people still know each other’s names. There is a community garden behind the old fire hall, a café called Kindling that stays open late, and Great Haven Assembly, the brick church on the corner whose doors are open more days than they are shut. Pastor Daniel and Pastor Tolu have led it for years, and half the Row has sat at their table.",
       "Not everyone here believes the same things. Most days, that is simply what it means to be neighbours.",
     ],
     playerTraits: [
@@ -192,7 +203,7 @@ export const alderRowWeek: Story = {
       name: "Ruth",
       look: RUTH,
       voice: { kind: "female", variant: 3, pitch: 0.85, rate: 0.9 },
-      traits: ["Hosts the Thursday table", "Married to Samuel for thirty-one years", "Asks better questions than she gives answers"],
+      traits: ["Hosts Great Haven’s Thursday table", "Married to Samuel for thirty-one years", "The person Pastor Tolu sends people to"],
     },
     {
       id: "dev",
@@ -213,14 +224,14 @@ export const alderRowWeek: Story = {
       name: "Pastor Daniel",
       look: DANIEL,
       voice: { kind: "male", variant: 3, pitch: 0.9, rate: 0.95 },
-      traits: ["Leads Great Haven Assembly with his wife, Tolu", "Preaches plainly", "Remembers everyone’s name"],
+      traits: ["Lead pastor of Great Haven Assembly", "Preaches Jesus plainly, and lives what he preaches", "Remembers your name, and what you were worried about last month"],
     },
     {
       id: "tolu",
       name: "Pastor Tolu",
       look: TOLU,
       voice: { kind: "female", variant: 5, pitch: 1 },
-      traits: ["Leads Great Haven alongside Daniel", "Asks how you really are", "Waits for the real answer"],
+      traits: ["Pastors Great Haven with Daniel, her husband", "The one people bring the hard things to", "Asks how you really are, and waits for the real answer"],
     },
   ],
 
@@ -279,7 +290,7 @@ export const alderRowWeek: Story = {
     { id: "question", key: true, place: "garden", slots: ["mon-eve", "thu-eve", "sat-eve"], with: ["partner"], title: "{partner} asked to talk", blurb: "“Come by the garden after work? There’s something I want to ask you.”", energy: -1, scene: "garden" },
     { id: "table", key: true, place: "ruth", slots: ["thu-eve"], with: ["ruth"], title: "The Thursday table at Ruth’s", blurb: "Soup, eight chairs, and people who ask how you really are.", energy: 1, bond: { ruth: 1 }, scene: "table" },
     { id: "soup", key: true, place: "home", slots: ["sat-day"], with: ["ruth"], when: { none: ["did:table"] }, title: "Ruth is at your door", blurb: "She’s holding a pot wrapped in a tea towel.", bond: { ruth: 1 }, scene: "soup" },
-    { id: "conversation", key: true, place: "river", slots: ["sat-eve"], with: ["partner"], when: { all: ["did:question"] }, title: "Meet {partner} at the river", blurb: "{He} wants to show you an apartment listing. You owe {him} an answer.", energy: -1, scene: "talk" },
+    { id: "conversation", key: true, place: "river", slots: ["sat-eve"], with: ["partner"], when: { all: ["did:question"] }, title: "Meet {partner} at the river", blurb: "{He} wants to talk about getting engaged. You owe {him} an answer.", energy: -1, scene: "talk" },
     { id: "service_guest", key: true, place: "church", slots: ["sun-day"], with: ["partner"], when: { all: ["path_pressure"] }, title: "Sunday service, with {partner}", blurb: "{He} said {he} would come, and {he} will.", energy: 1, scene: "service_guest" },
     { id: "repair", key: true, place: "garden", slots: ["sun-eve"], with: ["partner"], when: { any: HARM, none: ["repaired"] }, title: "Go to {partner} and make it right", blurb: "No excuses. Just the truth you should have started with.", grow: { courage: 1, compassion: 1 }, scene: "repair" },
     { id: "counsel", key: true, place: "ruth", slots: ["sun-eve"], with: ["ruth"], when: { any: HARM, none: ["repaired"] }, title: "Ask Ruth to help you see it straight", blurb: "Then go and do what needs doing.", grow: { wisdom: 1 }, scene: "counsel_again" },
@@ -304,7 +315,7 @@ export const alderRowWeek: Story = {
 
     // Sunday
     { id: "pastors", place: "church", slots: ["thu-day", "sat-day"], with: ["daniel", "tolu"], title: "Drop in on the pastors", blurb: "The church office door is open, and the kettle is usually on.", scene: "pastors_office" },
-    { id: "service", place: "church", slots: ["sun-day"], with: ["daniel", "tolu", "dev"], when: { none: ["path_pressure"] }, title: "Sunday service", blurb: "The doors are open and the coffee is terrible.", energy: 1, scene: "service" },
+    { id: "service", place: "church", slots: ["sun-day"], with: ["daniel", "tolu", "dev"], when: { none: ["path_pressure"] }, title: "Sunday service", blurb: "The doors are open, and Pastor Daniel is preaching.", energy: 1, scene: "service" },
     { id: "supper", place: "ruth", slots: ["sun-eve"], with: ["ruth"], when: { none: HARM }, title: "Sunday supper at Ruth’s", blurb: "Whoever turns up, and whatever is in the oven.", energy: 1, bond: { ruth: 1 }, scene: "supper" },
 
     // Always there
@@ -439,7 +450,7 @@ export const alderRowWeek: Story = {
       setting: "cafe",
       caption: "Thursday morning · Kindling Café",
       beats: [
-        d("you", "Partly, yes. I believe I’ve been treated a great deal better than I deserve. It’s hard to hold on to that and still be stingy with a stranger. I manage it about half the time."),
+        d("you", "Partly, yes. I follow Jesus. I believe he died on a cross for me before I had done one thing to deserve it, and rose again. It’s hard to be forgiven like that and stay stingy with a stranger. I manage it about half the time."),
         d("priya", "Huh.", "thoughtful"),
         d("priya", "That’s the first time anyone has explained it to me without trying to recruit me.", "warm"),
         s(READY_ANSWER),
@@ -488,7 +499,7 @@ export const alderRowWeek: Story = {
       prompt: "What do you say?",
       choices: [
         { id: "confess", when: { all: ["pocketed"], none: ["confessed"] }, label: "“Before that, I have to give you something back.”", grow: { integrity: 1, courage: 1 }, next: "priya_confessed" },
-        { id: "share", label: "Answer her honestly: what you find there, and what you don’t.", grow: { courage: 1 }, flags: ["shared_faith"], bond: { priya: 1 }, next: "coffee_share" },
+        { id: "share", label: "Answer her honestly: who you find there.", grow: { courage: 1 }, flags: ["shared_faith", "shared_sunday"], bond: { priya: 1 }, next: "coffee_share" },
         { id: "light", label: "Keep it light. “Free soup, mostly.”", next: "coffee_light" },
       ],
     },
@@ -496,10 +507,10 @@ export const alderRowWeek: Story = {
       setting: "cafe",
       caption: "Sunday morning · Kindling Café",
       beats: [
-        d("you", "People who know the worst of me and set a place for me anyway. And an hour when I’m not the centre of my own life. I think that’s most of it."),
-        d("you", "I believe God is like that table, only more so. I don’t always feel it. I keep going back."),
+        d("you", "People who know the worst of me and set a place for me anyway. And an hour when I’m not the centre of my own life."),
+        d("you", "That table is a small picture of Jesus. He knew the worst of me, went to the cross for it, and rose. Now there is a place for me that I could never have earned. I don’t always feel it. I keep going back."),
         d("priya", "I’m not there. I don’t know that I ever will be.", "thoughtful"),
-        d("priya", "But I like that you didn’t sell it to me. Bring me some of the soup sometime.", "warm"),
+        d("priya", "But you didn’t sell it to me, and I have been sold a great many things. What time does it start, on a Sunday? I’m only asking.", "warm"),
         s(READY_ANSWER, { when: { none: ["shared_thursday"] } }),
       ],
       next: "map",
@@ -543,7 +554,7 @@ export const alderRowWeek: Story = {
       setting: "cafe",
       caption: "Monday evening · Kindling Café",
       beats: [
-        n("Dev has taken the corner table and hasn’t touched his drink. He is the funniest person you know, and tonight he isn’t trying.", { react: { dev: "worried" } }),
+        n("Dev has taken the corner table and hasn’t touched his coffee. He is the funniest person you know, and tonight he isn’t trying.", { react: { dev: "worried" } }),
         d("dev", "They’ve cut my hours at the warehouse. Again. And my landlord’s putting the rent up, so I’ve found a cheaper room across town.", "worried"),
         d("dev", "I can cover most of it. I’m a hundred short on the deposit, and it’s due Friday. I get paid the Friday after. I hate asking.", "sad"),
         t("You have {money}. Your own rent is $380, on Saturday.", { react: { you: "worried" } }),
@@ -704,8 +715,8 @@ export const alderRowWeek: Story = {
       beats: [
         n("The last of the light is caught in the bean poles. You and {partner} have been tying up tomato vines for an hour, working down the same row from opposite ends, the way you always seem to end up doing."),
         n("Three months of dating. Before that, half a year of Saturday mornings here, trading seedlings and bad jokes."),
-        d("partner", "My lease is up in the spring. I’ve been thinking about what comes next.", "thoughtful"),
-        d("partner", "And I keep noticing that whatever I picture, you’re in it. So I suppose I’m asking: are we heading somewhere? Somewhere serious?", "warm"),
+        d("partner", "I’ve been thinking about what comes next. For me, and for us.", "thoughtful"),
+        d("partner", "And I keep noticing that whatever I picture, you’re in it. So I suppose I’m asking: are we heading towards marriage, you and I?", "warm"),
         d("partner", "I know your faith matters to you. I’ve never wanted to get in the way of that.", "warm"),
         t("You want to say yes. You also know there is a sentence you have never quite said out loud to {him}."),
       ],
@@ -793,8 +804,9 @@ export const alderRowWeek: Story = {
         d("ruth", "Tell me about {him} first. Not the problem. The person.", "warm"),
         n("You do. It takes a while, and you are smiling by the end of it.", { react: { you: "warm" } }),
         d("ruth", "{He} sounds like someone worth loving. I’m saying that first so you’ll know that nothing I say next is against {him}.", "warm"),
-        d("ruth", "There’s a line of Paul’s that people throw at each other like a stone. I’d rather hand it to you like bread. May I?", "thoughtful"),
-        s(UNEQUALLY_YOKED, { react: { you: "thoughtful", ruth: "neutral" } }),
+        d("ruth", "There’s a line of Paul’s that people throw at each other like a stone. Pastor Tolu taught me to hand it to people like bread. May I?", "thoughtful", { when: { none: ["pastor_love"] } }),
+        s(UNEQUALLY_YOKED, { when: { none: ["pastor_love"] }, react: { you: "thoughtful", ruth: "neutral" } }),
+        d("ruth", "Pastor Tolu rang me after you had been to see her. She has already opened Paul’s words about the yoke with you, so I won’t read them at you again. She asked me to keep you a chair and tell you what those words have meant in this kitchen.", "warm", { when: { all: ["pastor_love"] } }),
         d("ruth", "Samuel and I have pulled the same plough for thirty-one years, and it has still been hard. I can’t imagine doing it facing different ways. That isn’t a rule I’m reciting. It’s something I know in my shoulders.", "warm"),
       ],
       prompt: "What rises in you?",
@@ -811,6 +823,8 @@ export const alderRowWeek: Story = {
         d("ruth", "{He} might well be. I wouldn’t argue it. This was never about who the better person is. If it were, I’d have been unfit for Samuel on most Tuesdays.", "warm", { react: { you: "hurt" } }),
         d("ruth", "It’s about direction. Following Jesus isn’t your hobby; it’s your road. {partner} is on a road too, and an honest one by the sound of it. The question isn’t which of you is good. It’s whether two people can share one life while walking toward different things.", "thoughtful"),
         d("ruth", "And be angry about it if you need to. God can take your honesty. He would rather have that than your manners.", "warm", { react: { you: "sad" } }),
+        d("ruth", "Take this to Pastor Tolu before the weekend, if you haven’t. She will open the Bible with you and pray, and she sees further than I do.", "warm", { when: { none: ["pastor_love"] } }),
+        d("ruth", "Pastor Tolu will want to know how you are. Tell her I said you were brave.", "warm", { when: { all: ["pastor_love"] } }),
       ],
       next: "map",
     },
@@ -822,6 +836,8 @@ export const alderRowWeek: Story = {
         d("ruth", "Of course you are. You love {him}. Fear of loss is what love feels like when it’s holding something it might have to open its hand on.", "warm"),
         d("ruth", "But notice who you’ve been protecting. If you hide the centre of yourself to keep {him}, then the person {he} is keeping isn’t quite you. That isn’t fair to either of you.", "thoughtful"),
         d("ruth", "Jesus doesn’t ask you to stop loving {partner}. He asks you to love {him} truthfully.", "warm", { react: { you: "thoughtful" } }),
+        d("ruth", "Take this to Pastor Tolu before the weekend, if you haven’t. She will open the Bible with you and pray, and she sees further than I do.", "warm", { when: { none: ["pastor_love"] } }),
+        d("ruth", "Pastor Tolu will want to know how you are. Tell her I said you were brave.", "warm", { when: { all: ["pastor_love"] } }),
       ],
       next: "map",
     },
@@ -833,6 +849,8 @@ export const alderRowWeek: Story = {
         d("ruth", "Dev’s father did, you know, after eight years. That story is true and I thank God for it. But ask Dev’s mother sometime what those eight years were like. Grace that comes afterwards is a gift. It isn’t a plan.", "thoughtful"),
         d("ruth", "And think about it from {partner}’s side. If you date {him} toward a conversion, {he} becomes a project. {He} would never be sure whether you love {him}, or the person you are hoping {he} will turn into. {He} deserves better than that. So do you.", "thoughtful", { react: { you: "sad" } }),
         d("ruth", "Share your faith with {him} freely, as a friend, with no strings. Just don’t make {his} answer the price of your love.", "warm", { react: { you: "thoughtful" } }),
+        d("ruth", "Take this to Pastor Tolu before the weekend, if you haven’t. She will open the Bible with you and pray, and she sees further than I do.", "warm", { when: { none: ["pastor_love"] } }),
+        d("ruth", "Pastor Tolu will want to know how you are. Tell her I said you were brave.", "warm", { when: { all: ["pastor_love"] } }),
       ],
       next: "map",
     },
@@ -842,8 +860,8 @@ export const alderRowWeek: Story = {
       setting: "river",
       caption: "Saturday, dusk · the river path",
       beats: [
-        n("You walk as far as the footbridge. {partner} has an apartment listing open on {his} phone: two bedrooms, ten minutes from yours.", { react: { partner: "warm", you: "worried" } }),
-        d("partner", "I asked you in the garden, and it has been sitting there all week. I’m not rushing you. But I’d like to know where we’re going before I sign something.", "thoughtful"),
+        n("You walk as far as the footbridge. {partner} has been quiet all the way, the way {he} is when {he} has rehearsed something.", { react: { partner: "warm", you: "worried" } }),
+        d("partner", "I asked you in the garden, and it has been sitting there all week. I’m not rushing you. But I am thinking about marriage. About the two of us, engaged by the spring. I’d like to know whether you are too, before I let myself hope any further.", "thoughtful"),
         t("At least {he} knows something is unresolved. You told {him} that much.", { when: { all: ["honest_start"] } }),
         t("You remember the yes you gave in the garden, and how quickly you gave it.", { when: { all: ["easy_yes"] } }),
         t("You remember what you told {him}: just one part of my life. You wince.", { when: { all: ["downplayed"] } }),
@@ -909,7 +927,7 @@ export const alderRowWeek: Story = {
         d("you", "I’ve been thinking. What if my faith is just mine? I’ll do Sundays, you do your thing, and we don’t make it a subject.", "worried", { react: { partner: "thoughtful" } }),
         d("partner", "Are you sure? I don’t want you to shrink for me.", "worried"),
         d("you", "I’m sure."),
-        n("{He} kisses your forehead and says {he}’ll ring the agent on Monday. Everything is settled. You walk home wondering why settled feels so much like quiet.", { react: { partner: "warm", you: "thoughtful" } }),
+        n("{He} kisses your forehead and says that in that case {he} would like the two of you to be engaged by the spring. Everything is settled. You walk home wondering why settled feels so much like quiet.", { react: { partner: "warm", you: "thoughtful" } }),
       ],
       next: "map",
     },
@@ -944,6 +962,7 @@ export const alderRowWeek: Story = {
       beats: [
         n("{partner} comes, because you asked and {he} is generous. {He} shakes every hand, sings none of the songs, and listens to the sermon more carefully than you do.", { react: { partner: "thoughtful" } }),
         n("Pastor Daniel shakes {his} hand at the door and asks about {his} Grade 7s. Pastor Tolu finds {him} a seat. Neither of them asks what {he} believes."),
+        n("Then Pastor Daniel preaches Jesus: the cross, the empty tomb, and an invitation with no pressure in it. {partner} is given the truth and left free. You are the only one in the building who isn’t leaving {him} free."),
         n("You spend the hour watching {his} face instead of listening. You nudge {him} at the good lines. Afterwards you steer Ruth towards {him}, then Dev, and mention twice that the Thursday group has room.", { react: { you: "worried" } }),
         n("On the steps outside, {he} stops."),
         d("partner", "Can I ask you something, and will you tell me the truth? Am I a person to you this morning, or a prayer request?", "hurt"),
@@ -971,9 +990,9 @@ export const alderRowWeek: Story = {
       effects: { flags: ["counsel_again"] },
       beats: [
         n("You tell her all of it, and you don’t make yourself sound better than you were. She pours the tea before she answers.", { react: { you: "sad", ruth: "thoughtful" } }),
-        d("ruth", "Well. You did a wrong thing. You are not a wrong thing. Those are different, and the gospel lives in the difference.", "warm"),
+        d("ruth", "Well. You did a wrong thing. That is not the last word about you. Jesus died for people who do wrong things, and rose for them. That is the gospel, and it is yours tonight as much as it was on Monday.", "warm"),
         s(CONFESSION),
-        d("ruth", "God’s forgiveness you can have before the kettle cools. {partner}’s is {his} to give, in {his} own time, and you mustn’t demand it. An apology isn’t a transaction. You go, you tell the truth, you name what you did without the word “but”, and you let {him} feel however {he} feels.", "thoughtful"),
+        d("ruth", "God’s forgiveness you can have before the kettle cools. {partner}’s is {his} to give, in {his} own time, and you mustn’t demand it. Pastor Tolu taught me that an apology isn’t a transaction. You go, you tell the truth, you name what you did without the word “but”, and you let {him} feel however {he} feels.", "thoughtful"),
         d("ruth", "And I’ll be praying the whole time. Go now, while it’s light.", "warm", { react: { you: "warm" } }),
       ],
       next: "repair",
@@ -987,7 +1006,7 @@ export const alderRowWeek: Story = {
         d("you", "I’m not here to explain myself. I’m here to say I’m sorry, and to say what for.", "sad"),
         t("No “but”, Ruth said. You keep to it.", { when: { all: ["counsel_again"] } }),
         d("you", "I ended things by message because I was afraid of your face. And I threw a verse at you like a door slamming. You are not darkness. You were owed a conversation, and I gave you a verdict.", "sad", { when: { all: ["path_text"] } }),
-        d("you", "I invited you to church with an agenda and didn’t tell you. I turned you into something to fix. You came in good faith and I was keeping score. That was wrong, and it isn’t how the God I believe in treats anyone.", "sad", { when: { all: ["path_pressure"] } }),
+        d("you", "I invited you to church with an agenda and didn’t tell you. I turned you into something to fix. You came in good faith and I was keeping score. That was wrong, and it isn’t how Jesus treats anyone.", "sad", { when: { all: ["path_pressure"] } }),
         d("you", "I told you I could keep my faith out of it. I can’t, and part of me knew that. So I locked a room and let you think the door was your fault. It wasn’t. It was mine.", "sad", { when: { all: ["path_compromise"] } }),
         d("you", "I called it a pause because I couldn’t bear to say the true thing. I left you waiting in a doorway so I wouldn’t have to watch you be hurt. That was me protecting myself, not you.", "sad", { when: { all: ["path_pause"] } }),
         d("you", "Here is the whole truth, the one I should have started with. Jesus is the centre of my life, and I can’t build a marriage where that isn’t shared. That is about my road, not about your worth. You are one of the best people I know.", "worried"),
@@ -1005,10 +1024,10 @@ export const alderRowWeek: Story = {
       caption: "The river path",
       beats: [
         n("You take the long way, along the river. Somewhere past the footbridge you stop composing a prayer and simply start talking."),
-        t("I don’t know what I’m doing this week. I’m tired, and I’m trying to be everything to everyone. Here it is. All of it.", { react: { you: "sad" } }),
-        n("No voice answers. The water keeps moving. But a line you have heard a hundred times arrives differently tonight."),
+        t("Jesus, I don’t know what I’m doing this week. I’m tired, and I’m trying to be everything to everyone. Here it is. All of it.", { react: { you: "sad" } }),
+        n("The water keeps moving. And something Jesus said, which you have heard a hundred times, arrives tonight as if he were saying it to you."),
         s(EASY_YOKE),
-        n("You are already joined to someone, you realise. Everything else this week gets worked out from inside that, not around it.", { react: { you: "warm" } }),
+        n("You are already yoked to someone, you realise. To Jesus. Everything else this week gets worked out from inside that, not around it.", { react: { you: "warm" } }),
       ],
       next: "map",
     },
@@ -1043,11 +1062,13 @@ export const alderRowWeek: Story = {
       setting: "hall",
       caption: "Sunday morning · Great Haven Assembly",
       beats: [
-        n("The doors are open and the coffee is terrible, as it should be. You find a seat near the back. Two rows ahead, Dev is singing too loudly. Across the aisle, Ruth catches your eye and doesn’t make anything of it.", { react: { tolu: "warm", daniel: "warm" } }),
+        n("The doors are open, the coffee is hot, and Pastor Daniel is at the door, shaking every hand as if it were the only one. You find a seat near the back. Two rows ahead, Dev is singing too loudly. Across the aisle, Ruth catches your eye and doesn’t make anything of it.", { react: { tolu: "warm", daniel: "warm" } }),
         d("tolu", "Our reading is from Paul’s letter to the Colossians. You have heard it before. Listen as if you hadn’t.", "warm"),
         s(FORGIVING, { react: { you: "thoughtful" } }),
         d("daniel", "Notice that Paul doesn’t say “if anyone ever has a complaint.” He assumes you will. Some of you are sitting three seats from yours.", "thoughtful"),
-        d("daniel", "I’m not going to tell you forgiving is easy, or that it means pretending. I’m going to tell you that you have been forgiven more than you will ever be asked to forgive. Start there, and see what you can afford.", "warm"),
+        d("daniel", "And notice where the strength comes from. “Even as Christ forgave you.” Here is the gospel in one breath. We walked away from God. Jesus, God’s own Son, came after us. He died on a cross for our sins, and on the third day he rose. Everyone who turns to him and trusts him is forgiven, completely, and made new.", "warm"),
+        s(WHILE_SINNERS),
+        d("daniel", "So I am not going to tell you that forgiving is easy. I am going to tell you that you have been forgiven more than you will ever be asked to forgive. Start at the cross, and see what you can afford. And if you have never come to Jesus at all, come today. Tolu and I will be at the front.", "warm"),
         t("You think of who owes you. Then, less comfortably, of who you owe."),
       ],
       next: [{ when: { none: ["dev_good"] }, to: "service_dev" }, { to: "service_end" }],
@@ -1101,7 +1122,7 @@ export const alderRowWeek: Story = {
       caption: "The church office · Great Haven Assembly",
       onStage: ["tolu", "daniel"],
       beats: [
-        n("The church office is a converted vestry with a kettle, two mismatched armchairs, and a whiteboard nobody has wiped since Easter. Pastor Tolu waves you in before you have finished knocking.", { react: { tolu: "warm", daniel: "warm" } }),
+        n("The church office is a converted vestry with a kettle, two armchairs, and a whiteboard covered in people’s first names and what to pray for them. Yours is on it. Pastor Tolu waves you in before you have finished knocking.", { react: { tolu: "warm", daniel: "warm" } }),
         d("tolu", "Sit. Daniel, biscuits. Now. The real answer, not the Sunday one: how are you?", "warm"),
         t("They have known you for three years. They would know if you dressed it up."),
       ],
@@ -1117,9 +1138,10 @@ export const alderRowWeek: Story = {
       caption: "The church office · Great Haven Assembly",
       onStage: ["tolu", "daniel"],
       beats: [
-        d("daniel", "Can I tell you what I got wrong for years? I thought needing help meant I had failed at trusting God. So I hid it, and it grew in the dark.", "thoughtful"),
+        d("daniel", "Can I tell you something I had to learn? I used to think that needing help meant I had failed at trusting God. Jesus taught us to ask for daily bread. He never told us to pretend we owned the bakery.", "thoughtful"),
         d("daniel", "If Saturday comes and you’re short, ring your landlord before he rings you. Most people are kinder to the truth than to silence. Then ring us. This church keeps a fund for exactly that, and nobody keeps a list.", "warm"),
-        d("tolu", "And work your shifts, but don’t work yourself hollow. You are not what stands between this neighbourhood and collapse. That job is taken.", "warm", { react: { you: "warm" } }),
+        d("tolu", "And work your shifts, but don’t work yourself hollow. You are not what stands between this neighbourhood and collapse. That job is taken. Jesus has it.", "warm", { react: { you: "warm" } }),
+        n("Before you go, Pastor Daniel prays: for the rent, by amount, and for you, by name. It takes a minute. You walk out standing straighter."),
       ],
       next: "map",
     },
@@ -1128,10 +1150,18 @@ export const alderRowWeek: Story = {
       caption: "The church office · Great Haven Assembly",
       onStage: ["tolu", "daniel"],
       beats: [
-        d("tolu", "Ruth will tell you more than I could, and better. So I’ll only say what I wish someone had said to me at your age.", "thoughtful"),
-        d("tolu", "Whatever you decide, don’t decide it in hiding. The decisions that hurt people most are usually the ones made alone at midnight and delivered by surprise.", "warm"),
-        d("daniel", "And {partner} is welcome here, whatever happens between you. Not as a project. As a neighbour. We’d want {him} to know that.", "warm"),
-        t("You hadn’t realised how much you needed to hear that last part.", { react: { you: "warm" } }),
+        n("Pastor Tolu doesn’t answer at once. She moves her chair round, so that there is no desk between you.", { react: { tolu: "thoughtful" } }),
+        d("tolu", "Thank you for bringing this to us and not carrying it alone. Tell me about {him}. The person, before the problem.", "warm"),
+        n("You do. She listens to all of it, and asks {his} name twice, so that she will remember it.", { react: { you: "warm" } }),
+        d("tolu", "{He} sounds like someone worth loving, and nothing I say next is against {him}. I am going to open the Bible with you, because you deserve more than my opinion.", "warm", { when: { none: ["did:table", "did:soup"] } }),
+        s(UNEQUALLY_YOKED, { when: { none: ["did:table", "did:soup"] }, react: { you: "thoughtful" } }),
+        d("tolu", "{He} sounds like someone worth loving, and nothing I say next is against {him}. Ruth tells me she has opened Paul’s words about the yoke with you, so I won’t repeat them. I will add this.", "warm", { when: { any: ["did:table", "did:soup"] } }),
+        d("tolu", "Daniel and I have pulled one plough for a long time. What holds us is not that we agree about everything. It is that we are both following Jesus, so when we pull apart we know where to come back to. I want that for you. I want it for {partner} too.", "thoughtful"),
+        d("tolu", "So don’t decide this in hiding, and don’t deliver it by message at midnight. Tell {him} the truth to {his} face, with love, and leave {him} room to answer. I will be praying while you do.", "warm"),
+        d("daniel", "And {partner} is welcome in this church, whatever happens between you. Not as a project. As a neighbour. I would like to shake {his} hand.", "warm"),
+        d("tolu", "One more thing. I am sending you to Ruth. She keeps a chair at her table on Thursdays for exactly this, and she will walk it through with you week by week. I’ll ring her tonight. My door stays open too.", "warm", { when: { none: ["did:table", "did:soup"] } }),
+        d("tolu", "You have already been at Ruth’s table. Good. That is where I would have sent you. Keep going back there, and keep coming here.", "warm", { when: { any: ["did:table", "did:soup"] } }),
+        n("Then she prays for you, by name, and for {partner}, by name. It is short. You feel as though someone has taken one handle of a very heavy bag.", { react: { you: "warm" } }),
       ],
       next: "map",
     },
@@ -1225,7 +1255,7 @@ export const alderRowWeek: Story = {
         n("You took a wrong turn with {partner} this week, and then you turned around. You went back to the person you hurt, named what you did without excuses, and told the truth you should have begun with."),
         n("You didn’t do it alone. Ruth helped you see straight, then let you walk the last stretch yourself.", { when: { all: ["counsel_again"] } }),
         n("{partner} did not forgive you on the spot, and you didn’t ask {him} to. A month later {he} sent a short message: Thank you for coming back to say it properly. It mattered."),
-        n("The relationship ended. The harm did not get the last word. You are not the person who never gets it wrong. You are learning to be the person who goes back."),
+        n("The relationship ended. The harm did not get the last word. You are not the person who never gets it wrong. You are learning to be the person who goes back. That is what following Jesus looks like on an ordinary Sunday evening."),
       ],
       scripture: {
         reference: "Luke 15:20",
@@ -1247,6 +1277,7 @@ export const alderRowWeek: Story = {
       beats: [
         n("You told {partner} the truth to {his} face, and you did not make {him} smaller in order to do it. It cost you both something real."),
         n("Weeks later you pass {him} at the garden. It is awkward, and then it is all right. {He} hands you a packet of seeds {he} saved for you, and you both get back to work, a few rows apart."),
+        n("The next Sunday, Pastor Tolu found you after the service and stood beside you for a minute without saying anything. Then: “You told the truth in love. That is what Jesus asks of us. The rest is his.”"),
         n("You still think about the answer you gave in the garden at the start of the week. It is a quiet teacher now, not a wound. Next time, you will say the true thing sooner.", { when: { any: ["easy_yes", "downplayed"] } }),
       ],
       scripture: {
@@ -1274,7 +1305,7 @@ export const alderRowWeek: Story = {
         n("The pause never quite ended, and never quite became anything else. {partner} stopped asking. You told yourself that was peace.", { when: { all: ["path_pause"] } }),
         n("In the months that follow you notice the cost in small places. You pray less, because prayer keeps raising the subject. You miss more Thursdays. And {partner} carries it too: {he} is still waiting to be let all the way in."),
         n("Two good people, pulling gently in different directions, both a little more tired than they were."),
-        n("This is not the end of your story. The door you closed isn’t locked from the outside. Whenever you turn around, you will find you are already welcome."),
+        n("This is not the end of your story. The door you closed isn’t locked from the outside. Whenever you turn around, you will find that Jesus has not moved, and that you are already welcome."),
       ],
       scripture: {
         reference: "Matthew 11:28",
@@ -1374,7 +1405,9 @@ export const alderRowWeek: Story = {
         n("The forty dollars is still yours. Priya paid a stranger out of her own pocket and doesn’t know why her count was off. You do.", { when: { all: ["pocketed"], none: ["confessed"] } }),
         n("A man in a grey coat was cruel to you, and you made him a third coffee. His wife is in the General. You would never have known.", { when: { all: ["kind_customer"] } }),
         n("You gave a rude man exactly what he gave you. Priya hasn’t mentioned it again. You still think about his face.", { when: { all: ["snapped"] } }),
-        n("Priya asked what you believe, and you told her without a pitch. She isn’t persuaded. She is, she says, less suspicious.", { when: { all: ["shared_faith"] } }),
+        n("Priya asked you twice what you believe, and twice you told her about Jesus without a pitch. She came to Great Haven the next Sunday, “for the soup”, and sat at the back with her arms folded. Pastor Daniel preached the cross. In the spring she gave her life to Jesus, and Pastor Tolu baptised her. She still says she only came for the soup.", { when: { all: ["shared_thursday", "shared_sunday"] } }),
+        n("Priya asked what you believe, and you told her about Jesus without a pitch. She isn’t persuaded yet. She has asked what time Great Haven starts on a Sunday. She says she is only asking.", { when: { all: ["shared_thursday"], none: ["shared_sunday"] } }),
+        n("Priya asked what actually happens on a Sunday, and you told her about Jesus without a pitch. She isn’t persuaded yet. She has asked what time Great Haven starts. She says she is only asking.", { when: { all: ["shared_sunday"], none: ["shared_thursday"] } }),
         n("You left the forty in the drawer and said nothing. Priya found it on Tuesday and spent an hour checking her sums. It was never yours to take. It was yours to mention.", { when: { all: ["left_till"] } }),
         n("A man in a grey coat was cruel to you on Thursday. You said nothing, and carried him home with you. He is still there.", { when: { all: ["did:shift_thu"], none: ["kind_customer", "snapped"] } }),
         n("Priya asked you a real question on Sunday, and you kept it light. She’ll ask again. She’s like that.", { when: { all: ["did:priya_coffee"], none: ["shared_faith", "confessed"] } }),
@@ -1393,9 +1426,9 @@ export const alderRowWeek: Story = {
     {
       title: "Great Haven",
       beats: [
-        n("Pastor Daniel told you that needing help isn’t failing, and to ring before you were rung. You have repeated it to yourself more than once since.", { when: { all: ["pastor_money"] } }),
-        n("Pastor Tolu told you not to decide in hiding. Pastor Daniel told you {partner} would be welcome whatever happened. Both turned out to matter.", { when: { all: ["pastor_love"] } }),
-        n("On Sunday you sat near the back and heard Pastor Daniel say that you have been forgiven more than you will ever be asked to forgive.", { when: { all: ["did:service"] } }),
+        n("Pastor Daniel told you that Jesus taught us to ask for daily bread, and to ring before you were rung. Then he prayed for your rent by amount. You have repeated all of it to yourself more than once since.", { when: { all: ["pastor_money"] } }),
+        n("Pastor Tolu opened the Bible with you, prayed for you and {partner} by name, and sent you to Ruth’s table. Pastor Daniel said {partner} would be welcome whatever happened. All of it turned out to matter.", { when: { all: ["pastor_love"] } }),
+        n("On Sunday Pastor Daniel preached the cross: that Jesus died for you and rose, and that you have been forgiven more than you will ever be asked to forgive. You have not stopped thinking about it.", { when: { all: ["did:service"] } }),
         n("You didn’t make it through the doors of Great Haven this week. They were open. They will be next week.", { when: { none: ["did:service", "did:service_guest", "did:pastors"] } }),
       ],
     },

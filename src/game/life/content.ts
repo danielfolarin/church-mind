@@ -234,6 +234,31 @@ const LENDS = passage(
   "The point is not that generosity pays. It is that the person in front of you matters that much to God."
 );
 
+const GOSPEL_FIRST = passage(
+  "1 Corinthians 15:3–4",
+  "For I delivered to you first of all that which I also received: that Christ died for our sins according to the Scriptures, that he was buried, that he was raised on the third day according to the Scriptures,",
+  "Paul calls this the thing “first of all”: the news he was given and passed on. It is not advice about how to live. It is an announcement of what Jesus has done.",
+  "Everything else a church does, the singing and the soup and the hardship fund, stands on these two sentences."
+);
+const CONFESS_LORD = passage(
+  "Romans 10:9",
+  "that if you will confess with your mouth that Jesus is Lord, and believe in your heart that God raised him from the dead, you will be saved.",
+  "Paul is answering the question of how a person comes to God, and his answer is startlingly short. Not a ladder to climb. A Lord to trust, and say so.",
+  "There is no age limit in it, and no entrance exam."
+);
+const SPIRIT_HELPS = passage(
+  "Romans 8:26",
+  "In the same way, the Spirit also helps our weaknesses, for we don’t know how to pray as we ought. But the Spirit himself makes intercession for us with groanings which can’t be uttered.",
+  "Paul is writing about people who are waiting and hurting, and he does not tell them to find better words. He says God’s own Spirit prays for them, in the place where words run out.",
+  "A prayer that is mostly tears is still a prayer. It is heard."
+);
+const NEW_CREATION = passage(
+  "2 Corinthians 5:17",
+  "Therefore if anyone is in Christ, he is a new creation. The old things have passed away. Behold, all things have become new.",
+  "Paul is describing what happens to anyone who comes to Jesus, at any age. Not an improved version of the old life. A new one.",
+  "“Anyone” is doing a great deal of work in that sentence."
+);
+
 // ——— What there is to do in a season ———
 
 export interface Outcome {
@@ -379,10 +404,10 @@ export const ACTIVITIES: Activity[] = [
         text: [
           rotate(
             [
-              "You sit near the back. The singing is loud and not especially good. Something in you unclenches anyway.",
-              "The sermon is about ordinary Tuesdays. You think about it on Tuesday.",
-              "An old woman called Mrs. Abara takes your hand in both of hers and asks how you are, and then waits for the actual answer.",
-              "Communion. Bread from the bakery on Mill Street, torn, not cut. You have nothing to bring to it. That appears to be the idea.",
+              "You sit near the back. The singing is loud and not especially good. The sermon is about Jesus: that he died for our sins and rose on the third day, and that this is news, not advice. Something in you unclenches.",
+              "The sermon is about following Jesus on ordinary Tuesdays. You think about it on Tuesday.",
+              "An old woman called Mrs. Abara takes your hand in both of hers and asks how you are, and then waits for the actual answer. “I’ll take that to Jesus,” she says, and you believe that she will.",
+              "Communion. Bread from the bakery on Mill Street, torn, not cut. The body of Jesus, given for you. You have nothing to bring to it. That appears to be the idea.",
             ],
             times
           ),
@@ -392,7 +417,9 @@ export const ACTIVITIES: Activity[] = [
                 "Nothing has to come of it. You notice that you are still thinking about the conversation when you get home.",
               ]
             : []),
+          ...(has(state, "walt_believes") ? ["Walt is three rows from the front, singing half a beat behind everybody else."] : []),
         ],
+        scripture: times === 0 ? GOSPEL_FIRST : undefined,
       };
     },
   },
@@ -412,7 +439,7 @@ export const ACTIVITIES: Activity[] = [
           hasStillPlace(state) ? "You sit in the place you have made for it, and for a while you don’t say anything at all." : "You sit on the stairs, because that is where you happened to be, and for a while you don’t say anything at all.",
           rotate(
             [
-              "Then you say the true things, including the ones that aren’t very spiritual. Nothing answers out loud. You get up lighter than you sat down.",
+              "Then you say the true things to Jesus, including the ones that aren’t very spiritual. You get up lighter than you sat down.",
               "You run out of words quite quickly. You stay anyway. That seems to count.",
               "You pray for people by name, and find you can’t stay annoyed with someone while you are doing it.",
               "Mostly, today, you say thank you. It takes longer than you expected.",
@@ -458,7 +485,18 @@ export const ACTIVITIES: Activity[] = [
     show: () => true,
     run: (state) => ({
       effects: { bond: { walt: 1 }, grow: count(state, "walt") === 2 ? { compassion: 1 } : undefined },
-      text: [
+      text: has(state, "walt_believes")
+        ? [
+            rotate(
+              [
+                "Walt is reading the Gospel of John at the fence, out loud, with commentary. He would like to know why nobody told him it was this good.",
+                "Walt has prayed for you by name every morning this week. He tells you so in the tone of a man reporting a meter reading.",
+                "He has put Jean’s Bible on the windowsill, open. “She underlined everything,” he says. “I’m catching up.”",
+              ],
+              count(state, "walt")
+            ),
+          ]
+        : [
         nth(
           [
             "Walt answers the door in his slippers and tells you your bins are out on the wrong day. By his standards it is a warm welcome.",
@@ -719,7 +757,7 @@ export const EVENTS: LifeEvent[] = [
       "It is yours. What you make of it is up to you: who sits in it, what it is for, what kind of person lives here.",
     ],
     choices: [
-      { label: "Pray in the empty front room, before you unpack a thing.", effects: { grow: { trust: 1 }, memory: { icon: "🔑", text: "You got the keys to 14 Juniper Lane, and prayed in the empty front room." } }, result: ["You stand in the middle of the bare floor and say it out loud: this house is yours before it is mine. Help me build it well.", "Your voice sounds odd in an empty room. You mean it anyway."], scripture: BUILDS_THE_HOUSE },
+      { label: "Pray in the empty front room, before you unpack a thing.", effects: { grow: { trust: 1 }, memory: { icon: "🔑", text: "You got the keys to 14 Juniper Lane, and prayed in the empty front room." } }, result: ["You stand in the middle of the bare floor and say it out loud: Jesus, this house is yours before it is mine. Help me build it well.", "Your voice sounds odd in an empty room. You mean it anyway."], scripture: BUILDS_THE_HOUSE },
       { label: "Find the kettle. First things first.", effects: { energy: 1, memory: { icon: "🔑", text: "You got the keys to 14 Juniper Lane, and found the kettle first." } }, result: ["You drink tea out of the lid of a flask, sitting on a box, in a house with nothing in it. It is one of the best cups of tea of your life."] },
       { label: "Knock next door and say hello.", effects: { bond: { walt: 1 }, memory: { icon: "🔑", text: "You got the keys to 14 Juniper Lane, and met Walt before you had unpacked." } }, result: ["A man in a cardigan opens the door of number 12 and looks you up and down. “Walt. You’ll be the new one. Bins are Thursday. Don’t park across my drive.”", "He shuts the door. Ten minutes later he is back, with a spare kettle, “in case yours is in a box.”"] },
     ],
@@ -783,14 +821,19 @@ export const EVENTS: LifeEvent[] = [
   },
   {
     id: "waiting",
-    title: "Not this month",
+    title: "Still waiting",
     setting: "room",
     with: ["you", "partner"],
-    beats: ["Another month, and nothing. You hadn’t expected it to matter so much, so soon.", "{partner} finds you sitting on the edge of the bath. {He} doesn’t ask what’s wrong. {He} sits down on the floor."],
+    beats: [
+      "Months have gone by. Each one begins with hope and ends the same way. You had not known how much room a person who doesn’t exist yet could take up in a house.",
+      "There are people at the chapel who waited years, and some who are waiting still, and some whose waiting ended in a way nobody would choose. None of them has told you it will be all right. They have only stayed close.",
+      "{partner} finds you sitting on the edge of the bath. {He} doesn’t ask what’s wrong. {He} sits down on the floor.",
+    ],
     scripture: WAIT,
     choices: [
-      { label: "Tell {partner} exactly how you feel.", effects: { bond: { partner: 1 }, grow: { courage: 1 } }, result: ["You say all of it, including the parts that sound ungrateful. {He} doesn’t fix it. {He} says, “Me too,” which is better."] },
-      { label: "Pray it, angrily and honestly.", effects: { grow: { trust: 1 } }, result: ["It is not a polite prayer. It has the word “why” in it several times. You are fairly sure it is the most honest thing you have said to God all year.", "Nothing changes. You are not alone in it. Those are both true."] },
+      { label: "Tell {partner} exactly how you feel.", effects: { bond: { partner: 1 }, grow: { courage: 1 } }, result: ["You say all of it, including the parts that sound ungrateful. {He} doesn’t try to fix it. {He} says, “Me too,” which is better. You are grieving the same thing, and now you are doing it in the same room."] },
+      { label: "Pray it honestly, tears and all.", effects: { grow: { trust: 1 } }, result: ["It is not a polite prayer. There are not many words in it, and “why” is most of them. Jesus wept at a graveside. You find that you can weep in front of him.", "Nothing changes tonight. You are not alone in it. Both of those are true."], scripture: SPIRIT_HELPS },
+      { label: "Ask Mrs. Abara to pray with you both.", effects: { bond: { church: 1 }, grow: { trust: 1 } }, result: ["She comes round with nothing in her hands, which is not like her. “Thirty-eight years ago I sat where you are sitting,” she says. “I won’t tell you how my story went, because yours is yours. I will sit here.”", "She prays for you both by name, to Jesus, and does not promise anything on his behalf. It helps more than a promise would have."] },
       { label: "“I’m fine. Really.”", tempt: "ease", effects: { bond: { partner: -1 } }, result: ["{He} looks at you a moment longer, and lets you have the lie. You have spared {him} nothing. You have only made sure you are each sad in a different room."] },
     ],
   },
@@ -799,7 +842,7 @@ export const EVENTS: LifeEvent[] = [
     title: "Two lines",
     setting: "room",
     with: ["you", "partner"],
-    beats: ["You look at it for a long time before you believe it. Then you look at each other.", "A baby, two seasons from now. There is so much to do, and for one evening you do none of it."],
+    beats: ["You look at it for a long time before you believe it. Then you look at each other.", "A baby, two seasons from now. You are glad, and careful with your gladness. You know this is a gift and not a wage, and that people you love are still waiting for it."],
     choices: [
       { label: "Tell Walt first. He’ll pretend not to care.", effects: { bond: { walt: 1 }, memory: { icon: "🍼", text: "You found out a baby was on the way." } }, then: (state) => ({ ...state, due: state.turn + 2 }), result: ["“A baby,” says Walt. “Well. They’re noisy.” The next morning there is a hand-painted wooden duck on your doorstep. He claims not to know anything about it."] },
       { label: "Keep it between the two of you, for now.", effects: { bond: { partner: 1 }, memory: { icon: "🍼", text: "You found out a baby was on the way." } }, then: (state) => ({ ...state, due: state.turn + 2 }), result: ["It is a good secret to share. You catch each other’s eye in church and have to look at the floor."] },
@@ -998,7 +1041,7 @@ export const EVENTS: LifeEvent[] = [
     with: ["you"],
     beats: ["Dinner with friends from your old job, in their new house. It has a kitchen island the size of your front room, and a tap that makes boiling water on demand.", "You are happy for them. You say so several times. You drive home very quietly."],
     choices: [
-      { label: "Say it out loud. “I’m jealous. I don’t like it. Help me.”", effects: { grow: { trust: 1, integrity: 1 } }, result: ["You say it to God in the car, and then, because it is still there, to someone at the chapel on Sunday. She laughs, kindly. “Oh, the tap. I know about the tap.”", "It loses a good deal of its power once it has been said to a person."], scripture: NOT_ABUNDANCE },
+      { label: "Say it out loud. “I’m jealous. I don’t like it. Help me.”", effects: { grow: { trust: 1, integrity: 1 } }, result: ["You say it to Jesus in the car, and then, because it is still there, to someone at the chapel on Sunday. She laughs, kindly. “Oh, the tap. I know about the tap.”", "It loses a good deal of its power once it has been said to a person."], scripture: NOT_ABUNDANCE },
       { label: "Walk round your own house and say thank you for each room.", effects: { grow: { trust: 1 } }, result: ["The front room: thank you. The kitchen, with its humming fridge: thank you. The stairs. The bucket-shaped mark on the ceiling.", "By the time you reach the garden you mean it. The dandelions have never looked so well."], scripture: LEARNED_CONTENT },
       { label: "Sit up until midnight pricing kitchen islands.", tempt: "money", effects: { energy: -1, flags: ["restless"] }, result: ["There is a company that will do it in six weeks, on finance. You have three browser tabs open and a strange hollow feeling.", "The kitchen you already have is exactly as it was this morning, when you liked it."] },
     ],
@@ -1010,10 +1053,61 @@ export const EVENTS: LifeEvent[] = [
     with: ["you", "walt"],
     beats: ["Walt is leaning on the fence with a mug. He has clearly been working up to something.", "“You pray. I’ve seen you through the window, sat there. I prayed for Jean every day for two years, and she died anyway. So what’s it for?”"],
     choices: [
-      { label: "Tell him the truth, plainly, without tidying it up.", effects: { bond: { walt: 1 }, grow: { courage: 1 } }, result: ["“I don’t know why she died, Walt. I’m not going to pretend to. I don’t think prayer is how you get what you want. I think it’s how you’re not alone in what you get.”", "He looks at his tomatoes for a long time. “That’s the first answer I’ve had that wasn’t rubbish.” He doesn’t say any more. He comes to dinner on Friday."], scripture: READY_ANSWER },
+      { label: "Tell him the truth, plainly, without tidying it up.", effects: { bond: { walt: 1 }, grow: { courage: 1 }, flags: ["told_walt"] }, result: ["“I don’t know why she died, Walt. I won’t pretend to. The night before he died, Jesus prayed in a garden not to have to go through with it, and the answer was no. Three days later God raised him from the dead. So I don’t pray because it gets me what I want. I pray to someone who has been where you are, and came out the other side of the grave.”", "He looks at his tomatoes for a long time. “That’s the first answer I’ve had that wasn’t rubbish.” He doesn’t say any more. He comes to dinner on Friday."], scripture: READY_ANSWER },
       { label: "“It’s hard to explain.” Change the subject.", tempt: "ease", result: ["He nods, as if that was what he had expected, and tells you about greenfly. It took him two years to ask. You hope he will ask again."] },
       { label: "Explain to him, at length, why he’s wrong.", effects: { bond: { walt: -1 } }, result: ["You have good arguments. You use all of them. He finishes his tea, says, “Well, you’d know,” and goes inside.", "You were answering a question. He was telling you about his wife."] },
     ],
+  },
+  {
+    id: "walt_faith",
+    title: "Walt at the door",
+    setting: "kitchen",
+    with: ["you", "walt"],
+    beats: (state) => [
+      "Ten o’clock on a Saturday night, and somebody is knocking at the side door. It is Walt, in his cardigan, holding his cap in both hands like a man at a police station.",
+      has(state, "told_walt")
+        ? "“I’ve been thinking about what you said. About him coming out the other side of the grave. I’m seventy-four. I’ve run out of time to be clever about it.”"
+        : "“I’ve sat at your table for years now. Whatever it is you people have got, I’ve been watching it. I’m seventy-four. I’ve run out of time to be clever about it.”",
+      "“If a person wanted to start. With Jesus. How would they go about it?”",
+    ],
+    choices: [
+      {
+        label: "Put the kettle on, and tell him the gospel plainly at the kitchen table.",
+        effects: { bond: { walt: 1 }, grow: { courage: 1, trust: 1 }, flags: ["walt_believes"], memory: { icon: "🕊️", text: "Walt gave his life to Jesus at your kitchen table." } },
+        result: [
+          "You tell him the way it was told to you. God made us, and we walked off. Jesus, his Son, came after us, died on a cross for our sins, and rose on the third day. Anyone who turns to him and trusts him is forgiven and brought home. Seventy-four is not too late. Nothing is.",
+          "Walt prays at your kitchen table with his eyes open, because nobody has told him otherwise. It is eleven words long. When he looks up he says, “Jean will be insufferable about this,” and then he cries, and so do you.",
+        ],
+        scripture: CONFESS_LORD,
+      },
+      {
+        label: "“Come to the chapel with me in the morning. Sit beside me.”",
+        effects: { bond: { walt: 1 }, grow: { compassion: 1, trust: 1 }, flags: ["walt_believes"], memory: { icon: "🕊️", text: "Walt came to the chapel beside you, and gave his life to Jesus." } },
+        result: [
+          "He sits beside you in a tie from 1987, and listens as if it were being read to him personally: that Jesus died for our sins and rose, and that anyone may come. At the end, when the pastor says so, there is a long pause, and then the sound of an old man getting to his feet.",
+          "Mrs. Abara reaches him before you do. “Walt,” she says. “We kept your seat.”",
+        ],
+        scripture: CONFESS_LORD,
+      },
+      {
+        label: "“I’m not the right person to ask, Walt.”",
+        tempt: "ease",
+        effects: { flags: ["walt_believes"], memory: { icon: "🕊️", text: "Walt gave his life to Jesus. You would have liked to be there." } },
+        result: [
+          "He nods, puts his cap back on, and says goodnight. You lie awake. In the morning his curtains are open early, and he is not at home.",
+          "He had walked to the chapel by himself, and Mrs. Abara told him what you could have. He comes back a different colour. It did not need you. You would have liked to be there.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "walt_baptism",
+    title: "Walt goes under",
+    setting: "hall",
+    with: ["you", "walt"],
+    beats: ["Juniper Lane Chapel borrows the swimming pool on Mill Street twice a year. This time there is one candidate, and he is seventy-four, and he has complained about the temperature of the water since Tuesday.", "The pastor asks him whether he trusts Jesus as his Lord and Saviour. “I do,” says Walt, loudly, as if someone had suggested otherwise."],
+    scripture: NEW_CREATION,
+    choices: [{ label: "Stand at the edge, and cheer.", effects: { bond: { walt: 1, church: 1 }, energy: 1, memory: { icon: "💧", text: "Walt was baptised, aged seventy-four." } }, result: ["He goes under an old man with opinions about bins, and comes up an old man with opinions about bins who belongs to Jesus. The whole chapel is on its feet.", "“Jean would have brought a better towel,” he says, and lets Mrs. Abara wrap him in three."] }],
   },
   {
     id: "tired_yes",
@@ -1047,7 +1141,7 @@ export const EVENTS: LifeEvent[] = [
     with: ["you"],
     beats: ["The light is off. You are almost out of the door.", "“Where does God live? Is it far? Does he know which house is ours?”", "{eldest} has clearly been saving it up."],
     choices: [
-      { label: "Sit back down. “I don’t know all of it. Here’s what I do know.”", effects: { bond: { kids: 1 }, grow: { wisdom: 1, integrity: 1 } }, result: ["“He isn’t far. He knows which house. He knew before we did.” A pause. “And I don’t understand all of it either. We can not-understand it together.”", "That seems to be acceptable. You are asked, next, whether God knows the rabbit’s name."] },
+      { label: "Sit back down. “I don’t know all of it. Here’s what I do know.”", effects: { bond: { kids: 1 }, grow: { wisdom: 1, integrity: 1 } }, result: ["“He isn’t far. He knows which house. He knew before we did. Jesus said to let the children come to him, and that means you.” A pause. “And I don’t understand all of it either. We can not-understand it together.”", "That seems to be acceptable. You are asked, next, whether God knows the rabbit’s name."] },
       { label: "“That’s one for the pastor, I think.”", result: ["It is one for the pastor. It was also one for you. {eldest} asked the person whose answer mattered most to them."] },
       { label: "“It’s late. Go to sleep.”", tempt: "ease", effects: { bond: { kids: -1 } }, result: ["It is late. The question goes back wherever such questions are kept. They do come round again, though not for ever."] },
     ],
@@ -1152,7 +1246,7 @@ export const TOPICS: Topic[] = [
       state.children.length > 0
         ? { answer: "yes", note: "{eldest}. You would not have known how to ask for this particular person." }
         : waited(state, prayer) >= 3
-          ? { answer: "wait", note: "Not yet. You don’t know why. You have decided to keep asking, and to keep telling the truth about how it feels." }
+          ? { answer: "wait", note: "Not yet. You don’t know why. You have decided to keep asking, and to keep telling Jesus the truth about how it feels." }
           : null,
   },
   {
@@ -1160,8 +1254,10 @@ export const TOPICS: Topic[] = [
     text: "For Walt next door",
     show: (state) => state.bonds.walt >= 1,
     answer: (state, prayer) =>
-      state.bonds.walt >= 4
-        ? { answer: "other", note: "He hasn’t come to the chapel. He has started saying grace at your table, to be polite. You are not sure it is only politeness." }
+      has(state, "walt_believes")
+        ? { answer: "yes", note: "He prayed at a kitchen table, aged seventy-four. You had asked for this for years, and had not quite believed you would see it." }
+        : state.bonds.walt >= 4
+        ? { answer: "wait", note: "He hasn’t come to the chapel. He has started saying grace at your table, to be polite. You are not sure it is only politeness." }
         : waited(state, prayer) >= 4
           ? { answer: "wait", note: "He still says it is all nonsense. He also asked you, last week, to pray for his knee." }
           : null,
@@ -1244,7 +1340,8 @@ function nextEvent(state: LifeState): string | null {
   if (state.due !== null && state.turn >= state.due) return "birth";
   if (state.hoping === "adopt" && state.turn - state.hopingSince >= 3) return "adoption_day";
   if (state.hoping === "birth" && state.due === null) {
-    const wait = state.children.length === 0 ? 2 : 1;
+    // A first child is waited for: two seasons for some, three for others.
+    const wait = state.children.length === 0 ? 2 + (state.hopingSince % 2) : 1;
     if (state.turn - state.hopingSince >= wait) return "expecting";
     if (unseen("waiting")) return "waiting";
   }
@@ -1254,6 +1351,9 @@ function nextEvent(state: LifeState): string | null {
   if (has(state, "bucket") && since(state, "bucket") >= 2) return "ceiling";
   if (has(state, "lent_jo") && since(state, "lent_jo") >= 3) return "jo_repay";
   if (state.mortgage === 0 && unseen("mortgage_paid")) return "mortgage_paid";
+  // Walt comes to faith slowly: years of the open gate, an honest answer, a full table.
+  if (unseen("walt_faith") && state.bonds.walt >= 4 && ((has(state, "told_walt") && since(state, "told_walt") >= 2) || (count(state, "host") >= 3 && state.turn >= 10))) return "walt_faith";
+  if (unseen("walt_baptism") && has(state, "walt_believes") && since(state, "walt_believes") >= 2) return "walt_baptism";
   if (state.children.some((child) => child.how === "born" && ageOf(state, child) <= 1) && unseen("broken_nights")) return "broken_nights";
 
   const open = POOL.filter((entry) => unseen(entry.id) && entry.when(state));
@@ -1339,10 +1439,10 @@ export function reviewOf(state: LifeState, me: Me): Review {
   const lines = [
     paid > 0 ? `You paid $${paid.toLocaleString()} off the house this year. $${state.mortgage.toLocaleString()} to go.` : state.mortgage === 0 ? "The house is paid for. Nobody can take it from you." : "The mortgage didn’t move this year. It was a hard one.",
     hosted > 0 ? `People sat at your table ${hosted === 1 ? "once" : `${hosted} times`}.` : "Nobody came to dinner this year. The door opens from the inside.",
-    prayed > 0 ? `You stopped to pray in ${prayed === 1 ? "one season" : `${prayed} seasons`} out of four.` : "You didn’t stop to pray this year. God was not counting. He was, perhaps, waiting.",
+    prayed > 0 ? `You stopped to pray in ${prayed === 1 ? "one season" : `${prayed} seasons`} out of four.` : "You didn’t stop to pray this year. Jesus was not counting. He was, perhaps, waiting.",
     state.stage === "married" && partner ? `You and ${partner.name} are ${state.bonds.partner >= 4 ? "closer than you were" : state.bonds.partner >= 2 ? "steady" : "further apart than either of you would say out loud"}.` : state.stage === "single" ? "You live alone, and the house is as full as you have chosen to make it." : `You and ${partner?.name ?? "someone"} are finding out what this is.`,
     ...(state.children.length ? [`${state.children.map((child) => child.name).join(" and ")} ${state.children.length === 1 ? "is" : "are"} a year older, which seems impossible.`] : []),
-    state.bonds.walt >= 4 ? "Walt leaves the side gate open." : state.bonds.walt >= 2 ? "Walt has stopped mentioning the bins." : "You still don’t really know the man next door.",
+    has(state, "walt_believes") ? "Walt sits three rows from the front now, and has opinions about the hymns." : state.bonds.walt >= 4 ? "Walt leaves the side gate open." : state.bonds.walt >= 2 ? "Walt has stopped mentioning the bins." : "You still don’t really know the man next door.",
   ];
   return { title: `Year ${year} on Juniper Lane`, lines, ...REVIEWS[(year - 1) % REVIEWS.length] };
 }

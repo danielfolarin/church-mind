@@ -69,6 +69,39 @@ const CONFESSION: Scripture = {
   ],
 };
 
+const FOR_GOD_SO_LOVED: Scripture = {
+  reference: "John 3:16–17",
+  translation: WEB,
+  text: "For God so loved the world, that he gave his one and only Son, that whoever believes in him should not perish, but have eternal life. For God didn’t send his Son into the world to judge the world, but that the world should be saved through him.",
+  contextTitle: "In context",
+  context: [
+    "Jesus says this at night, to a respected teacher who has come to him privately with questions. It is the gospel in two sentences: God loved, God gave, and whoever believes is given life.",
+    "The second sentence matters as much as the first. He did not come to mark the world. He came to rescue it.",
+  ],
+};
+
+const NEVER_THROWN_OUT: Scripture = {
+  reference: "John 6:37",
+  translation: WEB,
+  text: "All those whom the Father gives me will come to me. He who comes to me I will in no way throw out.",
+  contextTitle: "In context",
+  context: [
+    "Jesus is speaking to a crowd that isn’t sure about him. He makes a promise with no small print: nobody who comes to him is turned away.",
+    "Not for where they are from, or how late they came, or how little they understand yet.",
+  ],
+};
+
+const FILLED: Scripture = {
+  reference: "Ephesians 5:18",
+  translation: WEB,
+  text: "Don’t be drunken with wine, in which is dissipation, but be filled with the Spirit,",
+  contextTitle: "In context",
+  context: [
+    "Paul is not only forbidding something. He is offering something better in its place: a life filled by God’s own Spirit.",
+    "A person filled like that doesn’t need a glass in their hand to belong in the room, or to be good company in it.",
+  ],
+};
+
 const ALL = ["mon-day", "mon-eve", "wed-day", "wed-eve", "fri-day", "fri-eve", "sun-day", "sun-eve"];
 const EVENINGS = ["mon-eve", "wed-eve", "fri-eve", "sun-eve"];
 const STUDIED = ["studied_a", "studied_b", "studied_c"];
@@ -403,7 +436,7 @@ export const wrenfieldWeek: Story = {
       setting: "lecture",
       caption: "Wednesday morning · Hartley Building, Seminar Room B",
       beats: [
-        d("you", "I do. Actually. I don’t think it makes me cleverer than anyone here. It’s the reason I’m less frightened than I would be otherwise."),
+        d("you", "I do. Actually. I follow Jesus. I believe he died and rose, and I have staked my life on it. It doesn’t make me cleverer than anyone here. It is the reason I’m less frightened than I would be otherwise."),
         n("A pause. The rowing fleece opens his mouth, and the tutor holds up a hand."),
         n("“That’s the first sentence this term that cost somebody something. Let’s start from there.” The hour that follows is the best the seminar has had."),
         s(GRACIOUS_SPEECH),
@@ -484,7 +517,7 @@ export const wrenfieldWeek: Story = {
         d("you", "If I keep the scholarship that way, it isn’t mine. I’d know every time the money came in."),
         d("partner", "You’re mad. I mean that with affection.", "warm"),
         n("He closes the laptop. He doesn’t delete the file, and you don’t ask him to. That is his to decide."),
-        t("You notice that you’re afraid, and that being afraid hasn’t changed the answer."),
+        t("You notice that you’re afraid, and that being afraid hasn’t changed the answer. You thank Jesus for that much, under your breath."),
       ],
       next: "map",
     },
@@ -617,6 +650,7 @@ export const wrenfieldWeek: Story = {
         n("You tell them. Nobody gasps. Two people look at their tea in a way that suggests they have the same file."),
         d("grace", "I’m not going to tell you what to do. You already know what I think. I’ll ask you something instead.", "thoughtful"),
         d("grace", "Who do you want to be on Saturday morning? Friday’s over in two hours. You have to be that person for a lot longer.", "warm"),
+        d("grace", "And remember whose you are. You belonged to Jesus before this exam, and you will belong to him after it, whatever the mark says. Decide from there.", "warm"),
         s(INTEGRITY_WALK),
         n("Someone refills your cup without asking. Nobody makes you promise anything."),
       ],
@@ -628,7 +662,7 @@ export const wrenfieldWeek: Story = {
       beats: [
         d("you", "I said no to it. And I think I might fail. Both of those are true."),
         d("grace", "Then we’ll pray about the second one, and I’ll bring my first-year stats notes to your flat tomorrow. I got sixty-three. They’re not good notes. They’re honest notes.", "warm"),
-        n("They pray for you by name. It is strange and steadying to be said aloud like that."),
+        n("They pray for you by name, to Jesus, as though he were in the room. It is strange and steadying to be said aloud like that."),
       ],
       next: "map",
     },
@@ -639,6 +673,7 @@ export const wrenfieldWeek: Story = {
         d("you", "I was right. I keep saying that to myself. I was right."),
         d("grace", "You probably were. Was he an enemy, or a friend offering you the wrong thing?", "thoughtful"),
         d("grace", "You can keep the “no” and take back the contempt. They don’t come as a set.", "warm"),
+        d("grace", "Jesus told people the truth all the time. He never once made them feel like dirt for needing to hear it.", "thoughtful"),
         t("His door is four steps from yours. It has felt like more than that since Monday."),
       ],
       next: "map",
@@ -749,6 +784,7 @@ export const wrenfieldWeek: Story = {
         d("you", "It’s harder than I said it would be. I haven’t made many friends yet. I’m not coming home. I just didn’t want to keep pretending."),
         n("She is quiet for a moment. The radio plays behind her.", { react: { mum: "sad" } }),
         d("mum", "Good. Now I know what to pray for. I have been praying for “everything wonderful” for six weeks, and I could tell God was confused.", "warm"),
+        d("mum", "And listen to me. Jesus is not only here in my kitchen. He is in that cold room with you. This morning I asked him to sit on the end of your bed.", "warm"),
         d("mum", "Eat something that is not bread. And find one person. One is enough to start with.", "warm"),
       ],
       next: "map",
@@ -948,9 +984,10 @@ export const wrenfieldWeek: Story = {
       setting: "cafe",
       caption: "Friday, after the exam · The Common Room",
       beats: [
-        d("you", "It’s the church thing. I think I’m already loved, before the mark comes back. So the mark doesn’t get to tell me who I am. I forget that about twice a day."),
+        d("you", "It’s the church thing. It’s Jesus, really. I believe he died for me before I had got one thing right, and rose again. So I’m already loved before the mark comes back, and the mark doesn’t get to tell me who I am. I forget that about twice a day."),
         d("partner", "Huh.", "thoughtful"),
-        d("partner", "That’s annoyingly coherent. I was hoping for something I could make fun of.", "warm"),
+        d("partner", "That’s annoyingly coherent. I was hoping for something I could make fun of. Is there a short one? Of the books about him. Asking for a friend.", "warm"),
+        d("you", "Mark. Sixteen chapters. You could read it on the bus."),
         n("He buys the second coffee without being asked. For Kai, that is a theological statement."),
       ],
       next: "map",
@@ -978,8 +1015,8 @@ export const wrenfieldWeek: Story = {
       ],
       prompt: "How do you spend the night?",
       choices: [
-        { id: "guest", label: "Stay. Keep a clear head, and keep an eye on people.", grow: { compassion: 1 }, flags: ["good_guest"], next: "party_guest" },
-        { id: "drink", tempt: "ease", label: "Drink until you stop feeling like the odd one out.", flags: ["drunk"], energy: -1, next: "party_drunk" },
+        { id: "guest", label: "Stay, with a lemonade. Keep a clear head, and keep an eye on people.", grow: { compassion: 1 }, flags: ["good_guest"], next: "party_guest" },
+        { id: "drink", tempt: "ease", label: "Take the drink. Just tonight, so you stop feeling like the odd one out.", flags: ["drunk"], energy: -1, next: "party_drunk" },
         { id: "hide", label: "Go to your room and put your headphones on.", flags: ["hid"], next: "party_hide" },
       ],
     },
@@ -987,9 +1024,11 @@ export const wrenfieldWeek: Story = {
       setting: "kitchen",
       caption: "Friday evening · Flat 4C",
       beats: [
-        n("You dance badly, on purpose. You hold someone’s coat. At one o’clock a first-year you don’t know is grey-faced on the stairs, and you sit with her until her flatmate comes."),
+        d("you", "Lemonade, if there is any. I don’t drink."),
+        n("Nobody minds. Somebody finds you a lemonade. You dance badly, on purpose. You hold someone’s coat. At one o’clock a first-year you don’t know is grey-faced on the stairs, and you sit with her until her flatmate comes."),
         d("partner", "You’re weirdly good at parties for someone who doesn’t drink at them.", "warm", { when: { none: ["path_scold"] } }),
         t("You didn’t have to become someone else to be in the room. You hadn’t been sure of that."),
+        s(FILLED),
       ],
       next: "map",
     },
@@ -998,10 +1037,12 @@ export const wrenfieldWeek: Story = {
       caption: "Saturday, far too early · Flat 4C",
       onStage: [],
       beats: [
+        n("You don’t drink. You had said so to Kai, to Grace and to God. Tonight you take the cup anyway, and then another."),
         n("It works, for about an hour. Then it works too well. You remember the traffic cone, and telling a stranger something about your mother, and then the bathroom floor."),
         n("You wake at six with a blanket over you that you didn’t fetch, and a glass of water by your hand."),
         t("Kai. It could only have been Kai. He never mentions it. That is its own kind of grace, and it came from a direction you weren’t watching.", { when: { none: ["path_scold"] } }),
         t("Somebody looked after you. You don’t know who. You weren’t much use to anyone last night, including yourself.", { when: { all: ["path_scold"] } }),
+        t("You tell Jesus the truth about it before you have even stood up. He is not surprised, and he has not left. You are still his. You will not be doing that again."),
       ],
       next: "map",
     },
@@ -1030,7 +1071,7 @@ export const wrenfieldWeek: Story = {
         d("grace", "You must be Mei. That smells incredible. You’re between Engineering and the jollof. Good luck.", "warm"),
         n("By nine she is teaching four people to fold dumplings, and laughing with her whole face.", { react: { mei: "warm" } }),
         s(HOSPITALITY),
-        d("grace", "Nobody’s going to preach at anyone tonight. We just feed people. It’s the most theological thing we do.", "warm"),
+        d("grace", "Nobody’s going to preach at anyone tonight. We just feed people. Jesus did some of his best work at tables.", "warm"),
       ],
       next: "map",
     },
@@ -1038,7 +1079,7 @@ export const wrenfieldWeek: Story = {
       setting: "hall",
       caption: "Friday evening · St Aldhelm’s Chapel",
       beats: [
-        d("grace", "Nobody’s going to preach at anyone tonight. We just feed people. It’s the most theological thing we do.", "warm"),
+        d("grace", "Nobody’s going to preach at anyone tonight. We just feed people. Jesus did some of his best work at tables.", "warm"),
         n("You eat three kinds of rice and something you can’t name, and laugh more than you have since you landed."),
         t("The girl from Larch Court isn’t here. Nobody thought to ask her. You could have.", { react: { you: "thoughtful" } }),
       ],
@@ -1063,10 +1104,11 @@ export const wrenfieldWeek: Story = {
       beats: [
         n("The Wren is slow and brown and full of ducks. Mei walks with her hands in her sleeves."),
         d("mei", "I go home in three weeks. When I came, I thought I would count the days. Now I am counting them the other way.", "thoughtful"),
-        d("mei", "You go to the church with the cold benches. I looked in once. I did not know if someone like me is allowed.", "thoughtful"),
-        d("you", "You’re allowed. You’d be allowed if you only came for the soup.", "warm"),
-        n("She folds something out of a bus ticket as she walks, and puts it in your hand at the bridge: a paper crane, slightly lopsided."),
-        d("mei", "For the person who asked if I had eaten.", "warm"),
+        d("mei", "You go to the church with the cold benches. I looked in once. I did not know if someone like me is allowed. And I want to ask you: who is Jesus, to you? Not the church. Him.", "thoughtful"),
+        d("you", "He is God, come close enough to find. He died for me on a cross, and rose, and he has never once sent me away. You’re allowed, Mei. You would be allowed if you only came for the soup.", "warm"),
+        s(NEVER_THROWN_OUT),
+        n("She is quiet for a long time. Then she folds something out of a bus ticket as she walks, and puts it in your hand at the bridge: a paper crane, slightly lopsided."),
+        d("mei", "For the person who asked if I had eaten. I would like to come on Sunday. Will you sit beside me?", "warm"),
       ],
       next: "map",
     },
@@ -1078,7 +1120,9 @@ export const wrenfieldWeek: Story = {
       onStage: ["grace"],
       beats: [
         n("St Aldhelm’s on a Sunday: forty students, three professors, and a heating system that gave up in the 1970s. Grace is on the door in gloves, handing out service sheets."),
-        n("The chaplain says that God is not waiting at the end of your degree to see how you did. He is in the week with you, including the parts you would rather he had missed."),
+        n("The chaplain preaches on two sentences. God, the chaplain says, is not waiting at the end of your degree to see how you did. He came. Jesus lived the life none of us has managed, died on a cross for our sins, and rose on the third day, so that anyone who trusts him is forgiven and brought home."),
+        s(FOR_GOD_SO_LOVED),
+        n("“He is in this week with you,” the chaplain says, “including the parts you would rather he had missed.”"),
         t("Including Friday. You sit very still.", { when: { all: ["cheated"], none: ["owned_up"] }, react: { you: "sad" } }),
         t("You sing the last hymn louder than you meant to.", { when: { all: ["sat_honest"] }, react: { you: "warm" } }),
         d("grace", "Lunch is soup. It’s always soup. Stay.", "warm"),
@@ -1126,7 +1170,7 @@ export const wrenfieldWeek: Story = {
         n("Grace is stacking chairs after the evening service. She takes one look at you, and puts the chair down."),
         d("you", "I used the paper. I’ve got a mark that isn’t mine."),
         d("grace", "Okay. Thank you for telling me. Sit down before you fall down.", "warm"),
-        d("grace", "I’m not going to tell you it’s fine. You wouldn’t believe me, and you’d be right. I’ll tell you it’s forgivable, which is better.", "thoughtful"),
+        d("grace", "I’m not going to tell you it’s fine. You wouldn’t believe me, and you’d be right. I’ll tell you it is forgiven the moment you bring it to Jesus. He died for exactly this, and he is not surprised.", "thoughtful"),
         s(CONFESSION),
         d("grace", "God isn’t the one you need to email, though. Do you want to do it now, here, or shall I walk you back?", "warm"),
       ],
@@ -1167,7 +1211,7 @@ export const wrenfieldWeek: Story = {
       caption: "Evening · beside the Wren",
       beats: [
         n("The path by the Wren is unlit past the boathouse. You walk until the noise of the campus drops away."),
-        t("I’m a long way from everyone who knows me. I’m frightened about Friday. I don’t know who I am here yet."),
+        t("Jesus, I’m a long way from everyone who knows me. I’m frightened about Friday. I don’t know who I am here yet."),
         s(FAR_SIDE),
         n("Nothing is solved. The river goes on being a river. You walk back slower than you came."),
       ],
@@ -1257,7 +1301,7 @@ export const wrenfieldWeek: Story = {
         n("Your mother has told your aunt. Your aunt has told everyone.", { when: { all: ["masked_mum"] } }),
         n("You find you don’t go to office hours any more. In seminars you are careful not to seem too good at statistics. You have stopped walking by the river, because the river is where you say true things."),
         n("You told Grace, and stopped there. She hasn’t mentioned it since. She still saves you a seat.", { when: { all: ["told_grace"] } }),
-        n("Nothing has collapsed. That is the heavy part. But Room 214 still has a chair with a cushion on it, and the door is still propped open."),
+        n("Nothing has collapsed. That is the heavy part. But Room 214 still has a chair with a cushion on it, the door is still propped open, and Jesus has not stopped saying “come”."),
       ],
       scripture: {
         reference: "Matthew 11:28",
@@ -1280,7 +1324,7 @@ export const wrenfieldWeek: Story = {
         n("It was not painless. For ninety minutes you watched other people’s pens move faster than yours, and did not know what it would cost you."),
         n("You apologised to Kai for the way you said it, and kept what you said. He respects the second more because of the first.", { when: { all: ["made_peace"] } }),
         n("Kai still thinks you are mad. He has also started asking you, before he does something, what you would do. He says it is for research.", { when: { none: ["path_scold"] } }),
-        n("Whatever the scholarship office decides, the number on the page is a true account of you. You can stand on it."),
+        n("Whatever the scholarship office decides, the number on the page is a true account of you. You can stand on it. And who you are was settled before the number came: you belong to Jesus."),
       ],
       scripture: INTEGRITY_WALK,
       questions: ["Where are you tempted to level the field by doing what everyone else is doing?", "What would it be worth to you to have nothing to hide?"],
@@ -1350,7 +1394,7 @@ export const wrenfieldWeek: Story = {
         n("You went back to Kai’s door and apologised for the contempt, not the conviction. He came out with two forks.", { when: { all: ["made_peace"] } }),
         n("You told Kai to his face that you had reported the paper, and then sat up with him until two. He passed. He tells people you are the most annoying person he has ever lived with, and says it like a compliment.", { when: { all: ["warned_kai"] } }),
         n("Kai walked into a paper he hadn’t revised for, and worked out afterwards who had told. He resits in August. He isn’t angry so much as careful with you now. Telling him first would have cost one hard evening.", { when: { all: ["reported_leak"], none: ["warned_kai"] } }),
-        n("Kai asked why, and you told him without a sermon. He hasn’t come to St Aldhelm’s. He has started saying “your lot” with something like fondness.", { when: { all: ["shared_faith"] } }),
+        n("Kai asked why, and you told him about Jesus without a sermon. He hasn’t come to St Aldhelm’s. He is on chapter nine of Mark’s Gospel, “for research”, and keeps knocking on your door with questions.", { when: { all: ["shared_faith"] } }),
         n("On Friday night Kai put a blanket over you and a glass of water by your hand, and never mentioned it. Grace arrived from a direction you weren’t watching.", { when: { all: ["drunk"], none: ["path_scold"] } }),
         n("Kai covered your fees without making you feel small. You are paying him back twenty dollars a week. He keeps forgetting to count it.", { when: { all: ["fees_helped"] } }),
         n("You hardly saw Kai this week. He left you a pancake under a plate on Monday. It was still there on Thursday.", { when: { none: ["did:leak", "did:kai_breakfast", "did:kai_after", "did:party", "did:supper", "fees_helped"] } }),
@@ -1359,7 +1403,7 @@ export const wrenfieldWeek: Story = {
     {
       title: "Mei",
       beats: [
-        n("Mei gave you a paper crane folded from a bus ticket. She goes home in three weeks, and has asked whether the church with the cold benches does soup on her last Sunday. It does.", { when: { all: ["did:mei_walk"] } }),
+        n("Mei came to St Aldhelm’s the next Sunday and sat beside you. On her last Sunday in Wrenfield she told the chaplain she wanted to follow Jesus, and she was baptised that afternoon, laughing with cold. She flew home with a Bible in two languages and a paper crane of her own.", { when: { all: ["did:mei_walk"] } }),
         n("At the Lantern’s supper Mei taught four people to fold dumplings. She has been back twice. Nobody has asked her what she believes. She has started asking them.", { when: { all: ["mei_potluck"] } }),
         n("You ate with Mei once, and meant to again. She still waves. One bowl of soup was more than anyone else had offered. There is room for a second.", { when: { all: ["met_mei"], none: ["did:mei_walk", "mei_potluck"] } }),
         n("The exchange student from Larch Court ate on the library stairs this week. You saw her, more than once. She goes home in three weeks.", { when: { none: ["met_mei"] } }),

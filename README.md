@@ -217,7 +217,7 @@ Church Mind can be downloaded without an app store. On the title screen,
   screen like an app. Android and desktop Chrome or Edge show an Install
   button; on iPhone and iPad it is Share, then "Add to Home Screen" in Safari.
 - **Play without internet.** Saves the whole game, voices included (about
-  80 MB), so it works with no connection.
+  85 MB), so it works with no connection.
 
 `public/manifest.webmanifest` describes the app, `public/sw.js` serves saved
 files when offline, and `src/game/offline.ts` handles installing and saving.
@@ -299,8 +299,23 @@ tailwind.config.js          colours, fonts, and motion
 
 ## Before sharing it widely
 
-- The story, its theology and the Scripture explanations are a first draft and
-  should be reviewed by a pastor.
+- Pastoral review is under way, by Pastor Daniel of Great Haven Assembly (the
+  church in the Alder Row world is his, and Pastor Daniel and Pastor Tolu in
+  it are himself and his wife). His rulings so far are written into the
+  stories and must be kept in anything added later:
+  - Jesus is named often, and the gospel (his death for our sins and his
+    resurrection) is stated plainly at least once in every world.
+  - People come to faith where the player has lived and spoken faithfully:
+    Priya in Alder Row, Mei at Wrenfield, Walt on Juniper Lane.
+  - The player's character does not drink alcohol. Drinking appears only as a
+    temptation, shown as a fall with a way back, never as a wise choice.
+  - Waiting for a child is written gently and promises nothing on God's behalf.
+  - Pastor Daniel and Pastor Tolu are shown as wise, warm and strong. Pastor
+    Tolu handles pastoral counsel herself and sends people on to Ruth; no
+    church member is written as wiser than the pastors. No jokes at Great
+    Haven's expense.
+  Every Bible quotation has been checked word for word against the World
+  English Bible. Decisions still open are on his review page.
 - The balance of money and energy was checked by simulation, not by watching
   real people play. Expect to tune it after a few playtests.
 - The sound was tuned by measurement, not by ear, and the voices are whatever

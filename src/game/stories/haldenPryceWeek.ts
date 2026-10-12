@@ -79,6 +79,17 @@ const WALK_HUMBLY: Scripture = {
   ],
 };
 
+const BY_GRACE: Scripture = {
+  reference: "Ephesians 2:8–10",
+  translation: WEB,
+  text: "for by grace you have been saved through faith, and that not of yourselves; it is the gift of God, not of works, that no one would boast. For we are his workmanship, created in Christ Jesus for good works, which God prepared before that we would walk in them.",
+  contextTitle: "In context",
+  context: [
+    "Paul puts the two halves in a careful order. You are not saved by your work. You are saved for it. Being accepted comes first, as a gift; the good work follows.",
+    "For anyone whose worth has been measured by output, that order is the whole difference.",
+  ],
+};
+
 const ALL = ["mon-day", "mon-eve", "wed-day", "wed-eve", "fri-day", "fri-eve", "sun-day", "sun-eve"];
 const EVENINGS = ["mon-eve", "wed-eve", "fri-eve", "sun-eve"];
 const RESTED = ["prayed", "rested", "did:midweek", "did:service", "did:park", "did:abi_friday", "did:abi_dinner"];
@@ -226,7 +237,7 @@ export const haldenPryceWeek: Story = {
     { id: "abi_car", place: "home", slots: ["wed-eve"], with: ["abi"], title: "Abi needs to ask you something", blurb: "She is holding a garage bill, and not looking at you.", scene: "abi_car" },
     { id: "drinks", place: "lock", slots: ["fri-eve"], with: ["vic", "owen"], when: { none: ["path_expose"] }, title: "Team drinks at the Lock", blurb: "Vic’s card is behind the bar.", scene: "drinks" },
     { id: "abi_friday", place: "home", slots: ["fri-eve"], with: ["abi"], title: "Friday night in with Abi", blurb: "Her one night off. She has rented something terrible.", energy: 1, bond: { abi: 1 }, scene: "abi_friday" },
-    { id: "supper", place: "home", slots: ["sun-eve"], with: ["abi", "partner"], when: { none: ["lied_room", "path_expose"] }, title: "Sunday supper at the flat", blurb: "Abi is cooking. {partner} is bringing wine.", energy: 1, scene: "supper" },
+    { id: "supper", place: "home", slots: ["sun-eve"], with: ["abi", "partner"], when: { none: ["lied_room", "path_expose"] }, title: "Sunday supper at the flat", blurb: "Abi is cooking. {partner} is bringing pudding.", energy: 1, scene: "supper" },
 
     // Always there
     { id: "pray_first", place: "quay", slots: EVENINGS, when: { none: ["prayed"] }, title: "Walk the quayside and pray", blurb: "No agenda. Just tell God the truth.", energy: 1, grow: { trust: 1 }, flags: ["prayed"], scene: "quay_first" },
@@ -347,7 +358,7 @@ export const haldenPryceWeek: Story = {
       beats: [
         d("you", "She wants a number changed before Friday. It isn’t a true number."),
         d("femi", "Hm. And you want to know whether to go to her boss.", "thoughtful"),
-        d("femi", "Thirty years I have watched people in this building go over each other’s heads. It is quick, and it leaves blood on the carpet. Go to her. Her, first, and alone. Say it plainly. If she will not hear you, then you have somewhere else to go, and a clean way to go there.", "warm"),
+        d("femi", "Thirty years I have watched people in this building go over each other’s heads. It is quick, and it leaves blood on the carpet. Jesus gave us a better way, and it is the hard one. Go to her. Her, first, and alone. Say it plainly. If she will not hear you, then you have somewhere else to go, and a clean way to go there.", "warm"),
         s(GO_FIRST),
       ],
       next: "map",
@@ -367,6 +378,7 @@ export const haldenPryceWeek: Story = {
       beats: [
         d("you", "I’m good at this job. I think it might be eating me."),
         d("femi", "I have seen that look come through those doors at seven and leave at eleven. The ones who last are not the ones who work the longest. They are the ones who know what the work is for.", "thoughtful"),
+        d("femi", "Jesus said, “Come to me, all you who labour.” He was talking to people exactly like you.", "warm"),
         s(REST_GIFT),
         d("femi", "Go home on time once this week. The building will still be here. I will make sure of it.", "warm"),
       ],
@@ -570,7 +582,7 @@ export const haldenPryceWeek: Story = {
       setting: "cafe",
       caption: "Wednesday lunchtime · The Lock",
       beats: [
-        n("The Lock is a pub that became a café and can’t quite commit. Leila orders for both of you without asking, and gets it right."),
+        n("The Lock is an old boathouse that became a café and can’t quite commit. Leila orders for both of you without asking, and gets it right."),
         d("partner", "Vic asked you about slide fourteen. Don’t look surprised. She asked me first, in March, about a different client. I said no. I’ve been “difficult” ever since.", "thoughtful"),
         d("partner", "You said no too. Of course you did.", "warm", { when: { all: ["held_line"] } }),
         d("partner", "You’re still thinking about it. All right. I won’t push.", "thoughtful", { when: { all: ["stalling"], none: ["held_line", "inflated"] } }),
@@ -592,7 +604,7 @@ export const haldenPryceWeek: Story = {
       setting: "cafe",
       caption: "Wednesday lunchtime · The Lock",
       beats: [
-        d("you", "It is. I think the work matters to God. Not the winning; the work. So I’d rather hand in a true eleven than a clever eighteen. I’m not brave. I just know who I’m doing it for."),
+        d("you", "It is. I follow Jesus. I believe he died for me and rose, and that I am accepted already, before the bonus and before the promotion. So the work stops being how I prove myself, and I can just do it truthfully, for him. I’m not brave. I just know who I’m doing it for."),
         d("partner", "Hm. Interesting.", "thoughtful"),
         d("partner", "I mean actually interesting. Not the way I usually mean it.", "warm"),
         s(WORK_HEARTILY),
@@ -628,7 +640,7 @@ export const haldenPryceWeek: Story = {
       beats: [
         n("Wednesday prayers at Quayside are held in the side chapel, because heating the main hall costs too much. Nine people: a bus driver, two nurses, a barrister, Femi in his lobby blazer."),
         n("Nobody here knows what a deck is. Nobody asks what you do. Someone prays for a daughter’s exam, someone for a hip operation."),
-        d("femi", "And for our young friend from the fourteenth floor, who is carrying something this week. Lord, you know what it is. We do not need to.", "warm"),
+        d("femi", "And for our young friend from the fourteenth floor, who is carrying something this week. Lord Jesus, you know what it is. We do not need to.", "warm"),
         t("You hadn’t told him anything. Thirty years on a front desk, and he can read a walk.", { when: { none: ["femi_counsel"] }, react: { you: "warm" } }),
         t("He doesn’t say what. He promised he wouldn’t.", { when: { all: ["femi_counsel"] }, react: { you: "warm" } }),
       ],
@@ -640,7 +652,9 @@ export const haldenPryceWeek: Story = {
       onStage: ["femi"],
       beats: [
         n("Quayside Church is a Victorian mission hall between a car park and a vape shop. Femi is on the door, as he is on every door."),
-        n("The preacher is a retired docker. He says that most of what God asks of you this week will happen at a desk, and that a spreadsheet can be an act of worship or an act of fear, and only you know which."),
+        n("The preacher is a retired docker. He says you are not saved by a good week at work, or lost by a bad one. Jesus did the work that saves: he died for our sins and rose again, and it is finished."),
+        s(BY_GRACE),
+        n("“So go to your desk tomorrow as someone already accepted,” he says. “A spreadsheet can be an act of worship or an act of fear, and only you know which.”"),
         t("You think about slide fourteen for the whole of the last hymn.", { when: { any: ["lied_room", "silent_room"], none: ["owned_up"] }, react: { you: "sad" } }),
         t("You think about slide fourteen, and for once it doesn’t tighten your chest.", { when: { any: ["told_truth", "owned_up"] }, react: { you: "warm" } }),
         d("femi", "You came. Good. Monday will still be there. Sit a while.", "warm"),
@@ -736,7 +750,7 @@ export const haldenPryceWeek: Story = {
       setting: "kitchen",
       caption: "Sunday evening · your flat",
       beats: [
-        n("Abi has cooked. Leila has brought wine, and a spreadsheet of who owes whom for the wine, which she claims is a joke."),
+        n("Abi has cooked. Leila has brought a cheesecake, and a spreadsheet of who owes whom for the cheesecake, which she claims is a joke."),
         d("abi", "So you’re the one who built the thing. I’ve heard about nothing else for a month.", "warm"),
         d("partner", "And you’re the one who writes EAT on the fridge. I’ve seen the lunches. Thank you.", "warm"),
         t("Two people who don’t believe what you believe, at your table, liking each other. You say grace in your head, and mean it.", { react: { you: "warm" } }),
@@ -920,15 +934,15 @@ export const haldenPryceWeek: Story = {
       ],
       prompt: "How long do you stay?",
       choices: [
-        { id: "one", label: "One drink, a proper goodbye to everyone, and the ten o’clock bus.", flags: ["one_drink"], next: "drinks_one" },
-        { id: "late", tempt: "ease", label: "Stay till they close. You’ve earned it.", energy: -2, flags: ["stayed_out"], next: "drinks_late" },
+        { id: "one", label: "A ginger beer, a proper goodbye to everyone, and the ten o’clock bus.", flags: ["one_drink"], next: "drinks_one" },
+        { id: "late", tempt: "ease", label: "Take the glass Vic is holding out, and stay till they close.", energy: -2, flags: ["stayed_out"], next: "drinks_late" },
       ],
     },
     drinks_one: {
       setting: "cafe",
       caption: "Friday evening · The Lock",
       beats: [
-        n("You ask the new graduate what she actually wants to do, and listen to the answer. You tell Owen his tie is terrible. At ten you put your coat on."),
+        n("You don’t drink, and by now most of them have stopped asking why. You ask the new graduate what she actually wants to do, and listen to the answer. You tell Owen his tie is terrible. At ten you put your coat on."),
         d("owen", "Leaving? It’s only just started.", "warm"),
         t("It turns out you can be fully in a room and still leave it."),
       ],
@@ -939,8 +953,9 @@ export const haldenPryceWeek: Story = {
       caption: "Saturday, around noon · your flat",
       onStage: [],
       beats: [
-        n("At midnight you are explaining the Brightwater model to a man from Legal who did not ask. At one, Vic’s card is declined, and everybody finds that very funny."),
-        n("You wake on Saturday at noon with the particular loneliness of a hangover in an empty flat. Abi has left water and two tablets by the bed, and a note: EAT."),
+        n("You don’t drink. Tonight, with Vic holding out a glass and the whole floor watching, you do. At midnight you are explaining the Brightwater model to a man from Legal who did not ask."),
+        n("You wake on Saturday at noon, sick and ashamed, in an empty flat. Abi has left water and two tablets by the bed, and a note: EAT."),
+        t("You tell Jesus the truth about it from the pillow. He has not gone anywhere. You will not be doing that again."),
       ],
       next: "map",
     },
@@ -951,6 +966,8 @@ export const haldenPryceWeek: Story = {
         d("owen", "I’ve been trying to work out what you wanted. For Wednesday. People don’t do that for nothing.", "thoughtful"),
         d("you", "I didn’t want anything."),
         d("owen", "That’s what I can’t get past. I’d have let you sink. I told you that. And you still walked me to her door.", "sad"),
+        d("you", "Somebody did that for me once, when I had earned the opposite. Jesus. He’s the reason I’m in that mission hall on Sundays. I’ll tell you about it properly, if you ever want."),
+        d("owen", "Not today. But don’t forget you offered.", "thoughtful"),
         d("owen", "I told HR the thing about Leila wasn’t true, by the way. I don’t actually know if it is. I just liked knowing things.", "thoughtful"),
         n("He pays for both coffees, and leaves a tip so large that the barista checks it isn’t a mistake."),
       ],
@@ -990,7 +1007,7 @@ export const haldenPryceWeek: Story = {
         n("Femi is locking the side door after the evening service. He sees your face, and unlocks it again."),
         d("you", "I said yes to a number that isn’t true, in front of the client. And I took the money.", undefined, { when: { all: ["lied_room"] } }),
         d("you", "I went over her head. I didn’t even tell her I was going to.", undefined, { when: { all: ["path_expose"] } }),
-        d("femi", "I will not tell you it is nothing. You would not respect me. I will tell you it is not the end of you, which is a different thing.", "warm"),
+        d("femi", "I will not tell you it is nothing. You would not respect me. I will tell you that Jesus went to the cross for this too, and so it is not the end of you.", "warm"),
         d("femi", "Zacchaeus did not say sorry and go home. He stood up and said what he would give back. The putting right is part of the being forgiven. Not the price of it. The fruit of it.", "thoughtful", { when: { all: ["lied_room"] } }),
         d("femi", "You were right about the number. You were wrong about the woman. Go to her. Not to explain. To say sorry for the manner of it.", "thoughtful", { when: { all: ["path_expose"] } }),
         d("femi", "Shall I sit here while you do it? I have nowhere to be. I am never anywhere to be.", "warm"),
@@ -1031,7 +1048,7 @@ export const haldenPryceWeek: Story = {
       caption: "Evening · the Quayside",
       beats: [
         n("The quay at night: container cranes lit up like cathedrals, and the water slapping the wall. You walk until the towers are behind you."),
-        t("I’m good at this job, and I’m afraid of what it’s making me good at. I don’t know what to do about Friday. I’m tired in a way that isn’t about sleep."),
+        t("Jesus, I’m good at this job, and I’m afraid of what it’s making me good at. I don’t know what to do about Friday. I’m tired in a way that isn’t about sleep."),
         s(WALK_HUMBLY),
         n("Nothing is solved. The cranes go on working. You walk back slower than you came."),
       ],
@@ -1115,7 +1132,7 @@ export const haldenPryceWeek: Story = {
         n("Abi’s car is fixed, and you helped pay for it. She thanked you, and then looked at you a little too long.", { when: { any: ["lent_abi", "part_abi"] } }),
         n("Leila knows. She has not reported it. She has stopped asking you to check her work, and started checking yours."),
         n("In March, Brightwater’s savings will come in at eleven, and someone will be asked why. You have started staying late, so that you will not have to walk past Femi’s desk while he is on it."),
-        n("Nothing has collapsed. That is the heavy part. But Ms. Aldana’s address is in your sent folder, and a correction has no closing date."),
+        n("Nothing has collapsed. That is the heavy part. But Ms. Aldana’s address is in your sent folder, and a correction has no closing date. Neither has the mercy of Jesus."),
       ],
       scripture: {
         reference: "Mark 8:36",
@@ -1141,6 +1158,7 @@ export const haldenPryceWeek: Story = {
         n("Brightwater signed for a third of what they might have. There was no bonus. The team kept their jobs, narrowly."),
         n("In March the savings came in at eleven point four. Ms. Aldana rang Vic herself, and asked for the same team on the next one, by name."),
         n("Vic has never said you were right. She has started sending you the numbers first."),
+        n("You did it as someone who already belongs to Jesus, not as someone trying to look good. That is why you could afford to lose."),
       ],
       scripture: {
         reference: "Ephesians 4:25",
@@ -1194,7 +1212,7 @@ export const haldenPryceWeek: Story = {
     { id: "h_card", icon: "🖨️", name: "A card from Owen", when: { all: ["helped_owen"] }, text: "“I’d have let you sink. Thank you for not being me.”" },
     { id: "h_pebble", icon: "🪨", name: "A stone from the quay", when: { all: ["prayed"] }, text: "Picked up under the cranes. It sits on your monitor stand now." },
     { id: "h_sheet", icon: "📖", name: "Sunday’s notice sheet", when: { all: ["did:service"] }, text: "In the margin, in your writing: an act of worship, or an act of fear." },
-    { id: "h_ticket", icon: "🚌", name: "A bus ticket, 10:04 p.m.", when: { all: ["one_drink"] }, text: "You were fully in the room. Then you went home." },
+    { id: "h_ticket", icon: "🚌", name: "A bus ticket, 10:04 p.m.", when: { all: ["one_drink"] }, text: "A ginger beer, and you were fully in the room. Then you went home." },
   ],
 
   // The other strands of the week. Each beat that fits is shown.
@@ -1207,7 +1225,7 @@ export const haldenPryceWeek: Story = {
         n("The partners think you built Leila’s model. She knows you let them. She has not raised it. She holds doors for you, very politely.", { when: { all: ["took_credit"], none: ["leila_repaired"] } }),
         n("Something Leila told you in confidence is doing the rounds of the kitchen. She has worked out the route it took.", { when: { all: ["gossiped"], none: ["leila_repaired"] } }),
         n("You told Vic by the lifts whose model it was. She said she would mention it. The partners still think it was yours.", { when: { all: ["credit_later"] } }),
-        n("Leila asked why, and you told her without a sermon. She isn’t persuaded. She has, she says, updated her priors.", { when: { all: ["shared_faith"] } }),
+        n("Leila asked why, and you told her about Jesus without a sermon. She isn’t persuaded. She did ask Femi, of all people, where a person would start, and he gave her his own Gospel of John, with thirty years of pencil in the margins.", { when: { all: ["shared_faith"] } }),
         n("You sat up late with Leila over her model, and watched what it looks like to make a number true and then stand next to it.", { when: { all: ["built_together"], none: ["gave_credit", "took_credit", "shared_faith"] } }),
       ],
     },
