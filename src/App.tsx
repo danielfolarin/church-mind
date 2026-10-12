@@ -385,9 +385,9 @@ function TitleScreen({
           See life through the way of Jesus.
         </p>
         <p {...stagger(5, "mt-6 max-w-xl text-base leading-relaxed text-cm-cream/75")}>
-          Choose who you are, then choose a world: a neighbourhood, a university, an office. Live one week there. Decide
-          where to be, who to show up for, and what to do with your time, money and energy. You determine how it ends.
-          No ending is beyond grace.
+          Choose who you are, then choose a world: a neighbourhood, a university, an office, or a home of your own.
+          Decide where to be, who to show up for, and what to do with your time, money and energy. You determine how it
+          ends. No ending is beyond grace.
         </p>
 
         {saved ? (
@@ -412,9 +412,9 @@ function TitleScreen({
               Begin Story <span aria-hidden="true">→</span>
             </PrimaryAction>
             <p className="text-sm text-cm-sand">
-              <span className="font-story text-base italic text-cm-cream">{STORIES.length} worlds</span>
+              <span className="font-story text-base italic text-cm-cream">{STORIES.length + 1} worlds</span>
               <span className="mx-2 text-cm-sand/50">·</span>
-              about {STORIES[0].minutes} minutes each
+              a week in about {STORIES[0].minutes} minutes, or a whole life
             </p>
           </div>
         )}
@@ -446,7 +446,7 @@ function Prologue({ audio, onBack, children }: { audio: SoundSettings; onBack: (
       <div className="absolute inset-x-0 top-0 h-[26rem] opacity-50">
         <TitleArt />
       </div>
-      <div className="absolute inset-x-0 top-0 h-[26rem] bg-gradient-to-b from-cm-night/30 via-cm-night/70 to-cm-night" />
+      <div className="absolute inset-x-0 top-0 h-[27rem] bg-gradient-to-b from-cm-night/30 via-cm-night/70 via-[90%] to-cm-night to-[96%]" />
 
       <header className="relative z-10 flex items-center justify-between px-6 py-5 sm:px-10">
         <Wordmark />
@@ -613,7 +613,7 @@ function WorldsScreen({
               open === "life" ? "scale-110 ring-cm-ember" : "ring-white/20 group-hover:scale-105 group-hover:ring-white/60"
             }`}
           >
-            <span className="absolute left-[46%] top-[-22%] block aspect-[3/2] h-[150%] -translate-x-1/2">
+            <span className="absolute left-[57.5%] top-0 block aspect-[3/2] h-[115%] -translate-x-1/2">
               <HouseArt state={house} />
             </span>
           </span>

@@ -48,7 +48,7 @@ function thing(id: string, tint: string | undefined, state: LifeState): ReactNod
           <rect x="305" y="392" width="3" height="72" fill={DARK} />
           <rect x="298" y="462" width="17" height="4" rx="2" fill={DARK} />
           <path d="M296 394 L300 372 H313 L317 394Z" fill="#F0D9A0" />
-          <circle cx="306" cy="396" r="22" fill="#FFD796" opacity="0.18" className="animate-cm-twinkle" />
+          <circle cx="306" cy="390" r="15" fill="#FFD796" opacity="0.1" className="animate-cm-twinkle" />
         </g>
       );
     case "books":
@@ -76,7 +76,7 @@ function thing(id: string, tint: string | undefined, state: LifeState): ReactNod
           <rect x="176" y="432" width="14" height="14" rx="2" fill="#E8622C" className="animate-cm-twinkle" />
           <rect x="174" y="460" width="4" height="6" fill="#14110F" />
           <rect x="188" y="460" width="4" height="6" fill="#14110F" />
-          <circle cx="183" cy="440" r="26" fill="#FFB25E" opacity="0.14" className="animate-cm-twinkle" />
+          <circle cx="183" cy="440" r="15" fill="#FFB25E" opacity="0.1" className="animate-cm-twinkle" />
         </g>
       );
     case "picture":
@@ -196,7 +196,7 @@ function thing(id: string, tint: string | undefined, state: LifeState): ReactNod
           <rect x="312" y="284" width="22" height="22" rx="2" fill={WOOD} />
           <rect x="321.500" y="270" width="3" height="14" fill={DARK} />
           <path d="M314 272 L318 258 H328 L332 272Z" fill="#F0D9A0" />
-          <circle cx="323" cy="270" r="16" fill="#FFD796" opacity="0.16" className="animate-cm-twinkle" />
+          <circle cx="323" cy="268" r="12" fill="#FFD796" opacity="0.1" className="animate-cm-twinkle" />
         </g>
       );
     case "curtains":
@@ -275,7 +275,7 @@ function thing(id: string, tint: string | undefined, state: LifeState): ReactNod
           <rect x="716" y="435" width="4" height="31" fill={WOOD} />
           <rect x="672" y="424" width="16" height="6" fill="#F4EBDD" />
           <path d="M706 430 V414 l-10 -6" stroke={DARK} strokeWidth="2.500" fill="none" strokeLinecap="round" />
-          <circle cx="695" cy="410" r="12" fill="#FFD796" opacity="0.2" className="animate-cm-twinkle" />
+          <circle cx="695" cy="410" r="10" fill="#FFD796" opacity="0.12" className="animate-cm-twinkle" />
         </g>
       );
     case "armchair":

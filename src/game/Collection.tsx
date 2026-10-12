@@ -1,6 +1,7 @@
 import { useRef, useState, type ReactNode, type RefObject } from "react";
 import { fill, strongestQuality, tokensFor, type GameState } from "./engine";
 import { leadFor, type CustomCharacter } from "./Creator";
+import { loadLife, when } from "./life/model";
 import { buy, endingsFound, GAME_NAMES, loadProfile, SHOP, type WeekReward } from "./rewards";
 import { FullFigure } from "./Rig";
 import { shareWeekCard } from "./shareCard";
@@ -151,6 +152,7 @@ export function CollectionScreen({
   onBack: () => void;
 }) {
   const [profile, setProfile] = useState(loadProfile);
+  const [life] = useState(loadLife);
 
   return (
     <div className="min-h-screen bg-cm-night text-cm-cream">
@@ -205,6 +207,28 @@ export function CollectionScreen({
             </section>
           );
         })}
+
+        {life && life.scrapbook.length > 0 && (
+          <section className="mt-8">
+            <h2 className="font-story text-2xl text-cm-cream">A Home on Juniper Lane</h2>
+            <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-cm-sand">
+              Scrapbook · {life.scrapbook.length} {life.scrapbook.length === 1 ? "memory" : "memories"} <span className="mx-1 text-cm-sand/50">·</span> {when(life.turn)}
+            </p>
+            <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+              {[...life.scrapbook].reverse().map((memory, index) => (
+                <li key={index} className="flex gap-3 rounded-2xl border border-cm-gold/30 bg-cm-gold/[0.05] px-4 py-3">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-cm-gold/60 bg-cm-night text-xl" aria-hidden="true">
+                    {memory.icon}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block font-story text-lg leading-snug text-cm-cream">{memory.text}</span>
+                    <span className="mt-0.5 block text-sm leading-snug text-cm-cream/70">{when(memory.turn)}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <section className="mt-12">
           <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-cm-sand">Shop</h2>

@@ -188,7 +188,7 @@ export function CharacterCreator({ value, onChange }: { value: CustomCharacter; 
 
   return (
     <div className="animate-cm-rise rounded-2xl border border-cm-ember/40 bg-cm-ember/[0.06] p-4 sm:p-6 md:flex md:gap-8">
-      <div className="mx-auto w-40 shrink-0 md:mx-0 md:w-48">
+      <div className="mx-auto w-40 shrink-0 md:sticky md:top-6 md:mx-0 md:w-48 md:self-start">
         <FullFigure look={look} className="h-72 w-full md:h-96" />
         <p className="mt-2 text-center font-story text-2xl text-cm-cream">{value.name.trim() || "You"}</p>
       </div>
