@@ -28,6 +28,7 @@ import { FullFigure } from "./game/Rig";
 import { clearWeek, loadWeek, saveWeek, type SavedWeek } from "./game/save";
 import { SceneArt, TitleArt } from "./game/SceneArt";
 import { TownArt } from "./game/Town";
+import { track } from "./game/track";
 import { Stage, type StagePerson } from "./game/Stage";
 import { STORIES } from "./game/stories";
 import { QUALITY_IDS, type Beat, type Lead, type Mood, type Story, type StoryNode, type Opportunity } from "./game/types";
@@ -147,7 +148,9 @@ export default function App() {
   useEffect(() => {
     if (screen !== "play" || game.phase !== "summary" || rewarded.current === game) return;
     rewarded.current = game;
-    setReward(rewardWeek(story, game, endingFor(story, game), rewound));
+    const ending = endingFor(story, game);
+    track("week-finished", { world: story.id, ending: ending.id, rewound });
+    setReward(rewardWeek(story, game, ending, rewound));
   }, [screen, game, story, rewound]);
 
   // The week is saved after every step, so it can be picked up later.
@@ -158,6 +161,7 @@ export default function App() {
   }, [screen, story, lead, game, trail]);
 
   function begin() {
+    track("week-started", { world: story.id });
     setLead(leadFor(story, character));
     setGame(startWeek(story));
     setTrail([]);
@@ -167,6 +171,7 @@ export default function App() {
   }
 
   function resume(saved: SavedWeek) {
+    track("week-continued", { world: saved.story.id });
     setStory(saved.story);
     setLead(saved.lead);
     setGame(saved.game);
@@ -179,6 +184,7 @@ export default function App() {
   /** From the ending: back to the start of an earlier morning or evening. */
   function rewind(slot: number) {
     if (!trail[slot]) return;
+    track("week-rewound", { world: story.id });
     setGame(trail[slot]);
     setTrail(trail.slice(0, slot + 1));
     setRewound(true);
@@ -200,6 +206,7 @@ export default function App() {
         headingRef={headingRef}
         onBack={() => setScreen("title")}
         onDone={(chosen) => {
+          track("character-chosen", { who: loadChoice() });
           setCharacter(chosen);
           setScreen("worlds");
         }}
@@ -215,10 +222,14 @@ export default function App() {
         headingRef={headingRef}
         onBack={() => setScreen("character")}
         onChoose={(chosen) => {
+          track("world-chosen", { world: chosen.id });
           setStory(chosen);
           setScreen("intro");
         }}
-        onLife={() => setScreen("life")}
+        onLife={() => {
+          track("world-chosen", { world: "juniper-lane" });
+          setScreen("life");
+        }}
       />
     );
   }

@@ -24,6 +24,7 @@ import {
 } from "./content";
 import { HouseView } from "./House";
 import { scriptureSpeech, useReadAloud } from "./speech";
+import { track } from "../track";
 import { actsAt, goalsFor, spotOpen, spotsFor } from "./spots";
 import {
   buildRoom,
@@ -411,7 +412,12 @@ export function LifeScreen({ me, audio, headingRef, onExit }: { me: Me; audio: S
           </div>
           <p className="mt-6 border-l-2 border-cm-gold/40 pl-4 font-story text-lg italic leading-relaxed text-cm-cream/90">{review.question}</p>
           <div className="mt-8">
-            <Button onClick={() => update(afterReview(life))}>
+            <Button
+              onClick={() => {
+                track("life-year-finished", { year: yearOf(life.turn) - 1 });
+                update(afterReview(life));
+              }}
+            >
               Into year {yearOf(life.turn)} <span aria-hidden="true">→</span>
             </Button>
           </div>

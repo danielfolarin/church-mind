@@ -322,3 +322,12 @@ tailwind.config.js          colours, fonts, and motion
   each device provides. Listen on a phone and a computer first.
 - Scripture is quoted from the World English Bible, which is public domain.
   Another translation may need a licence.
+
+## Who is playing
+
+The live site counts visits and a few play events with Umami (`src/game/track.ts`,
+script tag in `index.html`): which character and world were chosen, weeks started
+and finished, which ending, and years finished on Juniper Lane. It is anonymous:
+no cookies, and nothing a player types is ever sent. The dashboard is at
+cloud.umami.is under "The Curious Seekers Games". It only counts on
+`games.thecuriousseekers.com`, never on a local preview.
